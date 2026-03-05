@@ -43,50 +43,87 @@ export async function notifyArtistsOfNewRequest(
 ) {
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
-    header: {
+    size: "mega",
+    body: {
       type: "box",
       layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
       contents: [
+        {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            {
+              type: "text",
+              text: "NEW",
+              size: "xs",
+              color: "#FFFFFF",
+              weight: "bold",
+            },
+          ],
+          backgroundColor: "#D4A0A0",
+          cornerRadius: "xl",
+          paddingAll: "6px",
+          paddingStart: "12px",
+          paddingEnd: "12px",
+          width: "52px",
+        },
         {
           type: "text",
           text: "新需求通知",
           weight: "bold",
-          size: "lg",
-          color: "#E91E8C",
+          size: "xl",
+          color: "#1a1a1a",
+          margin: "md",
         },
-      ],
-    },
-    body: {
-      type: "box",
-      layout: "vertical",
-      spacing: "md",
-      contents: [
+        { type: "separator", margin: "lg", color: "#f0f0f0" },
         {
-          type: "text",
-          text: `服務項目：${requestSummary.services.join("、")}`,
-          wrap: true,
-          size: "sm",
-        },
-        {
-          type: "text",
-          text: `地點：${requestSummary.location}`,
-          size: "sm",
-        },
-        {
-          type: "text",
-          text: `預算：${requestSummary.budget}`,
-          size: "sm",
-        },
-        {
-          type: "text",
-          text: `時間：${requestSummary.date}`,
-          size: "sm",
+          type: "box",
+          layout: "vertical",
+          spacing: "sm",
+          margin: "lg",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "服務項目", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: requestSummary.services.join("、"), size: "sm", color: "#333333", flex: 5, wrap: true },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "地點", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: requestSummary.location, size: "sm", color: "#333333", flex: 5, wrap: true },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "預算", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: requestSummary.budget, size: "sm", color: "#333333", flex: 5 },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "時間", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: requestSummary.date, size: "sm", color: "#333333", flex: 5 },
+              ],
+            },
+          ],
         },
       ],
     },
     footer: {
       type: "box",
       layout: "vertical",
+      paddingAll: "20px",
       contents: [
         {
           type: "button",
@@ -96,9 +133,13 @@ export async function notifyArtistsOfNewRequest(
             uri: `${process.env.NEXT_PUBLIC_APP_URL}/artist/requests/${requestSummary.requestId}`,
           },
           style: "primary",
-          color: "#E91E8C",
+          color: "#D4A0A0",
+          height: "md",
         },
       ],
+    },
+    styles: {
+      footer: { backgroundColor: "#FAFAF8" },
     },
   };
 

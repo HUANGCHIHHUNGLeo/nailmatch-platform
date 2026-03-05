@@ -5,7 +5,7 @@ import { artistRegistrationSchema } from "@/lib/utils/form-schema";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { lineProfile, ...formData } = body;
+    const { lineProfile, role, ...formData } = body;
 
     const parsed = artistRegistrationSchema.safeParse(formData);
     if (!parsed.success) {
@@ -35,6 +35,8 @@ export async function POST(request: Request) {
         min_price: parsed.data.minPrice,
         max_price: parsed.data.maxPrice,
         instagram_handle: parsed.data.instagramHandle || null,
+        line_id: parsed.data.lineId || null,
+        role: role || "nail",
         is_verified: false,
         is_active: true,
         updated_at: new Date().toISOString(),

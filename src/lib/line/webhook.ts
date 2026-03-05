@@ -67,56 +67,87 @@ async function handleFollow(userId: string) {
     await supabase.from("customers").insert({ line_user_id: userId });
   }
 
-  // Send welcome Flex Message
+  // Send welcome Flex Message — elegant card style
   await pushFlexMessage(userId, "歡迎使用 NaLi Match！", {
     type: "bubble",
+    size: "mega",
+    hero: {
+      type: "image",
+      url: `${APP_URL}/logo.png`,
+      size: "full",
+      aspectRatio: "20:13",
+      aspectMode: "cover",
+      action: { type: "uri", label: "官網", uri: APP_URL },
+    },
     body: {
       type: "box",
       layout: "vertical",
-      spacing: "md",
+      spacing: "lg",
+      paddingAll: "24px",
       contents: [
         {
           type: "text",
-          text: "歡迎使用 NaLi Match",
+          text: "NaLi MATCH",
           weight: "bold",
-          size: "lg",
-          color: "#E91E8C",
+          size: "xl",
+          color: "#1a1a1a",
         },
         {
           type: "text",
-          text: "送出你的需求，美甲/美睫師會主動找上門報價！",
+          text: "美甲・美睫媒合平台",
+          size: "sm",
+          color: "#999999",
+          margin: "sm",
+        },
+        {
+          type: "separator",
+          margin: "lg",
+          color: "#f0f0f0",
+        },
+        {
+          type: "text",
+          text: "只需 3 分鐘填寫需求，\n讓合適的美甲/美睫師主動為您報價！",
           wrap: true,
           size: "sm",
-          color: "#666666",
-          margin: "md",
+          color: "#555555",
+          margin: "lg",
+          lineSpacing: "8px",
         },
       ],
     },
     footer: {
       type: "box",
       layout: "vertical",
-      spacing: "sm",
+      spacing: "md",
+      paddingAll: "20px",
       contents: [
         {
           type: "button",
           action: {
             type: "uri",
-            label: "我要找美甲/美睫師",
+            label: "我要預約 Book Now",
             uri: `${APP_URL}/request`,
           },
           style: "primary",
-          color: "#E91E8C",
+          color: "#D4A0A0",
+          height: "md",
         },
         {
           type: "button",
           action: {
             type: "uri",
-            label: "我是美甲/美睫師（註冊加入平台）",
+            label: "我是設計師・註冊加入",
             uri: `${APP_URL}/line/liff/artist-form`,
           },
-          style: "link",
+          style: "secondary",
+          color: "#F5F0EB",
+          height: "md",
         },
       ],
+    },
+    styles: {
+      hero: { backgroundColor: "#F5E6E0" },
+      footer: { backgroundColor: "#FAFAF8" },
     },
   });
 }

@@ -16,6 +16,10 @@ interface Artist {
   min_price: number;
   max_price: number;
   instagram_handle: string | null;
+  line_id: string | null;
+  role: string | null;
+  studio_address: string | null;
+  service_location_type: string | null;
   bio: string | null;
   line_user_id: string | null;
   is_verified: boolean;
@@ -193,6 +197,9 @@ export default function AdminDashboard() {
                       <StatusBadge artist={artist} />
                     </div>
                     <p className="text-xs text-gray-500 truncate">
+                      <span className={`mr-1 inline-block rounded px-1 py-0.5 text-[10px] font-medium ${artist.role === "lash" ? "bg-purple-100 text-purple-700" : "bg-pink-100 text-pink-700"}`}>
+                        {artist.role === "lash" ? "美睫" : "美甲"}
+                      </span>
                       {artist.services.join("、")} · {artist.cities.slice(0, 2).join("、")}
                       {artist.cities.length > 2 && ` +${artist.cities.length - 2}`}
                     </p>
@@ -219,10 +226,24 @@ export default function AdminDashboard() {
                 {/* Expanded Details */}
                 {expandedId === artist.id && (
                   <div className="border-t bg-gray-50 p-4 space-y-3">
+                    <DetailRow label="身份" value={artist.role === "lash" ? "美睫師" : "美甲師"} />
                     <DetailRow label="電話" value={artist.phone} />
                     <DetailRow label="Email" value={artist.email || "未填"} />
                     <DetailRow label="性別" value={artist.gender === "female" ? "女" : "男"} />
+                    <DetailRow label="店名/工作室" value={artist.studio_address || "未填"} />
                     <DetailRow label="服務地區" value={artist.cities.join("、")} />
+                    <DetailRow
+                      label="服務類型"
+                      value={
+                        artist.service_location_type === "studio"
+                          ? "工作室"
+                          : artist.service_location_type === "home_service"
+                          ? "到府服務"
+                          : artist.service_location_type === "both"
+                          ? "都可以"
+                          : artist.service_location_type || "未填"
+                      }
+                    />
                     <DetailRow label="服務項目" value={artist.services.join("、")} />
                     <DetailRow label="擅長風格" value={artist.styles.join("、")} />
                     <DetailRow
@@ -231,6 +252,9 @@ export default function AdminDashboard() {
                     />
                     {artist.instagram_handle && (
                       <DetailRow label="Instagram" value={`@${artist.instagram_handle}`} />
+                    )}
+                    {artist.line_id && (
+                      <DetailRow label="LINE ID" value={artist.line_id} />
                     )}
                     {artist.bio && <DetailRow label="自我介紹" value={artist.bio} />}
                     <DetailRow

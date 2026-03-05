@@ -44,18 +44,22 @@ export type ServiceRequestFormData = z.input<typeof serviceRequestSchema>;
 export const artistRegistrationSchema = z.object({
   displayName: z.string().min(1, "請輸入名稱"),
   gender: z.string().min(1, "請選擇性別"),
-  phone: z.string().min(1, "請輸入電話"),
-  email: z.string().email("請輸入有效的 Email").optional().or(z.literal("")),
+  phone: z.string().min(1, "請輸入電話號碼"),
+  email: z.string().min(1, "請輸入 Email").email("請輸入有效的 Email 格式"),
   bio: z.string().optional().default(""),
   cities: z.array(z.string()).min(1, "請選擇至少一個服務地區"),
   serviceLocationType: z.string().min(1, "請選擇服務地點類型"),
-  studioAddress: z.string().optional().default(""),
+  studioAddress: z.string().min(1, "請輸入店名或工作室名稱"),
   services: z.array(z.string()).min(1, "請選擇至少一個服務項目"),
   styles: z.array(z.string()).min(1, "請選擇至少一個擅長風格"),
   minPrice: z.number().min(0, "價格不能為負數"),
   maxPrice: z.number().min(0, "價格不能為負數"),
   instagramHandle: z.string().optional().default(""),
-});
+  lineId: z.string().optional().default(""),
+}).refine(
+  (data) => (data.instagramHandle && data.instagramHandle.length > 0) || (data.lineId && data.lineId.length > 0),
+  { message: "LINE ID 或 Instagram 至少填寫一項", path: ["lineId"] }
+);
 
 export type ArtistRegistrationFormData = z.input<typeof artistRegistrationSchema>;
 

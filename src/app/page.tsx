@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Clock, ShieldCheck, HeartPulse } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, Clock, ShieldCheck, HeartPulse, Sparkles } from "lucide-react";
 
 const steps = [
   {
@@ -70,7 +71,7 @@ export default function HomePage() {
       <header className="fixed top-0 z-50 w-full border-b border-white/20 bg-white/60 backdrop-blur-xl transition-all">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="group flex items-center gap-2 text-xl font-black tracking-tight text-slate-900">
-            <Sparkles className="h-6 w-6 text-pink-500 transition-transform group-hover:rotate-12 group-hover:scale-110" />
+            <Image src="/logo.png" alt="NaLi Match" width={32} height={32} className="rounded transition-transform group-hover:scale-110" />
             NaLi Match
           </Link>
           <nav className="flex items-center gap-6">
@@ -249,7 +250,7 @@ export default function HomePage() {
       <footer className="bg-white py-12 border-t border-slate-100">
         <div className="mx-auto max-w-6xl px-4 flex flex-col items-center justify-between sm:flex-row sm:px-6 lg:px-8 text-sm text-slate-500">
           <div className="flex items-center gap-2 font-bold text-slate-900 mb-4 sm:mb-0">
-            <Sparkles className="w-5 h-5 text-pink-500" />
+            <Image src="/logo.png" alt="NaLi Match" width={24} height={24} className="rounded" />
             NaLi Match
           </div>
           <p>&copy; {new Date().getFullYear()} NaLi Match Platform. Crafted with ❤️.</p>

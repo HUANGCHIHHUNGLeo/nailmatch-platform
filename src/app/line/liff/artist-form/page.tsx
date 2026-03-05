@@ -45,6 +45,7 @@ function ArtistFormContent() {
       minPrice: 500,
       maxPrice: 3000,
       instagramHandle: "",
+      lineId: "",
     },
   });
 
@@ -212,11 +213,25 @@ function ArtistFormContent() {
               <div>
                 <Label>電話 *</Label>
                 <Input {...register("phone")} placeholder="0912-345-678" />
+                {errors.phone && (
+                  <p className="mt-1 text-xs text-red-500">{errors.phone.message}</p>
+                )}
               </div>
 
               <div>
-                <Label>Email</Label>
-                <Input {...register("email")} type="email" placeholder="選填" />
+                <Label>Email *</Label>
+                <Input {...register("email")} type="email" placeholder="your@email.com" />
+                {errors.email && (
+                  <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label>店名 / 工作室名稱 *</Label>
+                <Input {...register("studioAddress")} placeholder="例：Nali Nail Studio" />
+                {errors.studioAddress && (
+                  <p className="mt-1 text-xs text-red-500">{errors.studioAddress.message}</p>
+                )}
               </div>
 
               <div>
@@ -225,11 +240,20 @@ function ArtistFormContent() {
               </div>
 
               <div>
-                <Label>Instagram</Label>
+                <Label>Instagram {!watch("lineId") && "*"}</Label>
                 <div className="flex items-center gap-1">
                   <span className="text-gray-400">@</span>
                   <Input {...register("instagramHandle")} placeholder="your_handle" />
                 </div>
+                <p className="mt-1 text-xs text-gray-400">LINE ID 或 Instagram 至少填一項</p>
+              </div>
+
+              <div>
+                <Label>LINE ID {!watch("instagramHandle") && "*"}</Label>
+                <Input {...register("lineId")} placeholder="例：@nalimatch" />
+                {errors.lineId && (
+                  <p className="mt-1 text-xs text-red-500">{errors.lineId.message}</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -293,10 +317,6 @@ function ArtistFormContent() {
                 </div>
               </div>
 
-              <div>
-                <Label>工作室地址</Label>
-                <Input {...register("studioAddress")} placeholder="選填" />
-              </div>
             </CardContent>
           </Card>
 
