@@ -170,8 +170,21 @@ export default function PortfolioPage() {
                 <Label>照片 *</Label>
                 <Input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileSelect} />
                 {preview && (
-                  <div className="relative mt-2 h-48 w-48 overflow-hidden rounded-lg">
-                    <Image src={preview} alt="Preview" fill className="object-cover" />
+                  <div className="relative mt-2 inline-block">
+                    <div className="relative h-48 w-48 overflow-hidden rounded-lg">
+                      <Image src={preview} alt="Preview" fill className="object-cover" />
+                    </div>
+                    <button
+                      type="button"
+                      className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600"
+                      onClick={() => {
+                        URL.revokeObjectURL(preview);
+                        setPreview(null);
+                        setSelectedFile(null);
+                      }}
+                    >
+                      ✕
+                    </button>
                   </div>
                 )}
               </div>
