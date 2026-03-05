@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { useAuthFetch } from "@/lib/line/use-auth-fetch";
 
 interface Slot {
   id: string;
@@ -29,6 +30,7 @@ function formatTime(timeStr: string) {
 
 export default function AvailabilityPage() {
   const router = useRouter();
+  const { authFetch } = useAuthFetch();
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -47,7 +49,7 @@ export default function AvailabilityPage() {
   const fetchSlots = async () => {
     try {
       const today = new Date().toISOString().split("T")[0];
-      const res = await fetch(`/api/availability?from=${today}`);
+      const res = await authFetch(`/api/availability?from=${today}`);
       if (res.ok) {
         setSlots(await res.json());
       }
@@ -67,7 +69,7 @@ export default function AvailabilityPage() {
     setAdding(true);
 
     try {
-      const res = await fetch("/api/availability", {
+      const res = await authFetch("/api/availability", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -97,7 +99,7 @@ export default function AvailabilityPage() {
   const handleDelete = async (id: string) => {
     setDeleting(id);
     try {
-      const res = await fetch(`/api/availability?id=${id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/availability?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setSlots(slots.filter((s) => s.id !== id));
       } else {
@@ -124,7 +126,7 @@ export default function AvailabilityPage() {
         // Skip if slot already exists for this date
         if (slots.some((s) => s.date === dateStr)) continue;
         promises.push(
-          fetch("/api/availability", {
+          authFetch("/api/availability", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ date: dateStr, start_time: "10:00", end_time: "18:00" }),

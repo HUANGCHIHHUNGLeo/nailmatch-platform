@@ -1,38 +1,23 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-
-async function getArtistId() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let query = supabase.from("artists").select("id");
-  if (user) {
-    query = query.eq("line_user_id", user.id);
-  } else {
-    query = query.eq("is_active", true).limit(1);
-  }
-  const { data } = await query.single();
-  return data?.id || null;
-}
+import { createServiceClient } from "@/lib/supabase/server";
+import { resolveArtist } from "@/lib/auth/resolve-artist";
 
 export async function GET(request: Request) {
   try {
-    const artistId = await getArtistId();
-    if (!artistId) {
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
       return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     const { searchParams } = new URL(request.url);
-    const from = searchParams.get("from"); // YYYY-MM-DD
-    const to = searchParams.get("to"); // YYYY-MM-DD
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
 
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
     let query = supabase
       .from("availability_slots")
       .select("id, date, start_time, end_time, is_booked")
-      .eq("artist_id", artistId)
+      .eq("artist_id", resolved.artistId)
       .order("date", { ascending: true })
       .order("start_time", { ascending: true });
 
@@ -54,8 +39,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const artistId = await getArtistId();
-    if (!artistId) {
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
       return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
@@ -66,12 +51,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "date, start_time, end_time are required" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
     const { data, error } = await supabase
       .from("availability_slots")
       .insert({
-        artist_id: artistId,
+        artist_id: resolved.artistId,
         date,
         start_time,
         end_time,
@@ -94,8 +79,8 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const artistId = await getArtistId();
-    if (!artistId) {
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
       return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
@@ -106,14 +91,14 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "id is required" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
     // Verify ownership and not booked
     const { data: slot } = await supabase
       .from("availability_slots")
       .select("id, is_booked")
       .eq("id", id)
-      .eq("artist_id", artistId)
+      .eq("artist_id", resolved.artistId)
       .single();
 
     if (!slot) {
@@ -128,7 +113,7 @@ export async function DELETE(request: Request) {
       .from("availability_slots")
       .delete()
       .eq("id", id)
-      .eq("artist_id", artistId);
+      .eq("artist_id", resolved.artistId);
 
     if (error) {
       return NextResponse.json({ error: "Failed to delete slot" }, { status: 500 });

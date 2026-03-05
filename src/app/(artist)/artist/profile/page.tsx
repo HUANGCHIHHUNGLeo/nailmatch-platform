@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { LOCATIONS, NAIL_SERVICES, STYLES } from "@/lib/utils/constants";
+import { useAuthFetch } from "@/lib/line/use-auth-fetch";
 
 interface ArtistProfile {
   id: string;
@@ -31,13 +32,14 @@ interface ArtistProfile {
 
 export default function ArtistProfilePage() {
   const router = useRouter();
+  const { authFetch } = useAuthFetch();
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    fetch("/api/artists/me")
+    authFetch("/api/artists/me")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data) setProfile(data);
@@ -52,7 +54,7 @@ export default function ArtistProfilePage() {
     setMessage(null);
 
     try {
-      const res = await fetch("/api/artists/me", {
+      const res = await authFetch("/api/artists/me", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

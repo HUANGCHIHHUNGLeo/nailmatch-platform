@@ -1,30 +1,23 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { resolveArtist } from "@/lib/auth/resolve-artist";
 
-export async function GET() {
+const ARTIST_SELECT =
+  "id, display_name, avatar_url, services, styles, cities, min_price, max_price, gender, bio, phone, email, service_location_type, studio_address, instagram_handle, is_active";
+
+export async function GET(request: Request) {
   try {
-    const supabase = await createClient();
-
-    // Try to get authenticated user first
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    let query = supabase
-      .from("artists")
-      .select(
-        "id, display_name, avatar_url, services, styles, cities, min_price, max_price, gender, bio, phone, email, service_location_type, studio_address, instagram_handle"
-      );
-
-    if (user) {
-      // Production: get artist by authenticated user's ID
-      query = query.eq("line_user_id", user.id);
-    } else {
-      // Local dev fallback: get first active artist
-      query = query.eq("is_active", true).limit(1);
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
-    const { data: artist, error } = await query.single();
+    const supabase = await createServiceClient();
+    const { data: artist, error } = await supabase
+      .from("artists")
+      .select(ARTIST_SELECT)
+      .eq("id", resolved.artistId)
+      .single();
 
     if (error || !artist) {
       return NextResponse.json({ error: "Artist not found" }, { status: 404 });
@@ -42,26 +35,13 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    const supabase = await createClient();
-    const body = await request.json();
-
-    // Try to get authenticated user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    // Find the artist
-    let findQuery = supabase.from("artists").select("id");
-    if (user) {
-      findQuery = findQuery.eq("line_user_id", user.id);
-    } else {
-      findQuery = findQuery.eq("is_active", true).limit(1);
-    }
-    const { data: artist } = await findQuery.single();
-
-    if (!artist) {
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
       return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
+
+    const body = await request.json();
+    const supabase = await createServiceClient();
 
     // Only allow updating specific fields
     const allowedFields: Record<string, unknown> = {};
@@ -80,6 +60,7 @@ export async function PUT(request: Request) {
       "max_price",
       "instagram_handle",
       "avatar_url",
+      "is_active",
     ];
 
     for (const field of updatable) {
@@ -100,10 +81,8 @@ export async function PUT(request: Request) {
     const { data, error } = await supabase
       .from("artists")
       .update(allowedFields)
-      .eq("id", artist.id)
-      .select(
-        "id, display_name, avatar_url, services, styles, cities, min_price, max_price, gender, bio, phone, email, service_location_type, studio_address, instagram_handle"
-      )
+      .eq("id", resolved.artistId)
+      .select(ARTIST_SELECT)
       .single();
 
     if (error) {

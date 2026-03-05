@@ -8,9 +8,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Booking {
   id: string;
+  customer_id: string;
   booking_date: string | null;
   booking_time: string | null;
   final_price: number | null;
@@ -53,6 +55,10 @@ export default function BookingDetailPage() {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   useEffect(() => {
     async function fetchBooking() {
@@ -86,6 +92,31 @@ export default function BookingDetailPage() {
       console.error("Cancel failed:", err);
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (!booking || reviewRating === 0) return;
+    setReviewSubmitting(true);
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          artistId: booking.artists.id,
+          customerId: booking.customer_id,
+          rating: reviewRating,
+          comment: reviewComment || null,
+        }),
+      });
+      if (res.ok) {
+        setReviewSubmitted(true);
+      }
+    } catch (err) {
+      console.error("Review submit error:", err);
+    } finally {
+      setReviewSubmitting(false);
     }
   };
 
@@ -216,6 +247,52 @@ export default function BookingDetailPage() {
               <p className="text-sm text-gray-600 italic">
                 &ldquo;{booking.artist_responses.message}&rdquo;
               </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Review Section - only for completed bookings */}
+        {booking.status === "completed" && !reviewSubmitted && (
+          <Card className="mb-4">
+            <CardContent className="p-4">
+              <h2 className="mb-3 font-semibold text-gray-700">評價美甲師</h2>
+              <div className="mb-3 flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setReviewRating(star)}
+                    className={`text-2xl transition ${
+                      star <= reviewRating ? "text-yellow-400" : "text-gray-300"
+                    }`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+              <Textarea
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="分享你的體驗..."
+                rows={3}
+                className="mb-3"
+              />
+              <Button
+                className="w-full bg-pink-500 hover:bg-pink-600"
+                onClick={handleSubmitReview}
+                disabled={reviewRating === 0 || reviewSubmitting}
+              >
+                {reviewSubmitting ? "送出中..." : "送出評價"}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {reviewSubmitted && (
+          <Card className="mb-4">
+            <CardContent className="p-4 text-center">
+              <span className="text-2xl">★</span>
+              <p className="mt-1 font-medium text-gray-700">感謝你的評價！</p>
             </CardContent>
           </Card>
         )}

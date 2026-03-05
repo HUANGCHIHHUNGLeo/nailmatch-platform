@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuthFetch } from "@/lib/line/use-auth-fetch";
 
 interface ServiceRequest {
   id: string;
@@ -33,6 +34,7 @@ interface ServiceRequest {
 export default function ArtistRequestDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { authFetch } = useAuthFetch();
   const [request, setRequest] = useState<ServiceRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [artistId, setArtistId] = useState<string | null>(null);
@@ -48,21 +50,21 @@ export default function ArtistRequestDetailPage() {
     async function fetchData() {
       try {
         // Fetch request details
-        const res = await fetch(`/api/requests/${id}`);
+        const res = await authFetch(`/api/requests/${id}`);
         if (res.ok) {
           const data = await res.json();
           setRequest(data);
         }
 
         // Increment viewed count
-        await fetch(`/api/requests/${id}`, {
+        await authFetch(`/api/requests/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ increment_viewed: true }),
         });
 
         // Get current artist ID
-        const meRes = await fetch("/api/artists/me");
+        const meRes = await authFetch("/api/artists/me");
         if (meRes.ok) {
           const me = await meRes.json();
           setArtistId(me.id);
@@ -82,7 +84,7 @@ export default function ArtistRequestDetailPage() {
     setSubmitting(true);
 
     try {
-      const res = await fetch("/api/responses", {
+      const res = await authFetch("/api/responses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

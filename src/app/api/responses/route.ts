@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { artistQuoteSchema } from "@/lib/utils/form-schema";
 import { notifyCustomerOfQuote } from "@/lib/line/messaging";
+import { resolveArtist } from "@/lib/auth/resolve-artist";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { requestId, artistId, ...quoteData } = body;
+    const { requestId, artistId: providedArtistId, ...quoteData } = body;
 
     // Validate quote data
     const parsed = artistQuoteSchema.safeParse(quoteData);
@@ -17,23 +18,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
-
-    // Resolve artist ID: use provided, or look up from auth, or fallback for local dev
-    let finalArtistId = artistId;
+    // Resolve artist ID from auth or provided value
+    let finalArtistId = providedArtistId;
     if (!finalArtistId) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      let artistQuery = supabase.from("artists").select("id");
-      if (user) {
-        artistQuery = artistQuery.eq("line_user_id", user.id);
-      } else {
-        artistQuery = artistQuery.eq("is_active", true).limit(1);
-      }
-      const { data: artist } = await artistQuery.single();
-      finalArtistId = artist?.id;
+      const resolved = await resolveArtist(request);
+      finalArtistId = resolved?.artistId;
     }
 
     if (!finalArtistId) {
@@ -42,6 +31,8 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
+
+    const supabase = await createServiceClient();
 
     // Create artist response
     const { data: response, error } = await supabase

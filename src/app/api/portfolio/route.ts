@@ -1,34 +1,19 @@
 import { NextResponse } from "next/server";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { resolveArtist } from "@/lib/auth/resolve-artist";
 
-async function getArtistId() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let query = supabase.from("artists").select("id");
-  if (user) {
-    query = query.eq("line_user_id", user.id);
-  } else {
-    query = query.eq("is_active", true).limit(1);
-  }
-  const { data } = await query.single();
-  return data?.id || null;
-}
-
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const artistId = await getArtistId();
-    if (!artistId) {
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
       return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
     const { data, error } = await supabase
       .from("portfolio_works")
       .select("id, image_url, title, style, price_hint, sort_order, source")
-      .eq("artist_id", artistId)
+      .eq("artist_id", resolved.artistId)
       .order("sort_order", { ascending: true });
 
     if (error) {
@@ -44,8 +29,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const artistId = await getArtistId();
-    if (!artistId) {
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
       return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
@@ -56,13 +41,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "image_url is required" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
     // Get current max sort_order
     const { data: maxItem } = await supabase
       .from("portfolio_works")
       .select("sort_order")
-      .eq("artist_id", artistId)
+      .eq("artist_id", resolved.artistId)
       .order("sort_order", { ascending: false })
       .limit(1)
       .single();
@@ -72,7 +57,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
       .from("portfolio_works")
       .insert({
-        artist_id: artistId,
+        artist_id: resolved.artistId,
         image_url,
         title: title || null,
         style: style || null,
@@ -97,8 +82,8 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const artistId = await getArtistId();
-    if (!artistId) {
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
       return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
@@ -109,14 +94,14 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "id is required" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
     // Verify ownership
     const { data: work } = await supabase
       .from("portfolio_works")
       .select("id, image_url")
       .eq("id", id)
-      .eq("artist_id", artistId)
+      .eq("artist_id", resolved.artistId)
       .single();
 
     if (!work) {
@@ -127,8 +112,7 @@ export async function DELETE(request: Request) {
     if (work.image_url.includes("supabase.co/storage")) {
       const path = work.image_url.split("/portfolio-images/")[1];
       if (path) {
-        const serviceClient = await createServiceClient();
-        await serviceClient.storage.from("portfolio-images").remove([path]);
+        await supabase.storage.from("portfolio-images").remove([path]);
       }
     }
 
@@ -137,7 +121,7 @@ export async function DELETE(request: Request) {
       .from("portfolio_works")
       .delete()
       .eq("id", id)
-      .eq("artist_id", artistId);
+      .eq("artist_id", resolved.artistId);
 
     if (error) {
       return NextResponse.json({ error: "Failed to delete" }, { status: 500 });

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuthFetch } from "@/lib/line/use-auth-fetch";
 
 interface ArtistMe {
   id: string;
@@ -44,6 +45,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function ArtistDashboard() {
+  const { authFetch } = useAuthFetch();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +60,7 @@ export default function ArtistDashboard() {
   const fetchData = useCallback(async () => {
     try {
       // Get current artist profile
-      const meRes = await fetch("/api/artists/me");
+      const meRes = await authFetch("/api/artists/me");
       if (!meRes.ok) {
         setLoading(false);
         return;
@@ -67,8 +69,8 @@ export default function ArtistDashboard() {
       setArtistName(me.display_name);
 
       const [requestsRes, bookingsRes] = await Promise.all([
-        fetch("/api/requests/matching"),
-        fetch(`/api/bookings?artistId=${me.id}`),
+        authFetch("/api/requests/matching"),
+        authFetch(`/api/bookings?artistId=${me.id}`),
       ]);
 
       const matchingRequests: ServiceRequest[] = requestsRes.ok ? await requestsRes.json() : [];
@@ -97,7 +99,7 @@ export default function ArtistDashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authFetch]);
 
   useEffect(() => {
     fetchData();

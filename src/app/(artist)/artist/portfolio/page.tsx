@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { STYLES } from "@/lib/utils/constants";
+import { useAuthFetch } from "@/lib/line/use-auth-fetch";
 
 interface PortfolioWork {
   id: string;
@@ -23,6 +24,7 @@ interface PortfolioWork {
 
 export default function PortfolioPage() {
   const router = useRouter();
+  const { authFetch } = useAuthFetch();
   const [works, setWorks] = useState<PortfolioWork[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -42,7 +44,7 @@ export default function PortfolioPage() {
 
   const fetchWorks = async () => {
     try {
-      const res = await fetch("/api/portfolio");
+      const res = await authFetch("/api/portfolio");
       if (res.ok) {
         setWorks(await res.json());
       }
@@ -70,7 +72,7 @@ export default function PortfolioPage() {
       formData.append("file", selectedFile);
       formData.append("bucket", "portfolio-images");
 
-      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+      const uploadRes = await authFetch("/api/upload", { method: "POST", body: formData });
       if (!uploadRes.ok) {
         alert("圖片上傳失敗");
         return;
@@ -78,7 +80,7 @@ export default function PortfolioPage() {
       const { url } = await uploadRes.json();
 
       // 2. Create portfolio work
-      const createRes = await fetch("/api/portfolio", {
+      const createRes = await authFetch("/api/portfolio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -109,7 +111,7 @@ export default function PortfolioPage() {
     setDeleting(id);
 
     try {
-      const res = await fetch(`/api/portfolio?id=${id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/portfolio?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setWorks(works.filter((w) => w.id !== id));
       } else {

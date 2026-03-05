@@ -1,33 +1,25 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { resolveArtist } from "@/lib/auth/resolve-artist";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const supabase = await createClient();
-
-    // Try to get authenticated user first
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    let artistQuery = supabase
-      .from("artists")
-      .select("id, cities, services, gender, min_price, max_price");
-
-    if (user) {
-      artistQuery = artistQuery.eq("line_user_id", user.id);
-    } else {
-      // Local dev fallback: get first active artist
-      artistQuery = artistQuery.eq("is_active", true).limit(1);
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
-    const { data: artist } = await artistQuery.single();
+    const supabase = await createServiceClient();
+
+    // Get artist profile for matching
+    const { data: artist } = await supabase
+      .from("artists")
+      .select("id, cities, services, gender, min_price, max_price")
+      .eq("id", resolved.artistId)
+      .single();
 
     if (!artist) {
-      return NextResponse.json(
-        { error: "Artist not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     // Fetch active requests that match this artist's profile

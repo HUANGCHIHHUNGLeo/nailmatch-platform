@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useAuthFetch } from "@/lib/line/use-auth-fetch";
 
 interface ArtistProfile {
   id: string;
@@ -22,16 +23,18 @@ interface ArtistProfile {
   phone: string | null;
   email: string | null;
   instagram_handle: string | null;
+  is_active: boolean;
 }
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { authFetch } = useAuthFetch();
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
 
   useEffect(() => {
-    fetch("/api/artists/me")
+    authFetch("/api/artists/me")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => setProfile(data))
       .catch(console.error)
@@ -39,11 +42,29 @@ export default function SettingsPage() {
   }, []);
 
   const handleToggleActive = async () => {
+    if (!profile) return;
+    const newActive = !profile.is_active;
+    const confirmMsg = newActive
+      ? "確定要恢復接單嗎？"
+      : "暫停接單後，你不會收到新的配對需求。確定要暫停嗎？";
+    if (!confirm(confirmMsg)) return;
+
     setToggling(true);
-    // This would toggle is_active, but we need to check the current state first
-    // For now, we'll just show the option
-    setToggling(false);
-    alert("此功能需要 LINE 認證後才能使用");
+    try {
+      const res = await authFetch("/api/artists/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: newActive }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setProfile(updated);
+      }
+    } catch (err) {
+      console.error("Toggle active error:", err);
+    } finally {
+      setToggling(false);
+    }
   };
 
   if (loading) {
@@ -156,18 +177,27 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Pause Service */}
+        {/* Pause/Resume Service */}
         <Card>
           <CardContent className="p-4">
             <h2 className="mb-2 font-semibold">接單狀態</h2>
-            <p className="mb-3 text-sm text-gray-500">暫停接單後，你不會收到新的配對需求</p>
+            <p className="mb-3 text-sm text-gray-500">
+              {profile?.is_active
+                ? "目前正在接單中，暫停後不會收到新的配對需求"
+                : "目前已暫停接單，恢復後才會收到新的配對需求"}
+            </p>
             <Button
               variant="outline"
-              className="w-full text-red-500 hover:bg-red-50 hover:text-red-600"
+              className={`w-full ${
+                profile?.is_active
+                  ? "text-red-500 hover:bg-red-50 hover:text-red-600"
+                  : "text-green-600 hover:bg-green-50 hover:text-green-700"
+              }`}
               onClick={handleToggleActive}
               disabled={toggling}
             >
-              暫停接單
+              {toggling && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {profile?.is_active ? "暫停接單" : "恢復接單"}
             </Button>
           </CardContent>
         </Card>

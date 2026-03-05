@@ -132,10 +132,13 @@ async function handleUnfollow(userId: string) {
 async function handleTextMessage(userId: string, text: string) {
   const lowerText = text.trim();
 
-  // Hidden admin command — only responds to the designated admin
+  // Hidden admin command — only responds to designated admins
   if (lowerText === "後台設置") {
-    const adminLineUserId = process.env.ADMIN_LINE_USER_ID;
-    if (adminLineUserId && userId === adminLineUserId) {
+    const adminIds = (process.env.ADMIN_LINE_USER_ID || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (adminIds.includes(userId)) {
       await pushMessage(
         userId,
         `管理後台入口：\n${APP_URL}/admin/login`
