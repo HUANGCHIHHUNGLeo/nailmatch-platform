@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { notifyBookingConfirmed } from "@/lib/line/messaging";
 
 export async function POST(request: Request) {
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
     // Create booking
     const { data: booking, error: bookingError } = await supabase
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "customerId or artistId is required" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
     let query = supabase
       .from("bookings")

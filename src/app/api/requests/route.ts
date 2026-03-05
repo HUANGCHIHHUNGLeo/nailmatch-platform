@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { serviceRequestSchema } from "@/lib/utils/form-schema";
 import { findMatchingArtists } from "@/lib/utils/matching";
 import { notifyArtistsOfNewRequest } from "@/lib/line/messaging";
@@ -17,52 +17,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
-    // Get or create customer (from LINE auth or session)
-    const { data: { user } } = await supabase.auth.getUser();
+    // Anonymous request - create temp customer
+    const { data: newCustomer, error: custError } = await supabase
+      .from("customers")
+      .insert({ display_name: "Anonymous" })
+      .select("id")
+      .single();
 
-    let customerId: string;
-
-    if (user) {
-      // Check if customer exists
-      const { data: customer } = await supabase
-        .from("customers")
-        .select("id")
-        .eq("line_user_id", user.id)
-        .single();
-
-      if (customer) {
-        customerId = customer.id;
-      } else {
-        // Create customer
-        const { data: newCustomer, error } = await supabase
-          .from("customers")
-          .insert({
-            line_user_id: user.id,
-            display_name: user.user_metadata?.display_name || "User",
-          })
-          .select("id")
-          .single();
-
-        if (error || !newCustomer) {
-          return NextResponse.json({ error: "Failed to create customer" }, { status: 500 });
-        }
-        customerId = newCustomer.id;
-      }
-    } else {
-      // Anonymous request - create temp customer
-      const { data: newCustomer, error } = await supabase
-        .from("customers")
-        .insert({ display_name: "Anonymous" })
-        .select("id")
-        .single();
-
-      if (error || !newCustomer) {
-        return NextResponse.json({ error: "Failed to create customer" }, { status: 500 });
-      }
-      customerId = newCustomer.id;
+    if (custError || !newCustomer) {
+      return NextResponse.json({ error: "Failed to create customer" }, { status: 500 });
     }
+    const customerId = newCustomer.id;
 
     // Create service request
     const { data: serviceRequest, error: insertError } = await supabase

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 
 export async function GET(
   _request: Request,
@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
     const { data: booking, error } = await supabase
       .from("bookings")
@@ -33,7 +33,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
     const allowedStatuses = ["confirmed", "completed", "cancelled", "no_show"];
     if (body.status && !allowedStatuses.includes(body.status)) {
