@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RequestStatusDashboard } from "@/components/shared/RequestStatusDashboard";
 import { QuoteCard } from "@/components/shared/QuoteCard";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ChevronLeft, Home } from "lucide-react";
+import { ChevronLeft, Home, RefreshCw } from "lucide-react";
 
 interface ArtistResponse {
   id: string;
@@ -48,6 +48,7 @@ export default function RequestDetailPage() {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [portfolioOpen, setPortfolioOpen] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState<{ name: string; images: { image_url: string; title: string | null }[] }>({ name: "", images: [] });
 
@@ -67,9 +68,6 @@ export default function RequestDetailPage() {
 
   useEffect(() => {
     fetchRequest();
-    // Poll every 30 seconds
-    const interval = setInterval(fetchRequest, 30000);
-    return () => clearInterval(interval);
   }, [fetchRequest]);
 
   const handleBook = async (quoteId: string) => {
@@ -216,9 +214,25 @@ export default function RequestDetailPage() {
 
         {/* Quotes Section */}
         <div className="mt-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">
-            收到的報價 ({request.responses.length})
-          </h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">
+              收到的報價 ({request.responses.length})
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                setRefreshing(true);
+                await fetchRequest();
+                setRefreshing(false);
+              }}
+              disabled={refreshing}
+              className="text-gray-500"
+            >
+              <RefreshCw className={`mr-1 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+              {refreshing ? "更新中" : "重新整理"}
+            </Button>
+          </div>
 
           {request.responses.length === 0 ? (
             <Card>
@@ -228,7 +242,7 @@ export default function RequestDetailPage() {
                 </div>
                 <p className="font-medium text-gray-700">等待美甲師報價中</p>
                 <p className="mt-1 text-sm text-gray-500">
-                  已通知 {request.notified_count} 位美甲師，報價會即時顯示在這裡
+                  已通知 {request.notified_count} 位美甲師，收到報價時會透過 LINE 通知你
                 </p>
               </CardContent>
             </Card>
