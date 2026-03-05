@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Service types (nail, lash - extensible)
+model ServiceType {
+  id       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name     String    // '美甲', '美睫'
+  slug     String    @unique // 'nail', 'lash'
+  isActive Boolean   @default(true) @map("is_active")
+  artists  Artist[]
+
+  @@map("service_types")
+}
+
+// Artists (B-side users)
+model Artist {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  lineUserId          String?   @unique @map("line_user_id")
+  displayName         String    @map("display_name")
+  avatarUrl           String?   @map("avatar_url")
+  gender              String?
+  phone               String?
+  email               String?
+  bio                 String?
+
+  serviceTypeId       String?   @map("service_type_id") @db.Uuid
+  serviceType         ServiceType? @relation(fields: [serviceTypeId], references: [id])
+
+  // Location
+  cities              String[]
+  serviceLocationType String?   @map("service_location_type")
+  studioAddress       String?   @map("studio_address")
+
+  // Capabilities
+  services            String[]
+  styles              String[]
+  minPrice            Int?      @map("min_price")
+  maxPrice            Int?      @map("max_price")
+
+  // Instagram
+  instagramHandle     String?   @map("instagram_handle")
+  instagramToken      String?   @map("instagram_token")
+
+  // Status
+  isVerified          Boolean   @default(false) @map("is_verified")
+  isActive            Boolean   @default(true) @map("is_active")
+
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  portfolioWorks      PortfolioWork[]
+  availabilitySlots   AvailabilitySlot[]
+  responses           ArtistResponse[]
+  bookings            Booking[]
+
+  @@map("artists")
+}
+
+// Portfolio works
+model PortfolioWork {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  artistId  String   @map("artist_id") @db.Uuid
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  imageUrl  String   @map("image_url")
+  title     String?
+  style     String?
+  priceHint Int?     @map("price_hint")
+  sortOrder Int      @default(0) @map("sort_order")
+  source    String   @default("upload") // 'upload' | 'instagram'
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("portfolio_works")
+}
+
+// Availability slots
+model AvailabilitySlot {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  artistId  String   @map("artist_id") @db.Uuid
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  startTime DateTime @map("start_time") @db.Time
+  endTime   DateTime @map("end_time") @db.Time
+  isBooked  Boolean  @default(false) @map("is_booked")
+
+  @@map("availability_slots")
+}
+
+// Customers (C-side users)
+model Customer {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  lineUserId  String?   @unique @map("line_user_id")
+  displayName String?   @map("display_name")
+  nickname    String?
+  gender      String?
+  phone       String?
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  requests    ServiceRequest[]
+  bookings    Booking[]
+
+  @@map("customers")
+}
+
+// Service requests (customer needs)
+model ServiceRequest {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId          String    @map("customer_id") @db.Uuid
+  customer            Customer  @relation(fields: [customerId], references: [id])
+
+  // Form fields (11 steps)
+  locations           String[]
+  services            String[]
+  customerGender      String?   @map("customer_gender")
+  nailLength          String?   @map("nail_length")
+  preferredStyles     String[]  @map("preferred_styles")
+  preferredDate       String?   @map("preferred_date")
+  preferredDateCustom DateTime? @map("preferred_date_custom") @db.Date
+  artistGenderPref    String?   @map("artist_gender_pref")
+  budgetRange         String?   @map("budget_range")
+  needsRemoval        String?   @map("needs_removal")
+  referenceImages     String[]  @map("reference_images")
+  additionalNotes     String?   @map("additional_notes")
+
+  // Matching stats (for status dashboard)
+  notifiedCount       Int       @default(0) @map("notified_count")
+  viewedCount         Int       @default(0) @map("viewed_count")
+
+  // Status
+  status              String    @default("pending")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  responses           ArtistResponse[]
+  bookings            Booking[]
+
+  @@map("service_requests")
+}
+
+// Artist responses (quotes)
+model ArtistResponse {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId     String    @map("request_id") @db.Uuid
+  request       ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  artistId      String    @map("artist_id") @db.Uuid
+  artist        Artist    @relation(fields: [artistId], references: [id])
+  quotedPrice   Int?      @map("quoted_price")
+  message       String?
+  availableTime String?   @map("available_time")
+  status        String    @default("pending") // pending | accepted | declined
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  bookings      Booking[]
+
+  @@map("artist_responses")
+}
+
+// Confirmed bookings
+model Booking {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId   String    @map("request_id") @db.Uuid
+  request     ServiceRequest @relation(fields: [requestId], references: [id])
+  responseId  String    @map("response_id") @db.Uuid
+  response    ArtistResponse @relation(fields: [responseId], references: [id])
+  customerId  String    @map("customer_id") @db.Uuid
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  artistId    String    @map("artist_id") @db.Uuid
+  artist      Artist    @relation(fields: [artistId], references: [id])
+  bookingDate DateTime? @map("booking_date") @db.Date
+  bookingTime DateTime? @map("booking_time") @db.Time
+  finalPrice  Int?      @map("final_price")
+  status      String    @default("confirmed") // confirmed | completed | cancelled | no_show
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("bookings")
+}

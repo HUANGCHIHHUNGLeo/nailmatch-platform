@@ -36,6 +36,15 @@ yarn-error.log*
 # vercel
 .vercel
 
+# temp files
+ffmpeg_error.log
+ffmpeg_output.txt
+temp_ffmpeg/
+convert_video.js
+
+# prisma generated client
+src/generated/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
