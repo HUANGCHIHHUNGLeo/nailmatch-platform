@@ -4,6 +4,8 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { pushMessage, pushFlexMessage } from "./messaging";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "";
+const LIFF_URL = LIFF_ID ? `https://liff.line.me/${LIFF_ID}` : APP_URL;
 
 // Verify LINE webhook signature
 export function verifySignature(
@@ -66,7 +68,7 @@ async function handleFollow(userId: string) {
   }
 
   // Send welcome Flex Message
-  await pushFlexMessage(userId, "歡迎使用 NailMatch！", {
+  await pushFlexMessage(userId, "歡迎使用 NaLi Match！", {
     type: "bubble",
     body: {
       type: "box",
@@ -75,7 +77,7 @@ async function handleFollow(userId: string) {
       contents: [
         {
           type: "text",
-          text: "歡迎使用 NailMatch",
+          text: "歡迎使用 NaLi Match",
           weight: "bold",
           size: "lg",
           color: "#E91E8C",
@@ -100,7 +102,7 @@ async function handleFollow(userId: string) {
           action: {
             type: "uri",
             label: "我要找美甲師",
-            uri: `${APP_URL}/request`,
+            uri: `${APP_URL}/request/new`,
           },
           style: "primary",
           color: "#E91E8C",

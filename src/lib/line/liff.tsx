@@ -43,11 +43,17 @@ export function LiffProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-    if (!liffId) {
+    if (!liffId || liffId === "your_liff_id") {
       console.warn("LIFF ID not configured, skipping LIFF initialization");
       setIsReady(true);
       return;
     }
+
+    // Timeout to prevent infinite hanging
+    const timeout = setTimeout(() => {
+      console.warn("LIFF init timed out after 5s, proceeding without LIFF");
+      setIsReady(true);
+    }, 5000);
 
     import("@line/liff")
       .then((liffModule) => {
@@ -55,6 +61,7 @@ export function LiffProvider({ children }: { children: ReactNode }) {
         return liffObj.init({ liffId }).then(() => liffObj);
       })
       .then(async (liffObj) => {
+        clearTimeout(timeout);
         setLiffInstance(liffObj);
         setIsInClient(liffObj.isInClient());
 
@@ -75,10 +82,13 @@ export function LiffProvider({ children }: { children: ReactNode }) {
         setIsReady(true);
       })
       .catch((err: Error) => {
+        clearTimeout(timeout);
         console.error("LIFF init failed:", err);
         setError(err);
         setIsReady(true);
       });
+
+    return () => clearTimeout(timeout);
   }, []);
 
   return (
