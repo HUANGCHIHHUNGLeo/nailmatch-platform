@@ -95,9 +95,10 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const customerId = searchParams.get("customerId");
     const artistId = searchParams.get("artistId");
+    const all = searchParams.get("all");
 
-    if (!customerId && !artistId) {
-      return NextResponse.json({ error: "customerId or artistId is required" }, { status: 400 });
+    if (!customerId && !artistId && !all) {
+      return NextResponse.json({ error: "customerId, artistId, or all is required" }, { status: 400 });
     }
 
     const supabase = await createServiceClient();
@@ -105,7 +106,8 @@ export async function GET(request: Request) {
     let query = supabase
       .from("bookings")
       .select("*, service_requests(services, locations, budget_range), artists(display_name, avatar_url, studio_address), customers(display_name)")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(50);
 
     if (customerId) query = query.eq("customer_id", customerId);
     if (artistId) query = query.eq("artist_id", artistId);
