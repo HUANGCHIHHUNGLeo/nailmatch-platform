@@ -36,14 +36,20 @@ export async function PATCH(request: Request) {
 
     const supabase = await createServiceClient();
 
-    const isVerified = action === "approve";
+    const isApproved = action === "approve";
+
+    const updateFields: Record<string, unknown> = {
+      is_verified: isApproved,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (!isApproved) {
+      updateFields.is_active = false;
+    }
 
     const { data: artist, error } = await supabase
       .from("artists")
-      .update({
-        is_verified: isVerified,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateFields)
       .eq("id", id)
       .select("id, display_name, line_user_id")
       .single();
@@ -55,7 +61,7 @@ export async function PATCH(request: Request) {
     // Send LINE notification to artist
     if (artist.line_user_id) {
       try {
-        if (isVerified) {
+        if (isApproved) {
           await pushMessage(
             artist.line_user_id,
             `恭喜！${artist.display_name}，您的美甲師帳號已通過審核 🎉\n\n您現在可以開始接單了！有新的顧客需求時，我們會立即通知您。`
