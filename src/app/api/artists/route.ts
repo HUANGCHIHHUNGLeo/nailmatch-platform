@@ -37,13 +37,14 @@ export async function POST(request: Request) {
         instagram_handle: parsed.data.instagramHandle || null,
         is_verified: false,
         is_active: true,
+        updated_at: new Date().toISOString(),
       })
       .select("id")
       .single();
 
     if (error) {
       console.error("Artist registration error:", error);
-      return NextResponse.json({ error: "Registration failed" }, { status: 500 });
+      return NextResponse.json({ error: "Registration failed", detail: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ id: artist.id });
