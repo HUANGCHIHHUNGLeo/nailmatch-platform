@@ -37,9 +37,9 @@ export default function ArtistGatePage() {
 
   if (checking) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--brand-bg)]">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-pink-500 border-t-transparent" />
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
           <p className="text-sm text-gray-500">確認身份中...</p>
         </div>
       </div>
@@ -47,10 +47,10 @@ export default function ArtistGatePage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-pink-50 to-white">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-[var(--brand-lighter)] to-white">
       <header className="border-b bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 text-lg font-bold text-pink-500">
+          <Link href="/" className="flex items-center gap-2 text-lg font-bold text-[var(--brand)]">
             <Sparkles className="h-5 w-5" />
             NaLi Match
           </Link>
@@ -59,8 +59,8 @@ export default function ArtistGatePage() {
 
       <main className="mx-auto flex max-w-md flex-1 flex-col items-center justify-center p-6">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-pink-100">
-            <Sparkles className="h-10 w-10 text-pink-500" />
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--brand-light)]">
+            <Sparkles className="h-10 w-10 text-[var(--brand)]" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">美甲師專區</h1>
           <p className="mt-2 text-gray-500">
@@ -73,15 +73,15 @@ export default function ArtistGatePage() {
           <Card className="transition hover:shadow-md">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-pink-100">
-                  <UserPlus className="h-6 w-6 text-pink-500" />
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[var(--brand-light)]">
+                  <UserPlus className="h-6 w-6 text-[var(--brand)]" />
                 </div>
                 <div className="flex-1">
                   <h2 className="font-semibold text-gray-900">我要註冊成為美甲師</h2>
                   <p className="mt-1 text-sm text-gray-500">
                     填寫資料、設定服務，開始接收顧客需求
                   </p>
-                  <Button asChild className="mt-3 w-full bg-pink-500 hover:bg-pink-600">
+                  <Button asChild className="mt-3 w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)]">
                     <Link href="/line/liff/artist-form">立即註冊</Link>
                   </Button>
                 </div>

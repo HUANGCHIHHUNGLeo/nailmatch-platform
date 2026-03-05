@@ -67,7 +67,7 @@ export default function ArtistPublicPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-pink-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
       </div>
     );
   }
@@ -86,10 +86,10 @@ export default function ArtistPublicPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
-          <Link href="/" className="text-lg font-semibold text-pink-500">
+          <Link href="/" className="text-lg font-semibold text-[var(--brand)]">
             NaLi Match
           </Link>
         </div>
@@ -101,7 +101,7 @@ export default function ArtistPublicPage() {
           <CardContent className="p-6 text-center">
             <Avatar className="mx-auto h-20 w-20">
               <AvatarImage src={artist.avatar_url || undefined} />
-              <AvatarFallback className="bg-pink-100 text-2xl text-pink-600">
+              <AvatarFallback className="bg-[var(--brand-light)] text-2xl text-[var(--brand-dark)]">
                 {artist.display_name.charAt(0)}
               </AvatarFallback>
             </Avatar>
@@ -169,7 +169,7 @@ export default function ArtistPublicPage() {
             {artist.min_price && artist.max_price && (
               <div>
                 <h2 className="mb-1 font-semibold text-gray-700">價格範圍</h2>
-                <p className="text-sm text-pink-500 font-medium">
+                <p className="text-sm text-[var(--brand)] font-medium">
                   NT${artist.min_price.toLocaleString()} — NT${artist.max_price.toLocaleString()}
                 </p>
               </div>
@@ -231,7 +231,7 @@ export default function ArtistPublicPage() {
         )}
 
         {/* CTA */}
-        <Button asChild className="w-full bg-pink-500 hover:bg-pink-600">
+        <Button asChild className="w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)]">
           <Link href="/request">向這位美甲師預約</Link>
         </Button>
       </main>

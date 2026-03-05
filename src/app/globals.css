@@ -55,8 +55,8 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.72 0.05 55);
+  --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -120,7 +120,32 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ========================================= */
+/* NaLi Match Brand Palette                  */
+/* ========================================= */
+:root {
+  --brand: #C4A08A;
+  --brand-dark: #A8806A;
+  --brand-darker: #8B6F5E;
+  --brand-light: #F5E9E2;
+  --brand-lighter: #FAF3EE;
+  --brand-bg: #FDF8F5;
+  --brand-text: #8B6F5E;
+  --brand-rose: #D4A9A9;
+  --brand-gold: #D4B896;
+  --font-heading: var(--font-noto-serif-tc), serif;
+}
+
+/* Heading font */
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
 }

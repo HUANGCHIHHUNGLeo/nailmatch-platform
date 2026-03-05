@@ -20,14 +20,14 @@ export function BudgetStep() {
             key={budget.value}
             className={`flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all ${
               selected === budget.value
-                ? "border-pink-500 bg-pink-50"
+                ? "border-[var(--brand)] bg-[var(--brand-light)]/50"
                 : "border-gray-200 hover:border-gray-300"
             }`}
             onClick={() => setValue("budgetRange", budget.value, { shouldValidate: true })}
           >
             <div className="flex items-center">
               <div className={`mr-3 h-5 w-5 rounded-full border-2 ${
-                selected === budget.value ? "border-pink-500 bg-pink-500" : "border-gray-300"
+                selected === budget.value ? "border-[var(--brand)] bg-[var(--brand)]" : "border-gray-300"
               }`}>
                 {selected === budget.value && (
                   <div className="flex h-full w-full items-center justify-center">

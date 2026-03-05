@@ -109,7 +109,7 @@ export default function ArtistRequestDetailPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-pink-500 border-t-transparent" />
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
       </div>
     );
   }
@@ -129,14 +129,14 @@ export default function ArtistRequestDetailPage() {
 
   if (submitted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--brand-bg)]">
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
             <span className="text-3xl">✓</span>
           </div>
           <h2 className="mb-2 text-xl font-bold text-gray-900">報價已送出！</h2>
           <p className="mb-6 text-gray-500">顧客會收到通知，請等待回覆</p>
-          <Button asChild className="bg-pink-500 hover:bg-pink-600">
+          <Button asChild className="bg-[var(--brand)] hover:bg-[var(--brand-dark)]">
             <Link href="/artist/dashboard">回到主頁</Link>
           </Button>
         </div>
@@ -145,13 +145,13 @@ export default function ArtistRequestDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
           <Link href="/artist/dashboard" className="text-sm text-gray-500">
             ← 返回
           </Link>
-          <span className="text-lg font-semibold text-pink-500">需求詳情</span>
+          <span className="text-lg font-semibold text-[var(--brand)]">需求詳情</span>
           <div className="w-10" />
         </div>
       </header>
@@ -162,13 +162,13 @@ export default function ArtistRequestDetailPage() {
           <CardContent className="p-4">
             <div className="flex flex-wrap gap-2 mb-3">
               {request.services.map((service) => (
-                <Badge key={service} className="bg-pink-100 text-pink-700">{service}</Badge>
+                <Badge key={service} className="bg-[var(--brand-light)] text-[var(--brand-darker)]">{service}</Badge>
               ))}
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">預算</span>
-                <span className="font-semibold text-pink-500">{request.budget_range}</span>
+                <span className="font-semibold text-[var(--brand)]">{request.budget_range}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">地點</span>
@@ -278,7 +278,7 @@ export default function ArtistRequestDetailPage() {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-pink-500 hover:bg-pink-600"
+                className="w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)]"
                 disabled={submitting || !quotedPrice}
               >
                 {submitting ? "送出中..." : "送出報價"}

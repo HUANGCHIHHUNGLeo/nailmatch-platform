@@ -54,7 +54,7 @@ export function QuoteCard({
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
               <AvatarImage src={artist.avatarUrl} />
-              <AvatarFallback className="bg-pink-100 text-pink-600">
+              <AvatarFallback className="bg-[var(--brand-light)] text-[var(--brand-dark)]">
                 {artist.displayName.charAt(0)}
               </AvatarFallback>
             </Avatar>
@@ -75,7 +75,7 @@ export function QuoteCard({
 
           {/* Price */}
           <div className="text-right">
-            <p className="text-2xl font-bold text-pink-500">
+            <p className="text-2xl font-bold text-[var(--brand)]">
               NT${quote.quotedPrice.toLocaleString()}
             </p>
             <p className="text-xs text-gray-400">預估報價</p>
@@ -92,7 +92,7 @@ export function QuoteCard({
         </div>
 
         {/* Available Time */}
-        <div className="mt-3 rounded-lg bg-gray-50 p-2">
+        <div className="mt-3 rounded-lg bg-[var(--brand-bg)] p-2">
           <p className="text-sm text-gray-600">
             <span className="font-medium">可預約時段：</span>
             {quote.availableTime}
@@ -116,7 +116,7 @@ export function QuoteCard({
             查看作品集
           </Button>
           <Button
-            className="flex-1 bg-pink-500 hover:bg-pink-600"
+            className="flex-1 bg-[var(--brand)] hover:bg-[var(--brand-dark)]"
             onClick={() => onBook(quote.id)}
           >
             想預約此方案

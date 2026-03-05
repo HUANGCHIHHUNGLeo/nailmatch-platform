@@ -30,7 +30,7 @@ export function StyleStep() {
             key={style}
             className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all ${
               selected?.includes(style)
-                ? "border-pink-500 bg-pink-50"
+                ? "border-[var(--brand)] bg-[var(--brand-light)]/50"
                 : "border-gray-200 hover:border-gray-300"
             }`}
           >

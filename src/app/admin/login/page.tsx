@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--brand-bg)] p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-lg">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-gray-900">NaLi Match</h1>
@@ -53,7 +53,7 @@ export default function AdminLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="請輸入管理密碼"
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-[var(--brand)] focus:outline-none focus:ring-1 focus:ring-[var(--brand)]"
               autoFocus
             />
           </div>
@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading || !password}
-            className="w-full rounded-lg bg-pink-500 py-3 text-sm font-medium text-white transition hover:bg-pink-600 disabled:opacity-50"
+            className="w-full rounded-lg bg-[var(--brand)] py-3 text-sm font-medium text-white transition hover:bg-[var(--brand-dark)] disabled:opacity-50"
           >
             {loading ? "驗證中..." : "登入"}
           </button>

@@ -28,12 +28,12 @@ export function ScheduleStep() {
           <Label
             key={option}
             className={`flex cursor-pointer items-center rounded-xl border-2 p-4 transition-all ${selectedDate === option
-              ? "border-pink-500 bg-pink-50"
+              ? "border-[var(--brand)] bg-[var(--brand-light)]/50"
               : "border-gray-200 hover:border-gray-300"
               }`}
             onClick={() => setValue("preferredDate", option, { shouldValidate: true })}
           >
-            <div className={`mr-3 h-5 w-5 rounded-full border-2 ${selectedDate === option ? "border-pink-500 bg-pink-500" : "border-gray-300"
+            <div className={`mr-3 h-5 w-5 rounded-full border-2 ${selectedDate === option ? "border-[var(--brand)] bg-[var(--brand)]" : "border-gray-300"
               }`}>
               {selectedDate === option && (
                 <div className="flex h-full w-full items-center justify-center">
@@ -68,12 +68,12 @@ export function ScheduleStep() {
             <Label
               key={time}
               className={`flex cursor-pointer items-center rounded-xl border-2 p-4 transition-all ${selectedTime === time
-                ? "border-pink-500 bg-pink-50"
+                ? "border-[var(--brand)] bg-[var(--brand-light)]/50"
                 : "border-gray-200 hover:border-gray-300"
                 }`}
               onClick={() => setValue("preferredTime", time, { shouldValidate: true })}
             >
-              <div className={`mr-3 h-5 w-5 rounded-full border-2 ${selectedTime === time ? "border-pink-500 bg-pink-500" : "border-gray-300"
+              <div className={`mr-3 h-5 w-5 rounded-full border-2 ${selectedTime === time ? "border-[var(--brand)] bg-[var(--brand)]" : "border-gray-300"
                 }`}>
                 {selectedTime === time && (
                   <div className="flex h-full w-full items-center justify-center">

@@ -47,9 +47,9 @@ export function RequestStatusDashboard({
               <p className="text-2xl font-bold text-purple-600">{viewedCount}</p>
               <p className="text-xs text-purple-500">正在查看</p>
             </div>
-            <div className="rounded-xl bg-pink-50 p-3">
-              <p className="text-2xl font-bold text-pink-600">{quoteCount}</p>
-              <p className="text-xs text-pink-500">已收到報價</p>
+            <div className="rounded-xl bg-[var(--brand-light)]/50 p-3">
+              <p className="text-2xl font-bold text-[var(--brand-dark)]">{quoteCount}</p>
+              <p className="text-xs text-[var(--brand)]">已收到報價</p>
             </div>
           </div>
         </CardContent>

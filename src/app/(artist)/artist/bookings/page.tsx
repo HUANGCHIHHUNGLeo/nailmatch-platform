@@ -102,7 +102,7 @@ export default function ArtistBookingsPage() {
                 {booking.booking_date && <p>日期：{booking.booking_date}</p>}
                 {booking.booking_time && <p>時間：{booking.booking_time}</p>}
                 {booking.final_price && (
-                  <p className="font-medium text-pink-500">
+                  <p className="font-medium text-[var(--brand)]">
                     NT${booking.final_price.toLocaleString()}
                   </p>
                 )}
@@ -138,19 +138,19 @@ export default function ArtistBookingsPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-pink-500 border-t-transparent" />
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
           <Link href="/artist/dashboard" className="text-sm text-gray-500">
             ← 返回
           </Link>
-          <span className="text-lg font-semibold text-pink-500">預約管理</span>
+          <span className="text-lg font-semibold text-[var(--brand)]">預約管理</span>
           <div className="w-10" />
         </div>
       </header>

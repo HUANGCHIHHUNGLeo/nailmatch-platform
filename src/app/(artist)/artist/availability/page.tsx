@@ -158,26 +158,26 @@ export default function AvailabilityPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--brand)]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       <header className="sticky top-0 z-10 border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
           <button onClick={() => router.back()} className="flex items-center text-sm text-gray-500">
             <ArrowLeft className="mr-1 h-4 w-4" /> 返回
           </button>
-          <h1 className="text-lg font-semibold text-pink-500">時段管理</h1>
+          <h1 className="text-lg font-semibold text-[var(--brand)]">時段管理</h1>
           <div className="w-12" />
         </div>
       </header>
 
       <main className="mx-auto max-w-2xl space-y-4 p-4">
         <div className="flex gap-2">
-          <Button size="sm" className="bg-pink-500 hover:bg-pink-600" onClick={() => setShowForm(true)}>
+          <Button size="sm" className="bg-[var(--brand)] hover:bg-[var(--brand-dark)]" onClick={() => setShowForm(true)}>
             <Plus className="mr-1 h-4 w-4" /> 新增時段
           </Button>
           <Button size="sm" variant="outline" onClick={handleQuickAdd} disabled={adding}>
@@ -214,7 +214,7 @@ export default function AvailabilityPage() {
                   取消
                 </Button>
                 <Button
-                  className="flex-1 bg-pink-500 hover:bg-pink-600"
+                  className="flex-1 bg-[var(--brand)] hover:bg-[var(--brand-dark)]"
                   onClick={handleAdd}
                   disabled={adding || !newDate}
                 >

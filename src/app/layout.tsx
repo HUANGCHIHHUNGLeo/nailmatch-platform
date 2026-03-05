@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Noto_Sans_TC } from "next/font/google";
+import { Noto_Sans_TC, Noto_Serif_TC } from "next/font/google";
+import { GlobalNav } from "@/components/shared/GlobalNav";
 import "./globals.css";
 
 const notoSansTC = Noto_Sans_TC({
   variable: "--font-noto-sans-tc",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const notoSerifTC = Noto_Serif_TC({
+  variable: "--font-noto-serif-tc",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -27,8 +34,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-Hant-TW" className="scroll-smooth">
-      <body className={`${notoSansTC.variable} font-sans antialiased bg-slate-50 text-slate-900 min-h-screen flex flex-col selection:bg-pink-200 selection:text-pink-900`}>
+      <body className={`${notoSansTC.variable} ${notoSerifTC.variable} font-sans antialiased bg-[var(--brand-bg)] text-slate-800 min-h-screen flex flex-col selection:bg-[var(--brand-light)] selection:text-[var(--brand-dark)]`}>
         {children}
+        <GlobalNav />
       </body>
     </html>
   );

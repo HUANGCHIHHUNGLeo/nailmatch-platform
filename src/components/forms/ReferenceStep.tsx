@@ -54,12 +54,12 @@ export function ReferenceStep() {
       {/* Upload area */}
       <Label
         htmlFor="image-upload"
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition-all ${uploading ? "border-pink-400 bg-pink-50" : "border-gray-300 hover:border-pink-400 hover:bg-pink-50"}`}
+        className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition-all ${uploading ? "border-[var(--brand)] bg-[var(--brand-light)]/50" : "border-gray-300 hover:border-[var(--brand)] hover:bg-[var(--brand-light)]/50"}`}
       >
         {uploading ? (
           <>
-            <div className="mb-2 h-10 w-10 animate-spin rounded-full border-4 border-pink-500 border-t-transparent" />
-            <span className="text-sm text-pink-500">上傳中...</span>
+            <div className="mb-2 h-10 w-10 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
+            <span className="text-sm text-[var(--brand)]">上傳中...</span>
           </>
         ) : (
           <>

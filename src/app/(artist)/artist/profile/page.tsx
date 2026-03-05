@@ -100,7 +100,7 @@ export default function ArtistProfilePage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--brand)]" />
       </div>
     );
   }
@@ -114,13 +114,13 @@ export default function ArtistProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       <header className="sticky top-0 z-10 border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
           <button onClick={() => router.back()} className="flex items-center text-sm text-gray-500">
             <ArrowLeft className="mr-1 h-4 w-4" /> 返回
           </button>
-          <h1 className="text-lg font-semibold text-pink-500">編輯個人檔案</h1>
+          <h1 className="text-lg font-semibold text-[var(--brand)]">編輯個人檔案</h1>
           <div className="w-12" />
         </div>
       </header>
@@ -317,7 +317,7 @@ export default function ArtistProfilePage() {
 
         {/* Save Button */}
         <Button
-          className="w-full bg-pink-500 hover:bg-pink-600"
+          className="w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)]"
           onClick={handleSave}
           disabled={saving}
         >

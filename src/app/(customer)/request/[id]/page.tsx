@@ -136,7 +136,7 @@ export default function RequestDetailPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-pink-500 border-t-transparent" />
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
           <p className="text-gray-500">載入中...</p>
         </div>
       </div>
@@ -157,7 +157,7 @@ export default function RequestDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
@@ -170,12 +170,12 @@ export default function RequestDetailPage() {
               上一頁
             </button>
             <div className="h-4 w-px bg-gray-200" />
-            <Link href="/" className="text-lg font-semibold text-pink-500">
+            <Link href="/" className="text-lg font-semibold text-[var(--brand)]">
               NaLi Match
             </Link>
           </div>
           <div>
-            <Button variant="ghost" size="sm" asChild className="text-gray-500 hover:text-pink-500">
+            <Button variant="ghost" size="sm" asChild className="text-gray-500 hover:text-[var(--brand)]">
               <Link href="/">
                 <Home className="h-4 w-4 mr-1" />
                 回主頁
@@ -237,7 +237,7 @@ export default function RequestDetailPage() {
           {request.responses.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-pink-50">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--brand-light)]/50">
                   <span className="text-2xl">💅</span>
                 </div>
                 <p className="font-medium text-gray-700">等待美甲師報價中</p>

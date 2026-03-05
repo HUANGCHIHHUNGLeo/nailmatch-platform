@@ -137,19 +137,19 @@ export default function PortfolioPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--brand)]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       <header className="sticky top-0 z-10 border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
           <button onClick={() => router.back()} className="flex items-center text-sm text-gray-500">
             <ArrowLeft className="mr-1 h-4 w-4" /> 返回
           </button>
-          <h1 className="text-lg font-semibold text-pink-500">管理作品集</h1>
+          <h1 className="text-lg font-semibold text-[var(--brand)]">管理作品集</h1>
           <div className="w-12" />
         </div>
       </header>
@@ -157,7 +157,7 @@ export default function PortfolioPage() {
       <main className="mx-auto max-w-2xl space-y-4 p-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-500">共 {works.length} 件作品</p>
-          <Button size="sm" className="bg-pink-500 hover:bg-pink-600" onClick={() => setShowForm(true)}>
+          <Button size="sm" className="bg-[var(--brand)] hover:bg-[var(--brand-dark)]" onClick={() => setShowForm(true)}>
             <Plus className="mr-1 h-4 w-4" /> 新增作品
           </Button>
         </div>
@@ -231,7 +231,7 @@ export default function PortfolioPage() {
                   取消
                 </Button>
                 <Button
-                  className="flex-1 bg-pink-500 hover:bg-pink-600"
+                  className="flex-1 bg-[var(--brand)] hover:bg-[var(--brand-dark)]"
                   onClick={handleUpload}
                   disabled={!selectedFile || uploading}
                 >
@@ -288,7 +288,7 @@ export default function PortfolioPage() {
                       </Badge>
                     )}
                     {work.price_hint && (
-                      <span className="text-xs text-pink-500">NT${work.price_hint.toLocaleString()}</span>
+                      <span className="text-xs text-[var(--brand)]">NT${work.price_hint.toLocaleString()}</span>
                     )}
                   </div>
                 </CardContent>

@@ -51,7 +51,7 @@ function CustomerFormContent() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-pink-200 border-t-pink-500" />
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand-light)] border-t-[var(--brand)]" />
           <p className="text-gray-500">載入中...</p>
         </div>
       </div>
@@ -70,10 +70,10 @@ function CustomerFormContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
-          <h1 className="text-lg font-semibold text-pink-500">NaLi Match</h1>
+          <h1 className="text-lg font-semibold text-[var(--brand)]">NaLi Match</h1>
           {profile && (
             <span className="text-sm text-gray-500">
               {profile.displayName}

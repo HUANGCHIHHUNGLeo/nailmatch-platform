@@ -110,17 +110,17 @@ export default function ArtistDashboard() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-pink-500 border-t-transparent" />
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       {/* Header */}
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
-          <h1 className="text-lg font-semibold text-pink-500">NaLi Match</h1>
+          <h1 className="text-lg font-semibold text-[var(--brand)]">NaLi Match</h1>
           <Link href="/artist/settings" className="text-sm text-gray-500">
             設定
           </Link>
@@ -138,25 +138,25 @@ export default function ArtistDashboard() {
         <div className="mb-6 grid grid-cols-2 gap-3">
           <Card>
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-pink-500">{stats.todayBookings}</p>
+              <p className="text-3xl font-bold text-[var(--brand)]">{stats.todayBookings}</p>
               <p className="text-sm text-gray-500">今日預約</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-blue-500">{stats.pendingRequests}</p>
+              <p className="text-3xl font-bold text-[var(--brand-dark)]">{stats.pendingRequests}</p>
               <p className="text-sm text-gray-500">待回應需求</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-purple-500">{stats.totalQuotes}</p>
+              <p className="text-3xl font-bold text-[var(--brand-darker)]">{stats.totalQuotes}</p>
               <p className="text-sm text-gray-500">累計接單</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-green-500">
+              <p className="text-3xl font-bold text-emerald-600">
                 NT${stats.monthlyEarnings.toLocaleString()}
               </p>
               <p className="text-sm text-gray-500">本月收入</p>
@@ -214,7 +214,7 @@ export default function ArtistDashboard() {
                       <Button variant="outline" size="sm" className="flex-1" asChild>
                         <Link href={`/artist/requests/${request.id}`}>查看詳情</Link>
                       </Button>
-                      <Button size="sm" className="flex-1 bg-pink-500 hover:bg-pink-600" asChild>
+                      <Button size="sm" className="flex-1 bg-[var(--brand)] hover:bg-[var(--brand-dark)]" asChild>
                         <Link href={`/artist/requests/${request.id}`}>立即報價</Link>
                       </Button>
                     </div>
@@ -245,7 +245,7 @@ export default function ArtistDashboard() {
                           ))}
                         </div>
                         {booking.final_price && (
-                          <p className="mt-2 text-sm font-medium text-pink-500">
+                          <p className="mt-2 text-sm font-medium text-[var(--brand)]">
                             NT${booking.final_price.toLocaleString()}
                           </p>
                         )}

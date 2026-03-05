@@ -101,17 +101,17 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-pink-200 border-t-pink-500" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand-light)] border-t-[var(--brand)]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       {/* Header */}
       <header className="border-b bg-white shadow-sm">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
-          <h1 className="text-lg font-bold text-pink-500">NaLi Match 管理後台</h1>
+          <h1 className="text-lg font-bold text-[var(--brand)]">NaLi Match 管理後台</h1>
           <button
             onClick={() => {
               document.cookie = "admin_session=; path=/; max-age=0";
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
               onClick={() => setTab(key)}
               className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
                 tab === key
-                  ? "bg-white text-pink-600 shadow-sm"
+                  ? "bg-white text-[var(--brand-dark)] shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -176,7 +176,7 @@ export default function AdminDashboard() {
                   }
                 >
                   {/* Avatar */}
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-pink-100 text-lg font-bold text-pink-500">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[var(--brand-light)] text-lg font-bold text-[var(--brand)]">
                     {artist.avatar_url ? (
                       <img
                         src={artist.avatar_url}
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
                       <StatusBadge artist={artist} />
                     </div>
                     <p className="text-xs text-gray-500 truncate">
-                      <span className={`mr-1 inline-block rounded px-1 py-0.5 text-[10px] font-medium ${artist.role === "lash" ? "bg-purple-100 text-purple-700" : "bg-pink-100 text-pink-700"}`}>
+                      <span className={`mr-1 inline-block rounded px-1 py-0.5 text-[10px] font-medium ${artist.role === "lash" ? "bg-purple-100 text-purple-700" : "bg-[var(--brand-light)] text-[var(--brand-darker)]"}`}>
                         {artist.role === "lash" ? "美睫" : "美甲"}
                       </span>
                       {artist.services.join("、")} · {artist.cities.slice(0, 2).join("、")}
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
 
                 {/* Expanded Details */}
                 {expandedId === artist.id && (
-                  <div className="border-t bg-gray-50 p-4 space-y-3">
+                  <div className="border-t bg-[var(--brand-bg)] p-4 space-y-3">
                     <DetailRow label="身份" value={artist.role === "lash" ? "美睫師" : "美甲師"} />
                     <DetailRow label="電話" value={artist.phone} />
                     <DetailRow label="Email" value={artist.email || "未填"} />
@@ -315,13 +315,13 @@ function StatCard({
     <div
       className={`rounded-xl p-4 shadow-sm ${
         highlight && value > 0
-          ? "bg-pink-500 text-white"
+          ? "bg-[var(--brand)] text-white"
           : "bg-white text-gray-900"
       }`}
     >
       <p
         className={`text-xs ${
-          highlight && value > 0 ? "text-pink-100" : "text-gray-500"
+          highlight && value > 0 ? "text-[var(--brand-light)]" : "text-gray-500"
         }`}
       >
         {label}

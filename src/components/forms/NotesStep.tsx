@@ -41,7 +41,7 @@ export function NotesStep() {
               key={pref}
               className={`flex cursor-pointer items-center gap-2 rounded-lg border-2 px-4 py-2 transition-all ${
                 notes.includes(`【聊天偏好：${pref}】`)
-                  ? "border-pink-500 bg-pink-50"
+                  ? "border-[var(--brand)] bg-[var(--brand-light)]/50"
                   : "border-gray-200"
               }`}
             >
@@ -63,8 +63,8 @@ export function NotesStep() {
         className="resize-none"
       />
 
-      <div className="mt-6 rounded-xl bg-pink-50 p-4">
-        <p className="text-sm text-pink-700">
+      <div className="mt-6 rounded-xl bg-[var(--brand-light)]/50 p-4">
+        <p className="text-sm text-[var(--brand-darker)]">
           送出後，系統會自動通知符合條件的美甲師，平均 5 分鐘內就會收到第一個報價！
         </p>
       </div>

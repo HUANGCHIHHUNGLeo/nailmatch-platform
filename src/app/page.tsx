@@ -30,22 +30,22 @@ const features = [
   {
     title: "價格透明",
     description: "不用一間間問，報價直接看",
-    icon: <ShieldCheck className="w-6 h-6 text-pink-500" />
+    icon: <ShieldCheck className="w-6 h-6 text-[var(--brand)]" />
   },
   {
     title: "作品先看",
     description: "每位美甲師都有作品集可以瀏覽",
-    icon: <Sparkles className="w-6 h-6 text-pink-500" />
+    icon: <Sparkles className="w-6 h-6 text-[var(--brand)]" />
   },
   {
     title: "快速配對",
     description: "平均 5 分鐘內收到第一個報價",
-    icon: <Clock className="w-6 h-6 text-pink-500" />
+    icon: <Clock className="w-6 h-6 text-[var(--brand)]" />
   },
   {
     title: "免費使用",
     description: "消費者完全免費，不收任何手續費",
-    icon: <HeartPulse className="w-6 h-6 text-pink-500" />
+    icon: <HeartPulse className="w-6 h-6 text-[var(--brand)]" />
   },
 ];
 
@@ -66,7 +66,7 @@ const itemVariants = {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-pink-200">
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-[var(--brand-light)]">
       {/* Header */}
       <header className="fixed top-0 z-50 w-full border-b border-white/20 bg-white/60 backdrop-blur-xl transition-all">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -77,11 +77,11 @@ export default function HomePage() {
           <nav className="flex items-center gap-6">
             <Link
               href="/artist"
-              className="text-sm font-medium text-slate-600 transition-colors hover:text-pink-600"
+              className="text-sm font-medium text-slate-600 transition-colors hover:text-[var(--brand-dark)]"
             >
               美甲師入口
             </Link>
-            <Button asChild size="sm" className="bg-slate-900 text-white shadow-md transition-all hover:bg-pink-600 hover:shadow-pink-500/25">
+            <Button asChild size="sm" className="text-white shadow-md transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, var(--brand), var(--brand-dark))' }}>
               <Link href="/request">我要求配對</Link>
             </Button>
           </nav>
@@ -90,9 +90,9 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-32 pb-20 lg:pt-48 lg:pb-32">
-        <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-100 via-white to-slate-50" />
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-pink-300/30 blur-3xl filter" />
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-96 w-96 rounded-full bg-purple-300/30 blur-3xl filter" />
+        <div className="absolute inset-0 z-0" style={{ background: 'radial-gradient(ellipse at top, var(--brand-light) 0%, white 50%, #f8fafc 100%)' }} />
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full blur-3xl filter" style={{ backgroundColor: 'rgba(196,160,138,0.25)' }} />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-96 w-96 rounded-full bg-purple-300/20 blur-3xl filter" />
 
         <div className="relative z-10 mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
           <motion.div
@@ -100,23 +100,24 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <Badge variant="outline" className="mb-6 border-pink-200 bg-pink-50/50 px-4 py-1.5 text-sm font-medium text-pink-700 backdrop-blur-sm">
+            <Badge variant="outline" className="mb-6 border-[var(--brand-light)] bg-[var(--brand-light)]/50/50 px-4 py-1.5 text-sm font-medium text-[var(--brand-darker)] backdrop-blur-sm">
               ✨ 顛覆傳統的美甲預約體驗
             </Badge>
             <h1 className="mb-8 text-5xl font-black tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
               不再一間間詢價，<br className="hidden sm:block" />
-              <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-                讓美甲師主動找上門。
+              <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--brand), var(--brand-rose))' }}>
+                讓美甲/美睫師主動找上門。
               </span>
             </h1>
             <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-600 lg:text-xl leading-relaxed">
-              只需三分鐘填妥條件！符合需求與空檔的美甲師會親自為您報價。輕鬆瀏覽作品集比價，挑選最心儀的款式一鍵預約。
+              只需三分鐘填妥條件！符合需求與空檔的美甲/美睫師會親自為您報價。輕鬆瀏覽作品集比價，挑選最心儀的款式一鍵預約。
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button
                 asChild
                 size="lg"
-                className="group h-14 bg-gradient-to-r from-pink-500 to-pink-600 px-8 text-lg font-semibold shadow-xl shadow-pink-500/20 transition-all hover:scale-105 hover:from-pink-600 hover:to-pink-700"
+                className="group h-14 px-8 text-lg font-semibold text-white shadow-xl transition-all hover:scale-105"
+                style={{ background: 'linear-gradient(135deg, var(--brand), var(--brand-dark))', boxShadow: '0 10px 25px -5px rgba(196,160,138,0.3)' }}
               >
                 <Link href="/request">
                   免費送出需求
@@ -143,7 +144,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
               簡單三步驟，完成完美預約
             </h2>
-            <div className="mx-auto mt-4 h-1 w-20 rounded bg-pink-500" />
+            <div className="mx-auto mt-4 h-1 w-20 rounded bg-[var(--brand)]" />
           </div>
 
           <motion.div
@@ -156,9 +157,9 @@ export default function HomePage() {
             {steps.map((step, index) => (
               <motion.div key={step.number} variants={itemVariants}>
                 <Card className="group relative overflow-hidden border-none bg-slate-50 shadow-none transition-all hover:bg-white hover:shadow-2xl hover:shadow-slate-200/50">
-                  <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-purple-500/5 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" style={{ background: 'linear-gradient(to bottom right, rgba(196,160,138,0.08), rgba(212,169,169,0.08))' }} />
                   <CardContent className="relative p-8">
-                    <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl font-black text-pink-500 shadow-sm ring-1 ring-slate-100 group-hover:scale-110 group-hover:rotate-3 transition-transform">
+                    <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl font-black text-[var(--brand)] shadow-sm ring-1 ring-slate-100 group-hover:scale-110 group-hover:rotate-3 transition-transform">
                       {step.number}
                     </div>
                     <h3 className="mb-3 text-2xl font-bold text-slate-900">{step.title}</h3>
@@ -185,11 +186,11 @@ export default function HomePage() {
                 為什麼需要 NaLi Match？
               </h2>
               <p className="mt-4 text-lg text-slate-400">
-                我們致力於解決尋找美甲師時的繁瑣過程，為雙方創造一個透明、高效的媒合環境。
+                我們致力於解決尋找美甲/美睫師時的繁瑣過程，為雙方創造一個透明、高效的媒合環境。
               </p>
             </div>
             <div className="mt-8 hidden md:block">
-              <div className="h-px w-32 bg-gradient-to-r from-pink-500 to-transparent" />
+              <div className="h-px w-32" style={{ background: 'linear-gradient(to right, var(--brand), transparent)' }} />
             </div>
           </div>
 
@@ -218,15 +219,15 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative overflow-hidden py-32 bg-pink-600">
+      <section className="relative overflow-hidden py-32" style={{ background: 'linear-gradient(135deg, var(--brand), var(--brand-rose))' }}>
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 
         <div className="relative z-10 mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-4xl font-black tracking-tight text-white sm:text-5xl">
-            準備好邂逅完美美甲了嗎？
+            準備好邂逅完美美甲/美睫了嗎？
           </h2>
-          <p className="mb-10 text-xl text-pink-100 font-medium">
+          <p className="mb-10 text-xl text-[var(--brand-light)] font-medium">
             現在就送出需求，短短 3 分鐘即可開啟全新的美麗旅程！
           </p>
           <motion.div
@@ -236,7 +237,7 @@ export default function HomePage() {
             <Button
               asChild
               size="lg"
-              className="h-16 rounded-full bg-white px-10 text-xl font-bold text-pink-600 shadow-xl transition-colors hover:bg-slate-50"
+              className="h-16 rounded-full bg-white px-10 text-xl font-bold text-[var(--brand-dark)] shadow-xl transition-colors hover:bg-slate-50"
             >
               <Link href="/request">
                 立即送出您的第一筆需求

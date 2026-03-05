@@ -56,16 +56,16 @@ export default function CustomerBookingsPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-pink-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
-          <Link href="/" className="text-lg font-semibold text-pink-500">
+          <Link href="/" className="text-lg font-semibold text-[var(--brand)]">
             NaLi Match
           </Link>
           <h1 className="text-sm font-medium text-gray-700">我的預約</h1>
@@ -78,7 +78,7 @@ export default function CustomerBookingsPage() {
           <Card>
             <CardContent className="p-8 text-center">
               <p className="text-gray-400">還沒有預約紀錄</p>
-              <Button asChild className="mt-4 bg-pink-500 hover:bg-pink-600">
+              <Button asChild className="mt-4 bg-[var(--brand)] hover:bg-[var(--brand-dark)]">
                 <Link href="/request">立即找美甲師</Link>
               </Button>
             </CardContent>
@@ -93,7 +93,7 @@ export default function CustomerBookingsPage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={booking.artists?.avatar_url || undefined} />
-                        <AvatarFallback className="bg-pink-100 text-pink-600">
+                        <AvatarFallback className="bg-[var(--brand-light)] text-[var(--brand-dark)]">
                           {booking.artists?.display_name?.charAt(0) || "?"}
                         </AvatarFallback>
                       </Avatar>
@@ -110,7 +110,7 @@ export default function CustomerBookingsPage() {
                         <div className="mt-1 flex items-center justify-between text-xs text-gray-400">
                           <span>{booking.booking_date || "日期待定"}</span>
                           {booking.final_price && (
-                            <span className="font-medium text-pink-500">
+                            <span className="font-medium text-[var(--brand)]">
                               NT${booking.final_price.toLocaleString()}
                             </span>
                           )}

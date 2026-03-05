@@ -123,7 +123,7 @@ export default function BookingDetailPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-pink-500 border-t-transparent" />
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
       </div>
     );
   }
@@ -144,10 +144,10 @@ export default function BookingDetailPage() {
   const statusInfo = STATUS_MAP[booking.status] || STATUS_MAP.confirmed;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--brand-bg)]">
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
-          <Link href="/" className="text-lg font-semibold text-pink-500">
+          <Link href="/" className="text-lg font-semibold text-[var(--brand)]">
             NaLi Match
           </Link>
         </div>
@@ -176,7 +176,7 @@ export default function BookingDetailPage() {
             <div className="flex items-center gap-3">
               <Avatar className="h-14 w-14">
                 <AvatarImage src={booking.artists.avatar_url || undefined} />
-                <AvatarFallback className="bg-pink-100 text-pink-600">
+                <AvatarFallback className="bg-[var(--brand-light)] text-[var(--brand-dark)]">
                   {booking.artists.display_name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
@@ -231,7 +231,7 @@ export default function BookingDetailPage() {
               <Separator />
               <div className="flex justify-between">
                 <span className="text-gray-500">確認價格</span>
-                <span className="text-lg font-bold text-pink-500">
+                <span className="text-lg font-bold text-[var(--brand)]">
                   NT${(booking.final_price || booking.artist_responses.quoted_price).toLocaleString()}
                 </span>
               </div>
@@ -278,7 +278,7 @@ export default function BookingDetailPage() {
                 className="mb-3"
               />
               <Button
-                className="w-full bg-pink-500 hover:bg-pink-600"
+                className="w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)]"
                 onClick={handleSubmitReview}
                 disabled={reviewRating === 0 || reviewSubmitting}
               >

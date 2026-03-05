@@ -121,7 +121,7 @@ export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
             type="button"
             onClick={handleNext}
             disabled={isSubmitting}
-            className="flex-1 bg-pink-500 hover:bg-pink-600"
+            className="flex-1 bg-[var(--brand)] hover:bg-[var(--brand-dark)]"
           >
             {isSubmitting
               ? "送出中..."

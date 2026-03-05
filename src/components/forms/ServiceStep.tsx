@@ -31,7 +31,7 @@ export function ServiceStep() {
             key={service.value}
             className={`flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all ${
               selected?.includes(service.label)
-                ? "border-pink-500 bg-pink-50"
+                ? "border-[var(--brand)] bg-[var(--brand-light)]/50"
                 : "border-gray-200 hover:border-gray-300"
             }`}
           >
