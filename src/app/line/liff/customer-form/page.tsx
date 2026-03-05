@@ -73,7 +73,7 @@ function CustomerFormContent() {
     <div className="min-h-screen bg-gray-50">
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
-          <h1 className="text-lg font-semibold text-pink-500">NailMatch</h1>
+          <h1 className="text-lg font-semibold text-pink-500">NaLi Match</h1>
           {profile && (
             <span className="text-sm text-gray-500">
               {profile.displayName}

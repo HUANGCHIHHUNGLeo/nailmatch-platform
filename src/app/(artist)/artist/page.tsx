@@ -52,7 +52,7 @@ export default function ArtistGatePage() {
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 text-lg font-bold text-pink-500">
             <Sparkles className="h-5 w-5" />
-            NailMatch
+            NaLi Match
           </Link>
         </div>
       </header>
@@ -64,7 +64,7 @@ export default function ArtistGatePage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900">美甲師專區</h1>
           <p className="mt-2 text-gray-500">
-            加入 NailMatch，讓顧客主動找上門
+            加入 NaLi Match，讓顧客主動找上門
           </p>
         </div>
 

@@ -171,7 +171,7 @@ export default function RequestDetailPage() {
             </button>
             <div className="h-4 w-px bg-gray-200" />
             <Link href="/" className="text-lg font-semibold text-pink-500">
-              NailMatch
+              NaLi Match
             </Link>
           </div>
           <div>

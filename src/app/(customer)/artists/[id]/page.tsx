@@ -90,7 +90,7 @@ export default function ArtistPublicPage() {
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
           <Link href="/" className="text-lg font-semibold text-pink-500">
-            NailMatch
+            NaLi Match
           </Link>
         </div>
       </header>

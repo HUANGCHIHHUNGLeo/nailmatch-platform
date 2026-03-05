@@ -30,7 +30,7 @@ export default function RequestPage() {
       {/* Header */}
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-lg items-center px-4">
-          <h1 className="text-lg font-semibold text-pink-500">NailMatch</h1>
+          <h1 className="text-lg font-semibold text-pink-500">NaLi Match</h1>
         </div>
       </header>
 

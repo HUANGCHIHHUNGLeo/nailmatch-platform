@@ -71,7 +71,7 @@ export default function HomePage() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="group flex items-center gap-2 text-xl font-black tracking-tight text-slate-900">
             <Sparkles className="h-6 w-6 text-pink-500 transition-transform group-hover:rotate-12 group-hover:scale-110" />
-            NailMatch
+            NaLi Match
           </Link>
           <nav className="flex items-center gap-6">
             <Link
@@ -181,7 +181,7 @@ export default function HomePage() {
           <div className="mb-16 md:flex md:items-end md:justify-between">
             <div className="max-w-2xl">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                為什麼需要 NailMatch？
+                為什麼需要 NaLi Match？
               </h2>
               <p className="mt-4 text-lg text-slate-400">
                 我們致力於解決尋找美甲師時的繁瑣過程，為雙方創造一個透明、高效的媒合環境。
@@ -250,9 +250,9 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4 flex flex-col items-center justify-between sm:flex-row sm:px-6 lg:px-8 text-sm text-slate-500">
           <div className="flex items-center gap-2 font-bold text-slate-900 mb-4 sm:mb-0">
             <Sparkles className="w-5 h-5 text-pink-500" />
-            NailMatch
+            NaLi Match
           </div>
-          <p>&copy; {new Date().getFullYear()} NailMatch Platform. Crafted with ❤️.</p>
+          <p>&copy; {new Date().getFullYear()} NaLi Match Platform. Crafted with ❤️.</p>
         </div>
       </footer>
     </div>

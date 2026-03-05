@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LiffProvider, useLiff } from "@/lib/line/liff";
@@ -20,6 +20,8 @@ function ArtistFormContent() {
   const { liff, isReady, profile } = useLiff();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const [role, setRole] = useState<"nail" | "lash" | "">("");
 
   const {
     register,
@@ -73,6 +75,7 @@ function ArtistFormContent() {
         },
         body: JSON.stringify({
           ...data,
+          role: role || "nail",
           lineProfile: profile,
         }),
       });
@@ -83,9 +86,8 @@ function ArtistFormContent() {
 
       if (liff?.isInClient()) {
         await liff.sendMessages([
-          { type: "text", text: "美甲師註冊申請已送出！審核通過後會通知您。" },
-        ]);
-        setTimeout(() => liff.closeWindow(), 2000);
+          { type: "text", text: `${role === "lash" ? "美睫師" : "美甲師"}註冊申請已送出！審核通過後會通知您。` },
+        ]).catch(() => {});
       }
     } catch (err) {
       console.error("Registration error:", err);
@@ -94,6 +96,25 @@ function ArtistFormContent() {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (!isSuccess) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          if (liff?.isInClient()) {
+            liff.closeWindow();
+          } else {
+            window.location.href = "/";
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isSuccess, liff]);
 
   if (!isReady) {
     return (
@@ -115,6 +136,7 @@ function ArtistFormContent() {
             <p className="text-gray-500">
               我們會盡快審核您的資料，審核通過後會透過 LINE 通知您。
             </p>
+            <p className="mt-3 text-sm text-gray-400">{countdown} 秒後自動跳轉...</p>
           </CardContent>
         </Card>
       </div>
@@ -126,12 +148,36 @@ function ArtistFormContent() {
       <header className="border-b bg-white">
         <div className="mx-auto flex h-14 max-w-lg items-center px-4">
           <h1 className="text-lg font-semibold text-pink-500">
-            NailMatch 美甲師入駐
+            NaLi Match {role === "lash" ? "美睫師" : "美甲師"}入駐
           </h1>
         </div>
       </header>
 
       <main className="mx-auto max-w-lg p-4">
+        {/* Role Selection */}
+        {!role && (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <h2 className="mb-4 text-lg font-bold text-gray-900">請選擇您的身份</h2>
+              <div className="space-y-3">
+                <Button
+                  className="w-full bg-pink-500 py-6 text-lg hover:bg-pink-600"
+                  onClick={() => setRole("nail")}
+                >
+                  我是美甲師
+                </Button>
+                <Button
+                  className="w-full bg-purple-500 py-6 text-lg hover:bg-purple-600"
+                  onClick={() => setRole("lash")}
+                >
+                  我是美睫師
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {role && (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Basic Info */}
           <Card>
@@ -331,6 +377,7 @@ function ArtistFormContent() {
             {isSubmitting ? "送出中..." : "送出申請"}
           </Button>
         </form>
+        )}
       </main>
     </div>
   );

@@ -84,7 +84,7 @@ async function handleFollow(userId: string) {
         },
         {
           type: "text",
-          text: "送出你的需求，美甲師會主動找上門報價！",
+          text: "送出你的需求，美甲/美睫師會主動找上門報價！",
           wrap: true,
           size: "sm",
           color: "#666666",
@@ -101,8 +101,8 @@ async function handleFollow(userId: string) {
           type: "button",
           action: {
             type: "uri",
-            label: "我要找美甲師",
-            uri: `${APP_URL}/request/new`,
+            label: "我要找美甲/美睫師",
+            uri: `${APP_URL}/request`,
           },
           style: "primary",
           color: "#E91E8C",
@@ -111,7 +111,7 @@ async function handleFollow(userId: string) {
           type: "button",
           action: {
             type: "uri",
-            label: "我是美甲師",
+            label: "我是美甲/美睫師（註冊加入平台）",
             uri: `${APP_URL}/line/liff/artist-form`,
           },
           style: "link",
