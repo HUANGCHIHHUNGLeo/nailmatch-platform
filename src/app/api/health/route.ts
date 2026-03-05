@@ -15,7 +15,17 @@ export async function GET() {
     ? `OK (${process.env.SUPABASE_SERVICE_ROLE_KEY.slice(0, 20)}...)`
     : "MISSING";
 
-  // 2. Try Supabase connection
+  // 2. LINE env vars
+  checks.LINE_CHANNEL_SECRET = process.env.LINE_CHANNEL_SECRET
+    ? `OK (${process.env.LINE_CHANNEL_SECRET.slice(0, 10)}...)`
+    : "MISSING";
+  checks.LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN
+    ? `OK (${process.env.LINE_CHANNEL_ACCESS_TOKEN.slice(0, 10)}...)`
+    : "MISSING";
+  checks.NEXT_PUBLIC_LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "MISSING";
+  checks.NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL || "MISSING";
+
+  // 3. Try Supabase connection
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
