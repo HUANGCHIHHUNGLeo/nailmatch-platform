@@ -34,6 +34,7 @@ interface ServiceRequest {
   services: string[];
   budget_range: string;
   preferred_date: string;
+  preferred_time: string | null;
   status: string;
   notified_count: number;
   viewed_count: number;
@@ -210,7 +211,7 @@ export default function RequestDetailPage() {
           services={request.services}
           budget={request.budget_range}
           location={request.locations.join("、")}
-          date={request.preferred_date}
+          date={`${request.preferred_date} ${request.preferred_time || ""}`}
         />
 
         {/* Quotes Section */}

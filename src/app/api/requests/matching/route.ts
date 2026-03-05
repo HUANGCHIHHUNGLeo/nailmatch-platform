@@ -34,7 +34,7 @@ export async function GET() {
     let query = supabase
       .from("service_requests")
       .select(
-        "id, services, locations, budget_range, preferred_date, preferred_styles, status, created_at"
+        "id, services, locations, budget_range, preferred_date, preferred_time, preferred_styles, status, created_at"
       )
       .in("status", ["pending", "matching"])
       .order("created_at", { ascending: false })

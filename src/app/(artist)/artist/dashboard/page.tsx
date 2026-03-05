@@ -19,6 +19,7 @@ interface ServiceRequest {
   locations: string[];
   budget_range: string;
   preferred_date: string;
+  preferred_time: string | null;
   status: string;
   created_at: string;
 }
@@ -199,7 +200,7 @@ export default function ArtistDashboard() {
                         <div className="mt-2 space-y-1 text-sm text-gray-600">
                           <p>地點：{request.locations.join("、")}</p>
                           <p>預算：{request.budget_range}</p>
-                          <p>時間：{request.preferred_date}</p>
+                          <p>時間：{request.preferred_date} {request.preferred_time || ""}</p>
                         </div>
                       </div>
                       <span className="text-xs text-gray-400">

@@ -3,7 +3,7 @@
 import { useFormContext } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { LOCATIONS } from "@/lib/utils/constants";
+import { LOCATION_GROUPS } from "@/lib/utils/constants";
 import type { ServiceRequestFormData } from "@/lib/utils/form-schema";
 
 export function LocationStep() {
@@ -24,22 +24,31 @@ export function LocationStep() {
       <h2 className="mb-2 text-2xl font-bold text-gray-900">服務地點</h2>
       <p className="mb-6 text-gray-500">選擇您方便的地區（可多選）</p>
 
-      <div className="grid grid-cols-2 gap-3">
-        {LOCATIONS.map((location) => (
-          <Label
-            key={location}
-            className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all ${
-              selected?.includes(location)
-                ? "border-pink-500 bg-pink-50"
-                : "border-gray-200 hover:border-gray-300"
-            }`}
-          >
-            <Checkbox
-              checked={selected?.includes(location)}
-              onCheckedChange={() => toggleLocation(location)}
-            />
-            <span className="text-sm font-medium">{location}</span>
-          </Label>
+      <div className="space-y-6">
+        {LOCATION_GROUPS.map((group) => (
+          <div key={group.city}>
+            <h3 className="mb-3 text-sm font-semibold text-gray-700">{group.city}</h3>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {group.districts.map((district) => {
+                const locationValue = group.city === "其他" ? district : `${group.city} ${district}`;
+                return (
+                  <Label
+                    key={locationValue}
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition-all ${selected?.includes(locationValue)
+                        ? "border-pink-500 bg-pink-50"
+                        : "border-gray-200 hover:border-gray-300"
+                      }`}
+                  >
+                    <Checkbox
+                      checked={selected?.includes(locationValue)}
+                      onCheckedChange={() => toggleLocation(locationValue)}
+                    />
+                    <span className="text-sm font-medium">{district}</span>
+                  </Label>
+                );
+              })}
+            </div>
+          </div>
         ))}
       </div>
 

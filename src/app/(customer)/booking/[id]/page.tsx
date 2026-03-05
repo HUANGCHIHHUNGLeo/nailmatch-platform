@@ -30,6 +30,7 @@ interface Booking {
     locations: string[];
     budget_range: string;
     preferred_date: string;
+    preferred_time: string | null;
     preferred_styles: string[];
   };
   artist_responses: {
@@ -187,12 +188,12 @@ export default function BookingDetailPage() {
                 <span className="text-gray-500">預約日期</span>
                 <span className="font-medium">{booking.booking_date || booking.service_requests.preferred_date}</span>
               </div>
-              {booking.booking_time && (
+              {(booking.booking_time || booking.service_requests.preferred_time) && (
                 <>
                   <Separator />
                   <div className="flex justify-between">
                     <span className="text-gray-500">預約時間</span>
-                    <span className="font-medium">{booking.booking_time}</span>
+                    <span className="font-medium">{booking.booking_time || booking.service_requests.preferred_time}</span>
                   </div>
                 </>
               )}

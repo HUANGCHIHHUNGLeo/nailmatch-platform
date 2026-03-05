@@ -18,7 +18,8 @@ export const serviceRequestSchema = z.object({
   preferredStyles: z.array(z.string()).min(1, "請選擇至少一個偏好風格"),
 
   // Step 6: 預約時間
-  preferredDate: z.string().min(1, "請選擇預約時間"),
+  preferredDate: z.string().min(1, "請選擇預約日期"),
+  preferredTime: z.string().min(1, "請選擇預約時段"),
   preferredDateCustom: z.string().optional(),
 
   // Step 7: 美甲師性別偏好

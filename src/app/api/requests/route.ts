@@ -75,6 +75,7 @@ export async function POST(request: Request) {
         nail_length: parsed.data.nailLength,
         preferred_styles: parsed.data.preferredStyles,
         preferred_date: parsed.data.preferredDate,
+        preferred_time: parsed.data.preferredTime,
         preferred_date_custom: parsed.data.preferredDateCustom || null,
         artist_gender_pref: parsed.data.artistGenderPref,
         budget_range: parsed.data.budgetRange,

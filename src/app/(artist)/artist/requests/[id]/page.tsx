@@ -19,6 +19,7 @@ interface ServiceRequest {
   nail_length: string;
   preferred_styles: string[];
   preferred_date: string;
+  preferred_time: string | null;
   preferred_date_custom: string | null;
   artist_gender_pref: string;
   budget_range: string;
@@ -174,7 +175,7 @@ export default function ArtistRequestDetailPage() {
               <div className="flex justify-between">
                 <span className="text-gray-500">希望時間</span>
                 <span className="font-medium">
-                  {request.preferred_date}
+                  {request.preferred_date} {request.preferred_time || ""}
                   {request.preferred_date_custom && ` (${request.preferred_date_custom})`}
                 </span>
               </div>

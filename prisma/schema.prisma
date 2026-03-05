@@ -121,6 +121,7 @@ model ServiceRequest {
   nailLength          String?   @map("nail_length")
   preferredStyles     String[]  @map("preferred_styles")
   preferredDate       String?   @map("preferred_date")
+  preferredTime       String?   @map("preferred_time")
   preferredDateCustom DateTime? @map("preferred_date_custom") @db.Date
   artistGenderPref    String?   @map("artist_gender_pref")
   budgetRange         String?   @map("budget_range")

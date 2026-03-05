@@ -11,7 +11,7 @@ export async function GET(
 
     const { data: booking, error } = await supabase
       .from("bookings")
-      .select("*, service_requests(services, locations, budget_range, preferred_date, preferred_styles), artists(id, display_name, avatar_url, studio_address, phone, instagram_handle, styles), customers(id, display_name, line_user_id), artist_responses(quoted_price, message, available_time)")
+      .select("*, service_requests(services, locations, budget_range, preferred_date, preferred_time, preferred_styles), artists(id, display_name, avatar_url, studio_address, phone, instagram_handle, styles), customers(id, display_name, line_user_id), artist_responses(quoted_price, message, available_time)")
       .eq("id", id)
       .single();
 
