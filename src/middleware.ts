@@ -1,7 +1,14 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Protect /admin (but not /admin/login) — redirect to login if no session cookie
+  if (pathname === "/admin" && !request.cookies.get("admin_session")) {
+    return NextResponse.redirect(new URL("/admin/login", request.url));
+  }
+
   return await updateSession(request);
 }
 

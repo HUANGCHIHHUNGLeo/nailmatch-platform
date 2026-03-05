@@ -132,6 +132,20 @@ async function handleUnfollow(userId: string) {
 async function handleTextMessage(userId: string, text: string) {
   const lowerText = text.trim();
 
+  // Hidden admin command — only responds to the designated admin
+  if (lowerText === "後台設置") {
+    const adminLineUserId = process.env.ADMIN_LINE_USER_ID;
+    if (adminLineUserId && userId === adminLineUserId) {
+      await pushMessage(
+        userId,
+        `管理後台入口：\n${APP_URL}/admin/login`
+      );
+    } else {
+      await pushMessage(userId, "感謝您的訊息！如需預約美甲，請輸入「預約」。");
+    }
+    return;
+  }
+
   if (["預約", "美甲", "我要預約", "找美甲師"].some((kw) => lowerText.includes(kw))) {
     await pushMessage(
       userId,
