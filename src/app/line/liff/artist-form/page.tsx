@@ -14,7 +14,7 @@ import {
   artistRegistrationSchema,
   type ArtistRegistrationFormData,
 } from "@/lib/utils/form-schema";
-import { LOCATIONS, NAIL_SERVICES, STYLES } from "@/lib/utils/constants";
+import { LOCATION_GROUPS, NAIL_SERVICES, STYLES } from "@/lib/utils/constants";
 
 function ArtistFormContent() {
   const { liff, isReady, profile } = useLiff();
@@ -192,22 +192,41 @@ function ArtistFormContent() {
           <Card>
             <CardContent className="space-y-4 p-4">
               <h2 className="font-semibold">服務地區 *</h2>
-              <div className="grid grid-cols-2 gap-2">
-                {LOCATIONS.map((loc) => (
-                  <Label
-                    key={loc}
-                    className={`flex cursor-pointer items-center gap-2 rounded-lg border-2 p-3 text-sm ${
-                      cities.includes(loc) ? "border-pink-500 bg-pink-50" : "border-gray-200"
-                    }`}
-                  >
-                    <Checkbox
-                      checked={cities.includes(loc)}
-                      onCheckedChange={() => toggleArrayField("cities", loc, cities)}
-                    />
-                    {loc}
-                  </Label>
-                ))}
-              </div>
+              <p className="text-xs text-gray-500">選擇您可以服務的區域（可複選）</p>
+              {LOCATION_GROUPS.map((group) => {
+                const groupLocations = group.city === "其他"
+                  ? group.districts
+                  : group.districts.map((d) => `${group.city} ${d}`);
+                const selectedCount = groupLocations.filter((loc) => cities.includes(loc)).length;
+                return (
+                  <details key={group.city} className="rounded-lg border">
+                    <summary className="flex cursor-pointer items-center justify-between p-3 font-medium">
+                      <span>{group.city}</span>
+                      {selectedCount > 0 && (
+                        <span className="rounded-full bg-pink-100 px-2 py-0.5 text-xs text-pink-600">
+                          已選 {selectedCount}
+                        </span>
+                      )}
+                    </summary>
+                    <div className="grid grid-cols-2 gap-2 border-t p-3">
+                      {groupLocations.map((loc) => (
+                        <Label
+                          key={loc}
+                          className={`flex cursor-pointer items-center gap-2 rounded-lg border-2 p-2 text-sm ${
+                            cities.includes(loc) ? "border-pink-500 bg-pink-50" : "border-gray-200"
+                          }`}
+                        >
+                          <Checkbox
+                            checked={cities.includes(loc)}
+                            onCheckedChange={() => toggleArrayField("cities", loc, cities)}
+                          />
+                          {group.city === "其他" ? loc : loc.replace(`${group.city} `, "")}
+                        </Label>
+                      ))}
+                    </div>
+                  </details>
+                );
+              })}
 
               <div>
                 <Label>服務地點類型 *</Label>
