@@ -75,7 +75,7 @@ export default function HomePage() {
           </Link>
           <nav className="flex items-center gap-6">
             <Link
-              href="/artist/dashboard"
+              href="/artist"
               className="text-sm font-medium text-slate-600 transition-colors hover:text-pink-600"
             >
               美甲師入口
