@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
-import { useLiff } from "@/lib/line/liff";
+import { useAuthSWR } from "@/lib/line/use-auth-swr";
 
 interface ArtistProfile {
   id: string;
@@ -29,21 +29,12 @@ interface ArtistProfile {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { isReady, isLoggedIn } = useLiff();
   const { authFetch } = useAuthFetch();
-  const [profile, setProfile] = useState<ArtistProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: profile, mutate } = useAuthSWR<ArtistProfile>("/api/artists/me");
   const [toggling, setToggling] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    if (!isReady || !isLoggedIn) return;
-    authFetch("/api/artists/me")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => setProfile(data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [isReady, isLoggedIn, authFetch]);
+  const loading = profile === undefined;
 
   const handleToggleActive = async () => {
     if (!profile) return;
@@ -62,7 +53,7 @@ export default function SettingsPage() {
       });
       if (res.ok) {
         const updated = await res.json();
-        setProfile(updated);
+        mutate(updated, { revalidate: false });
       } else {
         alert("操作失敗，請重試");
       }

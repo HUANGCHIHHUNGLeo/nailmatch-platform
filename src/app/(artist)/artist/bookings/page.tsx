@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
-import { useLiff } from "@/lib/line/liff";
+import { useAuthSWR } from "@/lib/line/use-auth-swr";
+
+interface ArtistMe {
+  id: string;
+}
 
 interface Booking {
   id: string;
@@ -34,35 +38,18 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 };
 
 export default function ArtistBookingsPage() {
-  const { isReady, isLoggedIn } = useLiff();
   const { authFetch } = useAuthFetch();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [artistId, setArtistId] = useState<string | null>(null);
+  const { data: me } = useAuthSWR<ArtistMe>("/api/artists/me");
+  const { data: bookings, mutate } = useAuthSWR<Booking[]>(
+    me?.id ? `/api/bookings?artistId=${me.id}` : null
+  );
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isReady || !isLoggedIn) return;
-    async function fetchData() {
-      try {
-        const meRes = await authFetch("/api/artists/me");
-        if (!meRes.ok) return;
-        const me = await meRes.json();
-        setArtistId(me.id);
-
-        const res = await authFetch(`/api/bookings?artistId=${me.id}`);
-        if (res.ok) {
-          setBookings(await res.json());
-        }
-      } catch (err) {
-        console.error("Failed to fetch bookings:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, [isReady, isLoggedIn, authFetch]);
+  const loading = !me;
+  const bookingList = bookings || [];
 
   const handleUpdateStatus = async (bookingId: string, status: string) => {
+    setUpdatingId(bookingId);
     try {
       const res = await authFetch(`/api/bookings/${bookingId}`, {
         method: "PATCH",
@@ -70,18 +57,22 @@ export default function ArtistBookingsPage() {
         body: JSON.stringify({ status }),
       });
       if (res.ok) {
-        setBookings((prev) =>
-          prev.map((b) => (b.id === bookingId ? { ...b, status } : b))
+        // Optimistic update + revalidate
+        mutate(
+          bookingList.map((b) => (b.id === bookingId ? { ...b, status } : b)),
+          { revalidate: true }
         );
       }
     } catch (err) {
       console.error("Update failed:", err);
+    } finally {
+      setUpdatingId(null);
     }
   };
 
-  const confirmed = bookings.filter((b) => b.status === "confirmed");
-  const completed = bookings.filter((b) => b.status === "completed");
-  const cancelled = bookings.filter((b) => ["cancelled", "no_show"].includes(b.status));
+  const confirmed = bookingList.filter((b) => b.status === "confirmed");
+  const completed = bookingList.filter((b) => b.status === "completed");
+  const cancelled = bookingList.filter((b) => ["cancelled", "no_show"].includes(b.status));
 
   const renderBookingCard = (booking: Booking) => {
     const statusInfo = STATUS_MAP[booking.status] || STATUS_MAP.confirmed;
@@ -118,6 +109,7 @@ export default function ArtistBookingsPage() {
                 size="sm"
                 className="flex-1 bg-green-500 hover:bg-green-600"
                 onClick={() => handleUpdateStatus(booking.id, "completed")}
+                disabled={updatingId === booking.id}
               >
                 標記完成
               </Button>
@@ -126,6 +118,7 @@ export default function ArtistBookingsPage() {
                 variant="outline"
                 className="flex-1 text-red-500"
                 onClick={() => handleUpdateStatus(booking.id, "cancelled")}
+                disabled={updatingId === booking.id}
               >
                 取消
               </Button>

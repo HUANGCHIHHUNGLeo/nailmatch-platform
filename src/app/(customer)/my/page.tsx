@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { LiffProvider, useLiff } from "@/lib/line/liff";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
+import { useAuthSWR } from "@/lib/line/use-auth-swr";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,32 +62,13 @@ const BOOKING_STATUS: Record<string, { label: string; color: string }> = {
 function MyPageContent() {
   const { isReady, isLoggedIn, needsLogin, error, profile } = useLiff();
   const { authFetch } = useAuthFetch();
-  const [requests, setRequests] = useState<ServiceRequest[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: requests } = useAuthSWR<ServiceRequest[]>("/api/requests");
+  const { data: bookings } = useAuthSWR<Booking[]>("/api/bookings");
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    if (!isReady || !isLoggedIn) return;
-
-    async function fetchData() {
-      try {
-        const [reqRes, bookRes] = await Promise.all([
-          authFetch("/api/requests"),
-          authFetch("/api/bookings"),
-        ]);
-
-        if (reqRes.ok) setRequests(await reqRes.json());
-        if (bookRes.ok) setBookings(await bookRes.json());
-      } catch (err) {
-        console.error("Failed to fetch data:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [isReady, isLoggedIn, authFetch]);
+  const loading = isReady && isLoggedIn && !requests && !bookings;
+  const requestList = requests || [];
+  const bookingList = bookings || [];
 
   const handleDeleteAccount = async () => {
     const confirmFirst = confirm(
@@ -189,7 +171,7 @@ function MyPageContent() {
               <div>
                 <p className="text-lg font-bold text-gray-900">{profile.displayName}</p>
                 <p className="text-sm text-gray-500">
-                  {requests.length} 筆需求 · {bookings.length} 筆預約
+                  {requestList.length} 筆需求 · {bookingList.length} 筆預約
                 </p>
               </div>
             </CardContent>
@@ -213,7 +195,7 @@ function MyPageContent() {
               <div className="flex items-center justify-center py-12">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
               </div>
-            ) : requests.length === 0 ? (
+            ) : requestList.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--brand-light)]">
@@ -227,7 +209,7 @@ function MyPageContent() {
                 </CardContent>
               </Card>
             ) : (
-              requests.map((req) => {
+              requestList.map((req) => {
                 const status = REQUEST_STATUS[req.status] || REQUEST_STATUS.pending;
                 return (
                   <Link key={req.id} href={`/request/${req.id}`}>
@@ -276,7 +258,7 @@ function MyPageContent() {
               <div className="flex items-center justify-center py-12">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
               </div>
-            ) : bookings.length === 0 ? (
+            ) : bookingList.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--brand-light)]">
@@ -290,7 +272,7 @@ function MyPageContent() {
                 </CardContent>
               </Card>
             ) : (
-              bookings.map((booking) => {
+              bookingList.map((booking) => {
                 const status = BOOKING_STATUS[booking.status] || BOOKING_STATUS.confirmed;
                 return (
                   <Link key={booking.id} href={`/booking/${booking.id}`}>

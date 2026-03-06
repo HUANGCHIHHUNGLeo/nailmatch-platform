@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useMemo } from "react";
 import { ArrowLeft, Lock, TrendingUp, DollarSign, Calendar, BarChart3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuthFetch } from "@/lib/line/use-auth-fetch";
-import { useLiff } from "@/lib/line/liff";
+import { useAuthSWR } from "@/lib/line/use-auth-swr";
+
+interface ArtistMe {
+  id: string;
+}
 
 interface Booking {
   id: string;
@@ -35,56 +36,48 @@ const IS_PREMIUM = false; // 未來付費解鎖
 
 export default function ArtistReportPage() {
   const router = useRouter();
-  const { isReady, isLoggedIn } = useLiff();
-  const { authFetch } = useAuthFetch();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: me } = useAuthSWR<ArtistMe>("/api/artists/me");
+  const { data: bookings } = useAuthSWR<Booking[]>(
+    me?.id ? `/api/bookings?artistId=${me.id}` : null
+  );
 
-  useEffect(() => {
-    if (!isReady || !isLoggedIn) return;
-    async function fetchData() {
-      try {
-        const meRes = await authFetch("/api/artists/me");
-        if (!meRes.ok) return;
-        const me = await meRes.json();
+  const loading = !me;
+  const bookingList = bookings || [];
 
-        const res = await authFetch(`/api/bookings?artistId=${me.id}`);
-        if (res.ok) {
-          setBookings(await res.json());
-        }
-      } catch (err) {
-        console.error("Failed to fetch report data:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, [isReady, isLoggedIn, authFetch]);
+  const { completed, totalRevenue, avgPrice, monthlyStats, thisMonthStats, currentMonth } = useMemo(() => {
+    const comp = bookingList.filter((b) => b.status === "completed");
+    const rev = comp.reduce((sum, b) => sum + (b.final_price || 0), 0);
+    const avg = comp.length > 0 ? Math.round(rev / comp.length) : 0;
 
-  const completed = bookings.filter((b) => b.status === "completed");
-  const totalRevenue = completed.reduce((sum, b) => sum + (b.final_price || 0), 0);
-  const avgPrice = completed.length > 0 ? Math.round(totalRevenue / completed.length) : 0;
-
-  // 按月份分組
-  const monthlyStats: MonthlyStats[] = [];
-  const monthMap = new Map<string, { revenue: number; count: number }>();
-  completed.forEach((b) => {
-    const date = b.booking_date || b.created_at;
-    const month = date.slice(0, 7); // YYYY-MM
-    const existing = monthMap.get(month) || { revenue: 0, count: 0 };
-    existing.revenue += b.final_price || 0;
-    existing.count += 1;
-    monthMap.set(month, existing);
-  });
-  Array.from(monthMap.entries())
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .forEach(([month, stats]) => {
-      monthlyStats.push({ month, ...stats });
+    const monthMap = new Map<string, { revenue: number; count: number }>();
+    comp.forEach((b) => {
+      const date = b.booking_date || b.created_at;
+      const month = date.slice(0, 7);
+      const existing = monthMap.get(month) || { revenue: 0, count: 0 };
+      existing.revenue += b.final_price || 0;
+      existing.count += 1;
+      monthMap.set(month, existing);
     });
 
-  // 本月數據
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const thisMonthStats = monthMap.get(currentMonth) || { revenue: 0, count: 0 };
+    const monthly: MonthlyStats[] = [];
+    Array.from(monthMap.entries())
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .forEach(([month, stats]) => {
+        monthly.push({ month, ...stats });
+      });
+
+    const curMonth = new Date().toISOString().slice(0, 7);
+    const thisMonth = monthMap.get(curMonth) || { revenue: 0, count: 0 };
+
+    return {
+      completed: comp,
+      totalRevenue: rev,
+      avgPrice: avg,
+      monthlyStats: monthly,
+      thisMonthStats: thisMonth,
+      currentMonth: curMonth,
+    };
+  }, [bookingList]);
 
   if (loading) {
     return (

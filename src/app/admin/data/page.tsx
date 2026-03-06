@@ -79,21 +79,34 @@ function formatDate(dateStr: string) {
   });
 }
 
+interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
 export default function AdminDataPage() {
   const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [totals, setTotals] = useState({ customers: 0, requests: 0, bookings: 0 });
+  const [pages, setPages] = useState({ customers: 1, requests: 1, bookings: 1 });
+  const [hasMore, setHasMore] = useState({ customers: false, requests: false, bookings: false });
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [tab, setTab] = useState<"customers" | "requests" | "bookings">("customers");
+  const PAGE_LIMIT = 30;
 
   useEffect(() => {
     async function fetchAll() {
       try {
         const [custRes, reqRes, bookRes] = await Promise.all([
-          fetch("/api/admin/customers"),
-          fetch("/api/admin/requests"),
-          fetch("/api/admin/bookings"),
+          fetch(`/api/admin/customers?limit=${PAGE_LIMIT}`),
+          fetch(`/api/admin/requests?limit=${PAGE_LIMIT}`),
+          fetch(`/api/admin/bookings?limit=${PAGE_LIMIT}`),
         ]);
 
         if (custRes.status === 401) {
@@ -101,9 +114,15 @@ export default function AdminDataPage() {
           return;
         }
 
-        setCustomers(await custRes.json());
-        setRequests(await reqRes.json());
-        setBookings(await bookRes.json());
+        const custData: PaginatedResult<Customer> = await custRes.json();
+        const reqData: PaginatedResult<ServiceRequest> = await reqRes.json();
+        const bookData: PaginatedResult<Booking> = await bookRes.json();
+
+        setCustomers(custData.data);
+        setRequests(reqData.data);
+        setBookings(bookData.data);
+        setTotals({ customers: custData.total, requests: reqData.total, bookings: bookData.total });
+        setHasMore({ customers: custData.hasMore, requests: reqData.hasMore, bookings: bookData.hasMore });
       } catch (err) {
         console.error("Failed to fetch admin data:", err);
       } finally {
@@ -112,6 +131,30 @@ export default function AdminDataPage() {
     }
     fetchAll();
   }, [router]);
+
+  const loadMore = async (type: "customers" | "requests" | "bookings") => {
+    setLoadingMore(true);
+    const nextPage = pages[type] + 1;
+    try {
+      const res = await fetch(`/api/admin/${type}?page=${nextPage}&limit=${PAGE_LIMIT}`);
+      if (!res.ok) return;
+      const result: PaginatedResult<Customer & ServiceRequest & Booking> = await res.json();
+
+      if (type === "customers") {
+        setCustomers((prev) => [...prev, ...(result.data as Customer[])]);
+      } else if (type === "requests") {
+        setRequests((prev) => [...prev, ...(result.data as ServiceRequest[])]);
+      } else {
+        setBookings((prev) => [...prev, ...(result.data as Booking[])]);
+      }
+      setPages((prev) => ({ ...prev, [type]: nextPage }));
+      setHasMore((prev) => ({ ...prev, [type]: result.hasMore }));
+    } catch (err) {
+      console.error("Failed to load more:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -142,29 +185,27 @@ export default function AdminDataPage() {
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Card>
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-[var(--brand)]">{customers.length}</p>
+              <p className="text-3xl font-bold text-[var(--brand)]">{totals.customers}</p>
               <p className="text-xs text-gray-500">客戶總數</p>
-              <p className="text-xs text-green-600">{customers.filter((c) => c.has_line).length} 已綁 LINE</p>
+              <p className="text-xs text-green-600">{customers.filter((c) => c.has_line).length}+ 已綁 LINE</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-blue-600">{requests.length}</p>
+              <p className="text-3xl font-bold text-blue-600">{totals.requests}</p>
               <p className="text-xs text-gray-500">需求總數</p>
-              <p className="text-xs text-blue-500">{requests.filter((r) => r.status === "matching").length} 配對中</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-green-600">{bookings.length}</p>
+              <p className="text-3xl font-bold text-green-600">{totals.bookings}</p>
               <p className="text-xs text-gray-500">預約總數</p>
-              <p className="text-xs text-green-500">{bookings.filter((b) => b.status === "completed").length} 已完成</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-3xl font-bold text-purple-600">
-                {requests.length > 0 ? Math.round((bookings.length / requests.length) * 100) : 0}%
+                {totals.requests > 0 ? Math.round((totals.bookings / totals.requests) * 100) : 0}%
               </p>
               <p className="text-xs text-gray-500">需求→預約轉換率</p>
             </CardContent>
@@ -174,9 +215,9 @@ export default function AdminDataPage() {
         {/* Data Tabs */}
         <div className="mb-4 flex gap-1 rounded-lg bg-gray-100 p-1">
           {([
-            ["customers", `客戶 (${customers.length})`],
-            ["requests", `需求 (${requests.length})`],
-            ["bookings", `預約 (${bookings.length})`],
+            ["customers", `客戶 (${totals.customers})`],
+            ["requests", `需求 (${totals.requests})`],
+            ["bookings", `預約 (${totals.bookings})`],
           ] as const).map(([key, label]) => (
             <button
               key={key}
@@ -237,6 +278,13 @@ export default function AdminDataPage() {
                     </tbody>
                   </table>
                 </div>
+                {hasMore.customers && (
+                  <div className="border-t p-3 text-center">
+                    <Button variant="ghost" size="sm" onClick={() => loadMore("customers")} disabled={loadingMore}>
+                      {loadingMore ? "載入中..." : `載入更多（已載入 ${customers.length}/${totals.customers}）`}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -296,6 +344,13 @@ export default function AdminDataPage() {
                     </tbody>
                   </table>
                 </div>
+                {hasMore.requests && (
+                  <div className="border-t p-3 text-center">
+                    <Button variant="ghost" size="sm" onClick={() => loadMore("requests")} disabled={loadingMore}>
+                      {loadingMore ? "載入中..." : `載入更多（已載入 ${requests.length}/${totals.requests}）`}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -351,6 +406,13 @@ export default function AdminDataPage() {
                     </tbody>
                   </table>
                 </div>
+                {hasMore.bookings && (
+                  <div className="border-t p-3 text-center">
+                    <Button variant="ghost" size="sm" onClick={() => loadMore("bookings")} disabled={loadingMore}>
+                      {loadingMore ? "載入中..." : `載入更多（已載入 ${bookings.length}/${totals.bookings}）`}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

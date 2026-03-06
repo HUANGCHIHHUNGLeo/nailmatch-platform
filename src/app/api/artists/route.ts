@@ -62,22 +62,33 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const { parsePagination, paginatedResponse } = await import("@/lib/utils/pagination");
+    const { page, limit, from, to } = parsePagination(searchParams);
+
     const supabase = await createServiceClient();
+
+    const { count } = await supabase
+      .from("artists")
+      .select("id", { count: "exact", head: true })
+      .eq("is_active", true)
+      .eq("is_verified", true);
 
     const { data, error } = await supabase
       .from("artists")
       .select("id, display_name, avatar_url, services, styles, min_price, max_price, cities, role, studio_address, payment_methods, instagram_handle")
       .eq("is_active", true)
       .eq("is_verified", true)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(from, to);
 
     if (error) {
       return NextResponse.json({ error: "Failed to fetch artists" }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json(paginatedResponse(data || [], count || 0, page, limit));
   } catch (error) {
     console.error("Artists GET error:", error);
     return NextResponse.json(

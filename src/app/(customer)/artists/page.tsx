@@ -33,15 +33,21 @@ const ROLE_FILTERS = [
 export default function ArtistDirectoryPage() {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
   const [cityFilter, setCityFilter] = useState("全部");
   const [roleFilter, setRoleFilter] = useState("all");
+  const PAGE_LIMIT = 20;
 
   useEffect(() => {
     async function fetchArtists() {
       try {
-        const res = await fetch("/api/artists");
+        const res = await fetch(`/api/artists?limit=${PAGE_LIMIT}`);
         if (res.ok) {
-          setArtists(await res.json());
+          const result = await res.json();
+          setArtists(result.data || result);
+          setHasMore(result.hasMore || false);
         }
       } catch (err) {
         console.error("Failed to fetch artists:", err);
@@ -51,6 +57,24 @@ export default function ArtistDirectoryPage() {
     }
     fetchArtists();
   }, []);
+
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      const res = await fetch(`/api/artists?page=${nextPage}&limit=${PAGE_LIMIT}`);
+      if (res.ok) {
+        const result = await res.json();
+        setArtists((prev) => [...prev, ...(result.data || [])]);
+        setHasMore(result.hasMore || false);
+        setPage(nextPage);
+      }
+    } catch (err) {
+      console.error("Failed to load more:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     return artists.filter((a) => {
@@ -203,6 +227,18 @@ export default function ArtistDirectoryPage() {
                 </Card>
               </Link>
             ))}
+          </div>
+        )}
+
+        {hasMore && (
+          <div className="mt-4 text-center">
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="rounded-full bg-white px-6 py-2 text-sm font-medium text-gray-600 shadow-sm transition hover:bg-gray-50 disabled:opacity-50"
+            >
+              {loadingMore ? "載入中..." : "載入更多設計師"}
+            </button>
           </div>
         )}
       </main>

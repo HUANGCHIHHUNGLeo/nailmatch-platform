@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { User, Image as ImageIcon, Calendar, ClipboardList } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuthFetch } from "@/lib/line/use-auth-fetch";
+import { useAuthSWR } from "@/lib/line/use-auth-swr";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 
@@ -47,68 +47,36 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function ArtistDashboard() {
-  const { authFetch } = useAuthFetch();
-  const [requests, setRequests] = useState<ServiceRequest[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [artistName, setArtistName] = useState("");
-  const [stats, setStats] = useState({
-    todayBookings: 0,
-    pendingRequests: 0,
-    totalQuotes: 0,
-    monthlyEarnings: 0,
-  });
+  const { data: me } = useAuthSWR<ArtistMe>("/api/artists/me");
+  const { data: requests } = useAuthSWR<ServiceRequest[]>("/api/requests/matching");
+  const { data: bookings } = useAuthSWR<Booking[]>(
+    me?.id ? `/api/bookings?artistId=${me.id}` : null
+  );
 
-  const fetchData = useCallback(async () => {
-    try {
-      // Get current artist profile
-      const meRes = await authFetch("/api/artists/me");
-      if (!meRes.ok) {
-        setArtistName("");
-        setLoading(false);
-        return;
-      }
-      const me: ArtistMe = await meRes.json();
-      setArtistName(me.display_name);
+  const loading = !me && !requests;
+  const artistName = me?.display_name || "";
+  const requestList = requests || [];
+  const bookingList = bookings || [];
 
-      const [requestsRes, bookingsRes] = await Promise.all([
-        authFetch("/api/requests/matching"),
-        authFetch(`/api/bookings?artistId=${me.id}`),
-      ]);
+  const stats = useMemo(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
 
-      const matchingRequests: ServiceRequest[] = requestsRes.ok ? await requestsRes.json() : [];
-      const artistBookings: Booking[] = bookingsRes.ok ? await bookingsRes.json() : [];
+    return {
+      todayBookings: bookingList.filter(
+        (b) => b.status === "confirmed" && b.booking_date === today
+      ).length,
+      pendingRequests: requestList.length,
+      totalQuotes: bookingList.length,
+      monthlyEarnings: bookingList
+        .filter((b) => b.status === "completed" && new Date(b.booking_date || "") >= monthStart)
+        .reduce((sum, b) => sum + (b.final_price || 0), 0),
+    };
+  }, [bookingList, requestList]);
 
-      setRequests(matchingRequests);
-      setBookings(artistBookings);
-
-      const today = new Date().toISOString().split("T")[0];
-      const monthStart = new Date();
-      monthStart.setDate(1);
-      monthStart.setHours(0, 0, 0, 0);
-
-      setStats({
-        todayBookings: artistBookings.filter(
-          (b) => b.status === "confirmed" && b.booking_date === today
-        ).length,
-        pendingRequests: matchingRequests.length,
-        totalQuotes: artistBookings.length,
-        monthlyEarnings: artistBookings
-          .filter((b) => b.status === "completed" && new Date(b.booking_date || "") >= monthStart)
-          .reduce((sum, b) => sum + (b.final_price || 0), 0),
-      });
-    } catch (err) {
-      console.error("Dashboard fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [authFetch]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const confirmedBookings = bookings.filter((b) => b.status === "confirmed");
+  const confirmedBookings = bookingList.filter((b) => b.status === "confirmed");
 
   if (loading) {
     return (
@@ -118,7 +86,7 @@ export default function ArtistDashboard() {
     );
   }
 
-  if (!artistName && requests.length === 0 && bookings.length === 0) {
+  if (!artistName && requestList.length === 0 && bookingList.length === 0) {
     const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
     const liffUrl = liffId ? `https://liff.line.me/${liffId}/artist-form` : null;
     return (
@@ -202,8 +170,8 @@ export default function ArtistDashboard() {
           <TabsList className="w-full">
             <TabsTrigger value="requests" className="flex-1">
               {t.dashboard.tabs.newRequests}
-              {requests.length > 0 && (
-                <Badge variant="secondary" className="ml-1">{requests.length}</Badge>
+              {requestList.length > 0 && (
+                <Badge variant="secondary" className="ml-1">{requestList.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="bookings" className="flex-1">
@@ -212,7 +180,7 @@ export default function ArtistDashboard() {
           </TabsList>
 
           <TabsContent value="requests" className="mt-4 space-y-3">
-            {requests.length === 0 ? (
+            {requestList.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center text-gray-400">
                   <p>{t.dashboard.emptyState.noRequests}</p>
@@ -220,7 +188,7 @@ export default function ArtistDashboard() {
                 </CardContent>
               </Card>
             ) : (
-              requests.map((request) => (
+              requestList.map((request) => (
                 <Card key={request.id}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
