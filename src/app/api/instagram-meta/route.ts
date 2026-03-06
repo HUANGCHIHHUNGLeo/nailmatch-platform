@@ -47,8 +47,8 @@ export async function GET(request: Request) {
       }
     }
 
-    // Fallback: public oEmbed API
-    const oembedUrl = `https://api.instagram.com/oembed/?url=${encodeURIComponent(postUrl)}&maxwidth=658&omitscript=true`;
+    // Fallback: public oEmbed API (v1 endpoint)
+    const oembedUrl = `https://www.instagram.com/api/v1/oembed/?url=${encodeURIComponent(postUrl)}&maxwidth=658&omitscript=true`;
     const res = await fetch(oembedUrl, {
       headers: {
         "User-Agent":
