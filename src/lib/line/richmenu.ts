@@ -12,83 +12,201 @@ const blobClient = new messagingApi.MessagingApiBlobClient({
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://nailmatch-platform.vercel.app";
 const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "";
 
-// ─── Brand colors (matches Flex Message style) ───
+// ─── Brand colors ───
 const BRAND = "#D4A0A0";
 const BRAND_DARK = "#B88A8A";
-const BG = "#FAF7F5";
-const BG_ACCENT = "#F5E6E0";
-const TEXT_DARK = "#1a1a1a";
-const TEXT_MUTED = "#999999";
-const DIVIDER = "#E8E0DC";
+const BRAND_LIGHT = "#F5E6E0";
+const TEXT_DARK = "#4A3535";
+const TEXT_MUTED = "#9B8585";
+const FONT = "'Noto Sans TC', 'Helvetica Neue', Arial, sans-serif";
 
-// ─── SVG icons (simple, clean) ───
-const ICONS = {
-  sparkles: `<path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" fill="${BRAND}" stroke="${BRAND_DARK}" stroke-width="1"/>`,
-  users: `<path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2" fill="none" stroke="${BRAND}" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" fill="none" stroke="${BRAND}" stroke-width="2"/><path d="M22 21v-2a4 4 0 00-3-3.87" fill="none" stroke="${BRAND}" stroke-width="2" stroke-linecap="round"/><path d="M16 3.13a4 4 0 010 7.75" fill="none" stroke="${BRAND}" stroke-width="2" stroke-linecap="round"/>`,
-  calendar: `<rect x="3" y="4" width="18" height="18" rx="2" fill="none" stroke="${BRAND}" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="${BRAND}" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="${BRAND}" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="${BRAND}" stroke-width="2"/>`,
-  dashboard: `<rect x="3" y="3" width="7" height="9" rx="1" fill="none" stroke="${BRAND}" stroke-width="2"/><rect x="14" y="3" width="7" height="5" rx="1" fill="none" stroke="${BRAND}" stroke-width="2"/><rect x="14" y="12" width="7" height="9" rx="1" fill="none" stroke="${BRAND}" stroke-width="2"/><rect x="3" y="16" width="7" height="5" rx="1" fill="none" stroke="${BRAND}" stroke-width="2"/>`,
-  user: `<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2" fill="none" stroke="${BRAND}" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" fill="none" stroke="${BRAND}" stroke-width="2"/>`,
-  settings: `<circle cx="12" cy="12" r="3" fill="none" stroke="${BRAND}" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" fill="none" stroke="${BRAND}" stroke-width="1.5"/>`,
+// ─── SVG icons (24x24 viewBox, stroke style) ───
+const ICONS: Record<string, string> = {
+  sparkles: `<path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5" stroke-linejoin="round"/>`,
+  users: `<path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="7" r="4" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5"/><path d="M22 21v-2a4 4 0 00-3-3.87" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5" stroke-linecap="round"/><path d="M16 3.13a4 4 0 010 7.75" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5" stroke-linecap="round"/>`,
+  user: `<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="7" r="4" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5"/>`,
+  dashboard: `<rect x="3" y="3" width="7" height="9" rx="1" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5"/><rect x="14" y="3" width="7" height="5" rx="1" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5"/><rect x="14" y="12" width="7" height="9" rx="1" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5"/><rect x="3" y="16" width="7" height="5" rx="1" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5"/>`,
+  settings: `<circle cx="12" cy="12" r="3" fill="none" stroke="${TEXT_DARK}" stroke-width="1.5"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" fill="none" stroke="${TEXT_DARK}" stroke-width="1.2"/>`,
 };
 
-function renderSvgButton(
-  icon: string,
-  label: string,
-  sublabel: string,
-  x: number,
-  width: number,
-  height: number
-): string {
-  const cx = x + width / 2;
-  const iconY = height * 0.3;
-  const labelY = height * 0.62;
-  const subY = height * 0.78;
+/** Decorative background SVG elements */
+function bgDecorations(W: number, H: number): string {
+  return `
+    <!-- soft gradient background -->
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#FCF5F3"/>
+        <stop offset="50%" stop-color="#F8EDE8"/>
+        <stop offset="100%" stop-color="#F0DDD6"/>
+      </linearGradient>
+      <linearGradient id="card-fill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="white" stop-opacity="0.92"/>
+        <stop offset="100%" stop-color="white" stop-opacity="0.78"/>
+      </linearGradient>
+    </defs>
+    <rect width="${W}" height="${H}" fill="url(#bg)"/>
+    <!-- decorative circles -->
+    <circle cx="${W * 0.05}" cy="${H * 0.2}" r="120" fill="${BRAND_LIGHT}" opacity="0.4"/>
+    <circle cx="${W * 0.95}" cy="${H * 0.8}" r="160" fill="${BRAND_LIGHT}" opacity="0.35"/>
+    <circle cx="${W * 0.5}" cy="${H * 0.1}" r="80" fill="${BRAND}" opacity="0.08"/>
+    <circle cx="${W * 0.15}" cy="${H * 0.85}" r="60" fill="${BRAND}" opacity="0.1"/>
+    <circle cx="${W * 0.85}" cy="${H * 0.15}" r="90" fill="${BRAND_LIGHT}" opacity="0.3"/>
+    <!-- subtle dots pattern -->
+    ${Array.from({ length: 12 }, (_, i) => {
+      const x = 100 + (i % 4) * ((W - 200) / 3);
+      const y = 80 + Math.floor(i / 4) * ((H - 160) / 2);
+      return `<circle cx="${x}" cy="${y}" r="4" fill="${BRAND}" opacity="0.12"/>`;
+    }).join("\n    ")}
+  `;
+}
+
+/** Render a card with rounded corners, icon, English title, and Chinese subtitle */
+function renderCard(opts: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  icon: string;
+  enTitle: string;
+  zhTitle: string;
+  cta?: string; // optional CTA pill text
+}): string {
+  const { x, y, w, h, icon, enTitle, zhTitle, cta } = opts;
+  const cx = x + w / 2;
+  const r = 30; // border radius
+
+  const iconSize = 56;
+  let enY: number, zhY: number, iconY: number;
+
+  if (cta) {
+    // Card with CTA button: icon top, EN title, ZH title, CTA pill
+    iconY = y + h * 0.15;
+    enY = y + h * 0.43;
+    zhY = y + h * 0.58;
+  } else {
+    // Standard card: EN title, ZH title, icon
+    enY = y + h * 0.3;
+    zhY = y + h * 0.5;
+    iconY = y + h * 0.6;
+  }
+
+  let ctaSvg = "";
+  if (cta) {
+    const pillW = 280;
+    const pillH = 52;
+    const pillX = cx - pillW / 2;
+    const pillY = y + h * 0.72;
+    ctaSvg = `
+      <rect x="${pillX}" y="${pillY}" width="${pillW}" height="${pillH}" rx="26" fill="${BRAND}" opacity="0.9"/>
+      <text x="${cx}" y="${pillY + pillH / 2 + 7}" text-anchor="middle" font-family="${FONT}" font-size="22" font-weight="500" fill="white" letter-spacing="1">${cta}</text>
+    `;
+  }
 
   return `
     <g>
-      <svg x="${cx - 20}" y="${iconY - 20}" width="40" height="40" viewBox="0 0 24 24">
+      <!-- card shadow -->
+      <rect x="${x + 4}" y="${y + 6}" width="${w}" height="${h}" rx="${r}" fill="black" opacity="0.04"/>
+      <!-- card body -->
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="url(#card-fill)" stroke="white" stroke-width="2"/>
+      <!-- icon -->
+      <svg x="${cx - iconSize / 2}" y="${iconY}" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24">
         ${icon}
       </svg>
-      <text x="${cx}" y="${labelY}" text-anchor="middle" font-family="'Noto Sans TC', 'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="600" fill="${TEXT_DARK}">${label}</text>
-      <text x="${cx}" y="${subY}" text-anchor="middle" font-family="'Noto Sans TC', 'Helvetica Neue', Arial, sans-serif" font-size="18" fill="${TEXT_MUTED}">${sublabel}</text>
+      <!-- English title -->
+      <text x="${cx}" y="${enY}" text-anchor="middle" font-family="${FONT}" font-size="38" font-weight="700" fill="${TEXT_DARK}" letter-spacing="3">${enTitle}</text>
+      <!-- Chinese subtitle -->
+      <text x="${cx}" y="${zhY}" text-anchor="middle" font-family="${FONT}" font-size="28" font-weight="400" fill="${TEXT_MUTED}">${zhTitle}</text>
+      ${ctaSvg}
     </g>
   `;
 }
 
-function generateRichMenuSvg(
-  buttons: { icon: string; label: string; sublabel: string }[],
-  title: string
-): string {
+/** Generate customer Rich Menu SVG (3 cards on decorated background) */
+function generateCustomerMenuSvg(): string {
   const W = 2500;
   const H = 843;
-  const cols = buttons.length;
-  const colW = W / cols;
+  const pad = 40;
+  const gap = 30;
+  const cardH = H - pad * 2;
 
-  const dividers = [];
-  for (let i = 1; i < cols; i++) {
-    dividers.push(
-      `<line x1="${colW * i}" y1="${H * 0.15}" x2="${colW * i}" y2="${H * 0.85}" stroke="${DIVIDER}" stroke-width="2"/>`
-    );
-  }
-
-  const buttonsSvg = buttons
-    .map((btn, i) =>
-      renderSvgButton(btn.icon, btn.label, btn.sublabel, colW * i, colW, H)
-    )
-    .join("\n");
+  // Left card: wider (main CTA)
+  const leftW = (W - pad * 2 - gap * 2) * 0.4;
+  // Middle + Right cards: equal width
+  const smallW = (W - pad * 2 - gap * 2 - leftW) / 2;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${BG}"/>
-      <stop offset="100%" stop-color="${BG_ACCENT}"/>
-    </linearGradient>
-  </defs>
-  <rect width="${W}" height="${H}" fill="url(#bg)"/>
-  <text x="${W / 2}" y="${H * 0.1}" text-anchor="middle" font-family="'Noto Sans TC', 'Helvetica Neue', Arial, sans-serif" font-size="20" fill="${TEXT_MUTED}" letter-spacing="3">${title}</text>
-  ${dividers.join("\n")}
-  ${buttonsSvg}
+  ${bgDecorations(W, H)}
+  ${renderCard({
+    x: pad,
+    y: pad,
+    w: leftW,
+    h: cardH,
+    icon: ICONS.sparkles,
+    enTitle: "RESERVE",
+    zhTitle: "發佈需求",
+    cta: "立即配對 Match Now",
+  })}
+  ${renderCard({
+    x: pad + leftW + gap,
+    y: pad,
+    w: smallW,
+    h: cardH,
+    icon: ICONS.users,
+    enTitle: "ARTISTS",
+    zhTitle: "設計師總覽",
+  })}
+  ${renderCard({
+    x: pad + leftW + gap + smallW + gap,
+    y: pad,
+    w: smallW,
+    h: cardH,
+    icon: ICONS.user,
+    enTitle: "MY PAGE",
+    zhTitle: "我的帳號",
+  })}
+</svg>`;
+}
+
+/** Generate artist Rich Menu SVG (3 cards on decorated background) */
+function generateArtistMenuSvg(): string {
+  const W = 2500;
+  const H = 843;
+  const pad = 40;
+  const gap = 30;
+  const cardH = H - pad * 2;
+  const cardW = (W - pad * 2 - gap * 2) / 3;
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  ${bgDecorations(W, H)}
+  ${renderCard({
+    x: pad,
+    y: pad,
+    w: cardW,
+    h: cardH,
+    icon: ICONS.dashboard,
+    enTitle: "DASHBOARD",
+    zhTitle: "接案總覽",
+  })}
+  ${renderCard({
+    x: pad + cardW + gap,
+    y: pad,
+    w: cardW,
+    h: cardH,
+    icon: ICONS.user,
+    enTitle: "PROFILE",
+    zhTitle: "個人資料",
+  })}
+  ${renderCard({
+    x: pad + (cardW + gap) * 2,
+    y: pad,
+    w: cardW,
+    h: cardH,
+    icon: ICONS.settings,
+    enTitle: "SETTINGS",
+    zhTitle: "帳號設定",
+  })}
 </svg>`;
 }
 
@@ -97,43 +215,34 @@ async function svgToPng(svg: string): Promise<Buffer> {
 }
 
 // ─── Customer Rich Menu ───
-const CUSTOMER_BUTTONS = [
-  { icon: ICONS.sparkles, label: "發佈需求", sublabel: "找設計師服務" },
-  { icon: ICONS.users, label: "設計師總覽", sublabel: "瀏覽各地設計師" },
-  { icon: ICONS.calendar, label: "我的帳號", sublabel: "需求・預約紀錄" },
-];
-
 const CUSTOMER_MENU_CONFIG: messagingApi.RichMenuRequest = {
   size: { width: 2500, height: 843 },
   selected: true,
   name: "NaLi Match — 客戶選單",
-  chatBarText: "NaLi Match 選單",
+  chatBarText: "立即找設計師",
   areas: [
     {
-      bounds: { x: 0, y: 0, width: 833, height: 843 },
+      // Left card (40% width): RESERVE
+      bounds: { x: 0, y: 0, width: 1000, height: 843 },
       action: {
         type: "uri",
         uri: `https://liff.line.me/${LIFF_ID}/customer-form`,
       },
     },
     {
-      bounds: { x: 833, y: 0, width: 834, height: 843 },
+      // Middle card (30%): ARTISTS
+      bounds: { x: 1000, y: 0, width: 750, height: 843 },
       action: { type: "uri", uri: `${APP_URL}/artists` },
     },
     {
-      bounds: { x: 1667, y: 0, width: 833, height: 843 },
+      // Right card (30%): MY PAGE
+      bounds: { x: 1750, y: 0, width: 750, height: 843 },
       action: { type: "uri", uri: `${APP_URL}/my` },
     },
   ],
 };
 
 // ─── Artist Rich Menu ───
-const ARTIST_BUTTONS = [
-  { icon: ICONS.dashboard, label: "接案總覽", sublabel: "查看新需求" },
-  { icon: ICONS.user, label: "個人資料", sublabel: "編輯公開檔案" },
-  { icon: ICONS.settings, label: "帳號設定", sublabel: "接案管理" },
-];
-
 const ARTIST_MENU_CONFIG: messagingApi.RichMenuRequest = {
   size: { width: 2500, height: 843 },
   selected: true,
@@ -169,15 +278,13 @@ export async function setupRichMenus(): Promise<{
 
   // Create customer menu
   const customerMenu = await client.createRichMenu(CUSTOMER_MENU_CONFIG);
-  const customerSvg = generateRichMenuSvg(CUSTOMER_BUTTONS, "NaLi Match ─ 美甲美睫媒合");
-  const customerPng = await svgToPng(customerSvg);
+  const customerPng = await svgToPng(generateCustomerMenuSvg());
   await blobClient.setRichMenuImage(customerMenu.richMenuId, new Blob([new Uint8Array(customerPng)], { type: "image/png" }));
   await client.setDefaultRichMenu(customerMenu.richMenuId);
 
   // Create artist menu
   const artistMenu = await client.createRichMenu(ARTIST_MENU_CONFIG);
-  const artistSvg = generateRichMenuSvg(ARTIST_BUTTONS, "NaLi Match ─ 設計師後台");
-  const artistPng = await svgToPng(artistSvg);
+  const artistPng = await svgToPng(generateArtistMenuSvg());
   await blobClient.setRichMenuImage(artistMenu.richMenuId, new Blob([new Uint8Array(artistPng)], { type: "image/png" }));
 
   return {
