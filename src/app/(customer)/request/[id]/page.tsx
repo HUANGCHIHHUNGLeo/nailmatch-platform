@@ -240,9 +240,9 @@ export default function RequestDetailPage() {
                 <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--brand-light)]/50">
                   <span className="text-2xl">💅</span>
                 </div>
-                <p className="font-medium text-gray-700">等待美甲師報價中</p>
+                <p className="font-medium text-gray-700">等待設計師報價中</p>
                 <p className="mt-1 text-sm text-gray-500">
-                  已通知 {request.notified_count} 位美甲師，收到報價時會透過 LINE 通知你
+                  已通知 {request.notified_count} 位設計師，收到報價時會透過 LINE 通知你
                 </p>
               </CardContent>
             </Card>

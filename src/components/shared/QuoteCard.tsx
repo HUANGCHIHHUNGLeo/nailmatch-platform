@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,9 +60,9 @@ export function QuoteCard({
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-gray-900">
+              <Link href={`/artists/${artist.id}`} className="font-semibold text-gray-900 hover:text-[var(--brand)] hover:underline">
                 {artist.displayName}
-              </h3>
+              </Link>
               {artist.studioAddress && (
                 <p className="text-sm text-gray-500">{artist.studioAddress}</p>
               )}
@@ -111,9 +112,11 @@ export function QuoteCard({
           <Button
             variant="outline"
             className="flex-1"
-            onClick={() => onViewPortfolio(artist.id)}
+            asChild
           >
-            查看作品集
+            <Link href={`/artists/${artist.id}`}>
+              查看設計師
+            </Link>
           </Button>
           <Button
             className="flex-1 bg-[var(--brand)] hover:bg-[var(--brand-dark)]"
