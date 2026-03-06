@@ -139,6 +139,23 @@ export default function AdminDashboard() {
               設定 Rich Menu
             </button>
             <button
+              onClick={async () => {
+                if (!confirm("確定要刪除所有 Messaging API Rich Menu？\n刪除後 LINE 官方後台設定的選單會生效。")) return;
+                try {
+                  const res = await fetch("/api/admin/delete-richmenu", { method: "POST" });
+                  const data = await res.json();
+                  if (res.ok) {
+                    alert(data.message);
+                  } else {
+                    alert(`刪除失敗: ${data.error}`);
+                  }
+                } catch { alert("網路錯誤"); }
+              }}
+              className="text-sm text-red-500 hover:underline"
+            >
+              刪除 Rich Menu
+            </button>
+            <button
               onClick={() => {
                 document.cookie = "admin_session=; path=/; max-age=0";
                 router.push("/admin/login");
