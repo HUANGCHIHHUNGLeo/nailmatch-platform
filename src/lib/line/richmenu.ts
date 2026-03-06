@@ -12,6 +12,36 @@ const blobClient = new messagingApi.MessagingApiBlobClient({
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://nailmatch-platform.vercel.app";
 const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "";
 
+// ─── Font embedding (Vercel has no CJK fonts) ───
+
+/** All Chinese characters used in Rich Menu text */
+const CJK_CHARS = "我要預約發佈需求立即配對設計師總覽帳號接案個人資料設定官網";
+
+/** Fetch a Google Fonts woff2 subset and return as base64 */
+async function fetchFontBase64(text: string, weight: number): Promise<string> {
+  const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@${weight}&text=${encodeURIComponent(text)}`;
+  const css = await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Chrome/120" },
+  }).then((r) => r.text());
+  const fontUrl = css.match(/url\(([^)]+)\)/)?.[1];
+  if (!fontUrl) return "";
+  const buf = await fetch(fontUrl).then((r) => r.arrayBuffer());
+  return Buffer.from(buf).toString("base64");
+}
+
+/** Get <style> block with embedded @font-face for CJK characters */
+async function buildFontStyles(): Promise<string> {
+  const [regular, bold] = await Promise.all([
+    fetchFontBase64(CJK_CHARS, 400),
+    fetchFontBase64(CJK_CHARS, 700),
+  ]);
+  return `
+    <style>
+      @font-face { font-family: 'Noto Sans TC'; font-weight: 400; src: url(data:font/woff2;base64,${regular}) format('woff2'); }
+      @font-face { font-family: 'Noto Sans TC'; font-weight: 700; src: url(data:font/woff2;base64,${bold}) format('woff2'); }
+    </style>`;
+}
+
 // ─── Brand palette ───
 const BRAND = "#D4A0A0";
 const BRAND_DARK = "#B88A8A";
@@ -84,7 +114,7 @@ function svgBranch(x: number, y: number, scale: number, flip: boolean, color: st
 
 // ─── Customer Rich Menu SVG (2 cards: RESERVATION + WEBSITE) ───
 
-function generateCustomerMenuSvg(): string {
+function generateCustomerMenuSvg(fontStyles: string): string {
   const W = 2500;
   const H = 843;
   const pad = 35;
@@ -103,6 +133,7 @@ function generateCustomerMenuSvg(): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
+    ${fontStyles}
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#FDF6F3"/>
       <stop offset="40%" stop-color="#F9EBE5"/>
@@ -180,7 +211,7 @@ function generateCustomerMenuSvg(): string {
 
 // ─── Artist Rich Menu SVG (3 equal cards) ───
 
-function generateArtistMenuSvg(): string {
+function generateArtistMenuSvg(fontStyles: string): string {
   const W = 2500;
   const H = 843;
   const pad = 35;
@@ -207,6 +238,7 @@ function generateArtistMenuSvg(): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
+    ${fontStyles}
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#FDF6F3"/>
       <stop offset="40%" stop-color="#F9EBE5"/>
@@ -292,15 +324,18 @@ export async function setupRichMenus(): Promise<{
     await client.deleteRichMenu(menu.richMenuId);
   }
 
+  // Fetch CJK font subset (Vercel has no Chinese fonts)
+  const fontStyles = await buildFontStyles();
+
   // Create customer menu
   const customerMenu = await client.createRichMenu(CUSTOMER_MENU_CONFIG);
-  const customerPng = await svgToPng(generateCustomerMenuSvg());
+  const customerPng = await svgToPng(generateCustomerMenuSvg(fontStyles));
   await blobClient.setRichMenuImage(customerMenu.richMenuId, new Blob([new Uint8Array(customerPng)], { type: "image/png" }));
   await client.setDefaultRichMenu(customerMenu.richMenuId);
 
   // Create artist menu
   const artistMenu = await client.createRichMenu(ARTIST_MENU_CONFIG);
-  const artistPng = await svgToPng(generateArtistMenuSvg());
+  const artistPng = await svgToPng(generateArtistMenuSvg(fontStyles));
   await blobClient.setRichMenuImage(artistMenu.richMenuId, new Blob([new Uint8Array(artistPng)], { type: "image/png" }));
 
   return {
