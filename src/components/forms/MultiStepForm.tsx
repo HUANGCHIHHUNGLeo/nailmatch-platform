@@ -96,13 +96,13 @@ export function MultiStepForm({ onSubmit, prefillArtist }: MultiStepFormProps) {
   useEffect(() => {
     if (!prefillArtist) return;
     const current = methods.getValues();
-    if (current.locations.length === 0 && prefillArtist.cities.length > 0) {
+    if (current.locations.length === 0 && (prefillArtist.cities?.length ?? 0) > 0) {
       methods.setValue("locations", prefillArtist.cities);
     }
-    if (current.services.length === 0 && prefillArtist.services.length > 0) {
+    if (current.services.length === 0 && (prefillArtist.services?.length ?? 0) > 0) {
       methods.setValue("services", prefillArtist.services);
     }
-    if (current.preferredStyles.length === 0 && prefillArtist.styles.length > 0) {
+    if (current.preferredStyles.length === 0 && (prefillArtist.styles?.length ?? 0) > 0) {
       methods.setValue("preferredStyles", prefillArtist.styles);
     }
   }, [prefillArtist, methods]);
@@ -115,9 +115,15 @@ export function MultiStepForm({ onSubmit, prefillArtist }: MultiStepFormProps) {
         const services = methods.getValues("services") || [];
         return !hasNailServices(services);
       }
+      // Auto-skip steps that are pre-filled from the selected artist
+      if (prefillArtist) {
+        if (step.key === "locations" && (prefillArtist.cities?.length ?? 0) > 0) return true;
+        if (step.key === "services" && (prefillArtist.services?.length ?? 0) > 0) return true;
+        if (step.key === "preferredStyles" && (prefillArtist.styles?.length ?? 0) > 0) return true;
+      }
       return false;
     },
-    [methods]
+    [methods, prefillArtist]
   );
 
   const getNextStep = useCallback(
@@ -212,9 +218,9 @@ export function MultiStepForm({ onSubmit, prefillArtist }: MultiStepFormProps) {
                 指定預約：{prefillArtist.display_name}
               </p>
               <p className="text-xs text-gray-500">
-                {prefillArtist.services.slice(0, 3).join("、")}
-                {prefillArtist.services.length > 3 && ` 等${prefillArtist.services.length}項`}
-                {prefillArtist.min_price && ` · NT$${prefillArtist.min_price.toLocaleString()} 起`}
+                {(prefillArtist.services || []).slice(0, 3).join("、")}
+                {(prefillArtist.services || []).length > 3 && ` 等${prefillArtist.services.length}項`}
+                {prefillArtist.min_price != null && ` · NT$${prefillArtist.min_price.toLocaleString()} 起`}
               </p>
             </div>
           </div>
