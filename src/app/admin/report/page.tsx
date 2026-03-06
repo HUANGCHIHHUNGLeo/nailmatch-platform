@@ -208,35 +208,63 @@ export default function AdminReportPage() {
 
         {/* 6. Revenue Model */}
         <Section number="6" title="商業模式與獲利分析">
-          <p className="mb-4">
-            NaLi Match 目前處於 MVP 免費階段，以快速累積用戶為優先。以下為平台三階段獲利策略：
-          </p>
+          <div className="mb-4 rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
+            <h3 className="mb-1 font-semibold text-amber-900">核心策略：不抽佣金</h3>
+            <p className="text-xs text-amber-800">
+              客戶和設計師熟了就會直接聯繫——抽佣金只會讓雙方想繞過平台。
+              正確做法：讓平台本身有價值，讓設計師「想留」而不是「被迫留」。
+              平台要持續帶來<strong>新客戶</strong>，並提供設計師自己做不到的<strong>經營工具</strong>。
+            </p>
+          </div>
 
           <div className="mb-6 space-y-4">
             <RevenueCard
-              phase="Phase 1：免費媒合期（現階段）"
+              phase="Phase 1：免費成長期（現階段）"
               timeline="0-6 個月"
               model="完全免費"
-              description="客戶免費發需求，設計師免費接單。目標：累積設計師資源與客戶口碑，驗證產品市場適配性（PMF）。"
+              description="客戶免費、設計師免費。衝刺用戶量、建立口碑、驗證 PMF。讓設計師體驗到「平台真的會帶客人來」的價值感。"
               revenue="NT$0"
-              goal="建立雙邊網路效應，達到 50+ 設計師、500+ 客戶"
+              goal="50+ 活躍設計師、500+ 客戶、建立平台信任"
             />
             <RevenueCard
-              phase="Phase 2：佣金模式"
+              phase="Phase 2：設計師 SaaS 訂閱"
               timeline="6-12 個月"
-              model="成交抽成 10-15%"
-              description="每筆成功預約，平台從設計師端收取 10-15% 服務費。平均客單價 NT$1,500，平台抽成 NT$150-225/單。透過 LINE Pay / 綠界金流整合自動扣款。"
-              revenue="月營收預估：100 筆/月 × NT$180 = NT$18,000"
-              goal="達到月均 100+ 成交訂單"
+              model="月費 NT$299 / NT$599 / NT$999"
+              description="免費版：基本曝光 + 每月 5 筆配對。Pro 版（NT$299）：無限配對 + 作品集精選展示 + 預約日曆。Premium 版（NT$599）：置頂曝光 + 數據報表 + 客戶回訪分析。Studio 版（NT$999）：多人工作室管理 + 品牌頁面。客戶端永遠免費。"
+              revenue="預估：200 位設計師 × 平均 NT$400/月 = NT$80,000/月"
+              goal="付費轉換率 40%+（因為免費版有配對數限制）"
             />
             <RevenueCard
-              phase="Phase 3：多元營收"
+              phase="Phase 3：生態系營收"
               timeline="12-24 個月"
-              model="佣金 + 訂閱 + 廣告"
-              description="設計師付費訂閱（月費 NT$299-599）可享置頂曝光、優先推薦、數據分析報表等進階功能。客戶端維持免費，搭配美甲/美睫品牌廣告合作。"
-              revenue="月營收預估：佣金 NT$50,000 + 訂閱 NT$30,000 + 廣告 NT$20,000 = NT$100,000"
-              goal="月營收突破 NT$100,000，開始獲利"
+              model="訂閱 + 品牌合作 + 教育課程"
+              description="美甲/美睫品牌廣告合作（材料商、產品品牌）。設計師線上課程平台（進階技術、經營技巧）抽成。與材料供應商合作團購，賺取差價或推薦費。舉辦線下美業交流活動。"
+              revenue="訂閱 NT$100K + 品牌合作 NT$50K + 課程/團購 NT$30K = NT$180K/月"
+              goal="多元營收結構，不依賴單一收入來源"
             />
+          </div>
+
+          <div className="mb-4 rounded-lg border p-4">
+            <h3 className="mb-2 font-semibold text-gray-900">為什麼設計師願意付費？</h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-md bg-green-50 p-3">
+                <p className="mb-1 text-xs font-semibold text-green-800">平台持續帶來的</p>
+                <ul className="ml-3 list-disc space-y-0.5 text-xs text-green-700">
+                  <li>源源不斷的<strong>新客戶</strong>（老客戶私約沒關係）</li>
+                  <li>客戶評價累積 → 自然排名提升</li>
+                  <li>設計師牆曝光 → 不用自己經營社群也有客源</li>
+                </ul>
+              </div>
+              <div className="rounded-md bg-blue-50 p-3">
+                <p className="mb-1 text-xs font-semibold text-blue-800">自己做不到的工具</p>
+                <ul className="ml-3 list-disc space-y-0.5 text-xs text-blue-700">
+                  <li>線上預約日曆 + 自動提醒客戶</li>
+                  <li>作品集網站（不用自己架站）</li>
+                  <li>經營數據分析（哪個服務最賺、客戶回訪率等）</li>
+                  <li>客戶管理 CRM（生日提醒、偏好紀錄）</li>
+                </ul>
+              </div>
+            </div>
           </div>
 
           <div className="rounded-lg border bg-gray-50 p-4">
@@ -251,11 +279,11 @@ export default function AdminReportPage() {
                   </tr>
                 </thead>
                 <tbody className="text-gray-700">
-                  <tr className="border-b"><td className="py-2 pr-4 font-medium">平均客單價 (AOV)</td><td className="py-2 pr-4">NT$1,500</td><td className="py-2 text-gray-500">美甲 NT$800-2,500，美睫 NT$1,000-3,000</td></tr>
-                  <tr className="border-b"><td className="py-2 pr-4 font-medium">平台佣金率</td><td className="py-2 pr-4">10-15%</td><td className="py-2 text-gray-500">每筆成交抽 NT$150-225</td></tr>
-                  <tr className="border-b"><td className="py-2 pr-4 font-medium">客戶獲取成本 (CAC)</td><td className="py-2 pr-4">NT$50-100</td><td className="py-2 text-gray-500">LINE OA 好友邀請 + 口碑推薦</td></tr>
-                  <tr className="border-b"><td className="py-2 pr-4 font-medium">客戶終身價值 (LTV)</td><td className="py-2 pr-4">NT$900-1,350</td><td className="py-2 text-gray-500">年均 6 次消費 × NT$150-225 佣金</td></tr>
-                  <tr><td className="py-2 pr-4 font-medium">LTV / CAC 比率</td><td className="py-2 pr-4 font-semibold text-green-600">9-27x</td><td className="py-2 text-gray-500">健康標準 &gt;3x ✓</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-4 font-medium">設計師月費 ARPU</td><td className="py-2 pr-4">NT$400</td><td className="py-2 text-gray-500">免費/299/599/999 加權平均</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-4 font-medium">設計師獲取成本</td><td className="py-2 pr-4">NT$200-500</td><td className="py-2 text-gray-500">FB 社團招募 + LINE OA 推播</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-4 font-medium">設計師留存率</td><td className="py-2 pr-4">80%/月</td><td className="py-2 text-gray-500">只要持續帶新客就會續訂</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-4 font-medium">設計師 LTV</td><td className="py-2 pr-4">NT$4,800</td><td className="py-2 text-gray-500">平均訂閱 12 個月 × NT$400</td></tr>
+                  <tr><td className="py-2 pr-4 font-medium">LTV / CAC 比率</td><td className="py-2 pr-4 font-semibold text-green-600">9.6-24x</td><td className="py-2 text-gray-500">健康標準 &gt;3x ✓</td></tr>
                 </tbody>
               </table>
             </div>
@@ -317,13 +345,21 @@ export default function AdminReportPage() {
                   <td className="py-2.5 pr-4 text-center">38%</td>
                   <td className="py-2.5 text-center">40%</td>
                 </tr>
+                <tr className="border-b">
+                  <td className="py-2.5 pr-4 font-medium">付費設計師數</td>
+                  <td className="py-2.5 pr-4 text-center">-</td>
+                  <td className="py-2.5 pr-4 text-center">-</td>
+                  <td className="py-2.5 pr-4 text-center">30</td>
+                  <td className="py-2.5 pr-4 text-center">80</td>
+                  <td className="py-2.5 text-center">200</td>
+                </tr>
                 <tr>
                   <td className="py-2.5 pr-4 font-medium text-[var(--brand)]">月營收預估</td>
                   <td className="py-2.5 pr-4 text-center">-</td>
                   <td className="py-2.5 pr-4 text-center">-</td>
-                  <td className="py-2.5 pr-4 text-center font-semibold text-[var(--brand)]">NT$18K</td>
-                  <td className="py-2.5 pr-4 text-center font-semibold text-[var(--brand)]">NT$54K</td>
-                  <td className="py-2.5 text-center font-semibold text-[var(--brand)]">NT$174K</td>
+                  <td className="py-2.5 pr-4 text-center font-semibold text-[var(--brand)]">NT$12K</td>
+                  <td className="py-2.5 pr-4 text-center font-semibold text-[var(--brand)]">NT$40K</td>
+                  <td className="py-2.5 text-center font-semibold text-[var(--brand)]">NT$130K</td>
                 </tr>
               </tbody>
             </table>
@@ -344,10 +380,10 @@ export default function AdminReportPage() {
               <ul className="ml-4 list-disc space-y-1.5 text-xs text-gray-600">
                 <li><strong>M1</strong>：首 10 位設計師完成註冊 + 首筆成功預約</li>
                 <li><strong>M3</strong>：LINE 好友 500、月需求 80+、轉換率 30%+</li>
-                <li><strong>M6</strong>：開啟佣金模式、整合線上支付、月營收 NT$18K</li>
-                <li><strong>M12</strong>：200+ 活躍設計師、推出訂閱方案、月營收 NT$54K</li>
-                <li><strong>M18</strong>：擴展至全台主要城市、品牌廣告合作</li>
-                <li><strong>M24</strong>：月營收 NT$174K、評估 A 輪融資或持續自營獲利</li>
+                <li><strong>M6</strong>：推出 Pro/Premium 訂閱、預約日曆、月營收 NT$12K</li>
+                <li><strong>M12</strong>：80 位付費設計師、品牌合作啟動、月營收 NT$40K</li>
+                <li><strong>M18</strong>：擴展至全台、線上課程平台、材料團購上線</li>
+                <li><strong>M24</strong>：200+ 付費設計師、月營收 NT$130K、生態系成形</li>
               </ul>
             </div>
           </div>
