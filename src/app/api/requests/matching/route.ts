@@ -32,14 +32,9 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: false })
       .limit(20);
 
-    // Filter by location overlap
+    // Only filter by location overlap — let artists decide if they want to bid
     if (artist.cities && artist.cities.length > 0) {
       query = query.overlaps("locations", artist.cities);
-    }
-
-    // Filter by service overlap
-    if (artist.services && artist.services.length > 0) {
-      query = query.overlaps("services", artist.services);
     }
 
     const { data: requests, error } = await query;

@@ -19,24 +19,13 @@ interface MatchedArtist {
   cities: string[];
 }
 
-// Parse budget range string to min/max values
-function parseBudgetRange(budget: string): { min: number; max: number } {
-  const ranges: Record<string, { min: number; max: number }> = {
-    "NT$500-800": { min: 500, max: 800 },
-    "NT$800-1200": { min: 800, max: 1200 },
-    "NT$1200-2000": { min: 1200, max: 2000 },
-    "NT$2000-3500": { min: 2000, max: 3500 },
-    "NT$3500+": { min: 3500, max: 99999 },
-  };
-  return ranges[budget] || { min: 0, max: 99999 };
-}
-
-// Find artists matching the service request criteria
+// Find artists matching the service request by location only.
+// Other criteria (services, budget, gender) are shown to both sides
+// so they can decide themselves whether to proceed.
 export async function findMatchingArtists(
   criteria: MatchCriteria
 ): Promise<MatchedArtist[]> {
   const supabase = await createServiceClient();
-  const budget = parseBudgetRange(criteria.budget_range);
 
   let query = supabase
     .from("artists")
@@ -44,26 +33,9 @@ export async function findMatchingArtists(
     .eq("is_active", true)
     .eq("is_verified", true);
 
-  // Filter by location overlap
+  // Only filter by location overlap — let humans decide the rest
   if (criteria.locations.length > 0) {
     query = query.overlaps("cities", criteria.locations);
-  }
-
-  // Filter by service overlap
-  if (criteria.services.length > 0) {
-    query = query.overlaps("services", criteria.services);
-  }
-
-  // Filter by gender preference
-  if (criteria.artist_gender_pref && criteria.artist_gender_pref !== "不限") {
-    const genderMap: Record<string, string> = {
-      "女性": "female",
-      "男性": "male",
-    };
-    const gender = genderMap[criteria.artist_gender_pref];
-    if (gender) {
-      query = query.eq("gender", gender);
-    }
   }
 
   const { data, error } = await query;
@@ -73,8 +45,5 @@ export async function findMatchingArtists(
     return [];
   }
 
-  // Further filter by budget compatibility
-  return (data || []).filter((artist) => {
-    return artist.min_price <= budget.max && artist.max_price >= budget.min;
-  });
+  return data || [];
 }
