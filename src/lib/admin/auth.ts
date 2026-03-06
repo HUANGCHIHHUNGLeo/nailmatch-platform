@@ -9,7 +9,7 @@ export async function verifyAdminSession(): Promise<boolean> {
   const session = cookieStore.get("admin_session")?.value;
   if (!session) return false;
 
-  const parts = session.split(":");
+  const parts = session.split(".");
   if (parts.length !== 3) return false;
 
   const [token, expiryStr, hmac] = parts;
@@ -19,7 +19,7 @@ export async function verifyAdminSession(): Promise<boolean> {
   if (Date.now() > expiry) return false;
 
   // Verify HMAC
-  const sessionData = `${token}:${expiryStr}`;
+  const sessionData = `${token}.${expiryStr}`;
   const expectedHmac = crypto
     .createHmac("sha256", adminPassword)
     .update(sessionData)

@@ -20,16 +20,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create a session token
+    // Create a session token (use . separator to avoid URL encoding issues with :)
     const token = crypto.randomBytes(32).toString("hex");
     const expiry = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-    const sessionData = `${token}:${expiry}`;
+    const sessionData = `${token}.${expiry}`;
     const hmac = crypto
       .createHmac("sha256", adminPassword)
       .update(sessionData)
       .digest("hex");
 
-    const sessionValue = `${sessionData}:${hmac}`;
+    const sessionValue = `${sessionData}.${hmac}`;
 
     const response = NextResponse.json({ success: true });
     response.cookies.set("admin_session", sessionValue, {
