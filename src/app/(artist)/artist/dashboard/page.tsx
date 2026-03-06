@@ -64,6 +64,7 @@ export default function ArtistDashboard() {
       // Get current artist profile
       const meRes = await authFetch("/api/artists/me");
       if (!meRes.ok) {
+        setArtistName("");
         setLoading(false);
         return;
       }
@@ -113,6 +114,34 @@ export default function ArtistDashboard() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!artistName && requests.length === 0 && bookings.length === 0) {
+    const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+    const liffUrl = liffId ? `https://liff.line.me/${liffId}/artist-form` : null;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--brand-bg)] p-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-sm">
+          <h2 className="mb-2 text-xl font-bold text-gray-900">請先登入</h2>
+          <p className="mb-6 text-sm text-gray-500">
+            設計師後台需要透過 LINE 登入才能使用。
+          </p>
+          <div className="space-y-3">
+            {liffUrl && (
+              <button
+                onClick={() => { window.location.href = liffUrl; }}
+                className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
+              >
+                用 LINE 登入
+              </button>
+            )}
+            <a href="/" className="block rounded-lg border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50">
+              回首頁
+            </a>
+          </div>
+        </div>
       </div>
     );
   }

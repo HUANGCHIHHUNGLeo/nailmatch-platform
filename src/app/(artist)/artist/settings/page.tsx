@@ -77,6 +77,37 @@ export default function SettingsPage() {
     );
   }
 
+  if (!profile) {
+    const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+    const liffUrl = liffId ? `https://liff.line.me/${liffId}/artist-form` : null;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--brand-bg)] p-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-sm">
+          <h2 className="mb-2 text-xl font-bold text-gray-900">無法載入資料</h2>
+          <p className="mb-6 text-sm text-gray-500">
+            請透過 LINE 重新登入後再進入設定頁面。
+          </p>
+          <div className="space-y-3">
+            {liffUrl && (
+              <button
+                onClick={() => { window.location.href = liffUrl; }}
+                className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
+              >
+                用 LINE 重新登入
+              </button>
+            )}
+            <button
+              onClick={() => router.back()}
+              className="w-full rounded-lg border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+            >
+              返回
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[var(--brand-bg)]">
       <header className="sticky top-0 z-10 border-b bg-white">
