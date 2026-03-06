@@ -34,7 +34,9 @@ function ArtistGate({ children }: { children: React.ReactNode }) {
               {(liffUrl || liff) && (
                 <button
                   onClick={() => {
-                    if (liffUrl) {
+                    if (liff?.isInClient()) {
+                      liff.login({ redirectUri: window.location.href });
+                    } else if (liffUrl) {
                       window.location.href = liffUrl;
                     } else if (liff) {
                       liff.login({ redirectUri: window.location.href });

@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MultiStepForm } from "@/components/forms/MultiStepForm";
+import { DirectBookingForm } from "@/components/forms/DirectBookingForm";
 import type { ServiceRequestFormData } from "@/lib/utils/form-schema";
 
 interface ArtistInfo {
@@ -58,6 +59,25 @@ function RequestContent() {
     ? `https://liff.line.me/${liffId}/customer-form`
     : null;
 
+  // Direct booking: use simplified form
+  if (artistId && artist) {
+    return (
+      <main className="px-4 py-6">
+        <DirectBookingForm artist={artist} onSubmit={handleSubmit} />
+      </main>
+    );
+  }
+
+  // Loading artist data
+  if (artistId && !artist) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
+      </div>
+    );
+  }
+
+  // General matching: use full multi-step form
   return (
     <>
       {/* LINE Guidance Banner */}
@@ -83,10 +103,7 @@ function RequestContent() {
 
       {/* Form */}
       <main className="px-4 py-8">
-        <MultiStepForm
-          onSubmit={handleSubmit}
-          prefillArtist={artist ?? undefined}
-        />
+        <MultiStepForm onSubmit={handleSubmit} />
       </main>
     </>
   );

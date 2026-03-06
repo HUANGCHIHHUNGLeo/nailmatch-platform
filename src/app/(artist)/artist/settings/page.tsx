@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
 import { useAuthSWR } from "@/lib/line/use-auth-swr";
+import { useLiff } from "@/lib/line/liff";
 
 interface ArtistProfile {
   id: string;
@@ -29,6 +30,7 @@ interface ArtistProfile {
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { liff } = useLiff();
   const { authFetch } = useAuthFetch();
   const { data: profile, mutate } = useAuthSWR<ArtistProfile>("/api/artists/me");
   const [toggling, setToggling] = useState(false);
@@ -111,9 +113,17 @@ export default function SettingsPage() {
             請透過 LINE 重新登入後再進入設定頁面。
           </p>
           <div className="space-y-3">
-            {liffUrl && (
+            {(liffUrl || liff) && (
               <button
-                onClick={() => { window.location.href = liffUrl; }}
+                onClick={() => {
+                  if (liff?.isInClient()) {
+                    liff.login({ redirectUri: window.location.href });
+                  } else if (liffUrl) {
+                    window.location.href = liffUrl;
+                  } else if (liff) {
+                    liff.login({ redirectUri: window.location.href });
+                  }
+                }}
                 className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
               >
                 用 LINE 重新登入
