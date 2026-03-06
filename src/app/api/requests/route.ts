@@ -194,16 +194,16 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update notified count
-    await supabase
-      .from("service_requests")
-      .update({ notified_count: matchingArtists.length })
-      .eq("id", serviceRequest.id);
-
     // Send LINE notifications to matching artists
     const artistLineIds = matchingArtists
       .map((a) => a.line_user_id)
       .filter(Boolean) as string[];
+
+    // Update notified count — only count artists who can actually be notified
+    await supabase
+      .from("service_requests")
+      .update({ notified_count: artistLineIds.length })
+      .eq("id", serviceRequest.id);
 
     if (artistLineIds.length > 0) {
       await notifyArtistsOfNewRequest(artistLineIds, {

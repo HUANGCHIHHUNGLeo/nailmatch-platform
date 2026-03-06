@@ -162,13 +162,13 @@ function ArtistFormContent() {
               設計師入駐表單需要透過 LINE 登入才能使用，請從 LINE 官方帳號開啟此頁面。
             </p>
             <div className="space-y-3">
-              {(liff || liffUrl) && (
+              {(liffUrl || liff) && (
                 <button
                   onClick={() => {
-                    if (liff) {
-                      liff.login({ redirectUri: window.location.href });
-                    } else if (liffUrl) {
+                    if (liffUrl) {
                       window.location.href = liffUrl;
+                    } else if (liff) {
+                      liff.login({ redirectUri: window.location.href });
                     }
                   }}
                   className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"

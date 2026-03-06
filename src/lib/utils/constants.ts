@@ -114,6 +114,7 @@ export const BUDGET_RANGES = [
   { value: "NT$1200-2000", label: "NT$1,200–2,000", description: "設計款" },
   { value: "NT$2000-3500", label: "NT$2,000–3,500", description: "複雜設計" },
   { value: "NT$3500+", label: "NT$3,500+", description: "高級訂製" },
+  { value: "依設計師報價", label: "依設計師報價", description: "不限預算，等設計師報價" },
 ] as const;
 
 // Removal options

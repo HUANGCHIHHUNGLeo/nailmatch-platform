@@ -31,7 +31,8 @@ export async function findMatchingArtists(
     .from("artists")
     .select("id, line_user_id, display_name, avatar_url, services, min_price, max_price, cities, gender, styles")
     .eq("is_active", true)
-    .eq("is_verified", true);
+    .eq("is_verified", true)
+    .not("line_user_id", "is", null);
 
   // Only filter by location overlap — let humans decide the rest
   if (criteria.locations.length > 0) {

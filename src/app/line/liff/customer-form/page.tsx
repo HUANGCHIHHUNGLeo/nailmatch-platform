@@ -74,13 +74,13 @@ function CustomerFormContent() {
             此表單需要透過 LINE 登入，才能在配對成功時即時通知您。
           </p>
           <div className="space-y-3">
-            {(liff || liffUrl) && (
+            {(liffUrl || liff) && (
               <button
                 onClick={() => {
-                  if (liff) {
-                    liff.login({ redirectUri: window.location.href });
-                  } else if (liffUrl) {
+                  if (liffUrl) {
                     window.location.href = liffUrl;
+                  } else if (liff) {
+                    liff.login({ redirectUri: window.location.href });
                   }
                 }}
                 className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
