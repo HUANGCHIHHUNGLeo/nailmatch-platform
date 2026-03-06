@@ -1,9 +1,9 @@
 import crypto from "crypto";
 import type { WebhookEvent } from "@line/bot-sdk";
 import { createServiceClient } from "@/lib/supabase/server";
-import { pushMessage, pushFlexMessage, notifyArtistWelcomeBack, notifyHelperMenu } from "./messaging";
+import { pushMessage, pushFlexMessage, notifyArtistWelcomeBack, notifyHelperMenu, notifyArtistsOfNewRequest } from "./messaging";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://nailmatch-platform.vercel.app";
 const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "";
 const LIFF_URL = LIFF_ID ? `https://liff.line.me/${LIFF_ID}` : APP_URL;
 
@@ -53,6 +53,40 @@ async function handleFollow(userId: string) {
   if (artist) {
     await supabase.from("artists").update({ is_active: true }).eq("id", artist.id);
     await notifyArtistWelcomeBack(userId, artist.display_name);
+
+    // Send pending matching requests the artist may have missed
+    try {
+      const { data: artistData } = await supabase
+        .from("artists")
+        .select("cities")
+        .eq("id", artist.id)
+        .single();
+
+      if (artistData?.cities?.length) {
+        const { data: pendingRequests } = await supabase
+          .from("service_requests")
+          .select("id, services, locations, budget_range, preferred_date")
+          .eq("status", "matching")
+          .overlaps("locations", artistData.cities)
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        if (pendingRequests?.length) {
+          for (const req of pendingRequests) {
+            await notifyArtistsOfNewRequest([userId], {
+              services: req.services || [],
+              location: (req.locations || []).join("、"),
+              budget: req.budget_range || "",
+              date: req.preferred_date || "",
+              requestId: req.id,
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Failed to send pending requests to returning artist:", err);
+    }
+
     return;
   }
 

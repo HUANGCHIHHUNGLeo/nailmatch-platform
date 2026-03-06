@@ -52,15 +52,14 @@ export function LiffProvider({
 
   useEffect(() => {
     const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-    if (!liffId || liffId === "your_liff_id") {
-      console.warn("LIFF ID not configured, skipping LIFF initialization");
+    if (!liffId) {
+      setError(new Error("LIFF ID 未設定"));
       setIsReady(true);
       return;
     }
 
-    // Timeout to prevent infinite hanging
     const timeout = setTimeout(() => {
-      console.warn("LIFF init timed out after 5s, proceeding without LIFF");
+      setError(new Error("LINE 連線逾時，請重新整理頁面"));
       setIsReady(true);
     }, 5000);
 

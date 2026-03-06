@@ -59,9 +59,11 @@ export default function SettingsPage() {
       if (res.ok) {
         const updated = await res.json();
         setProfile(updated);
+      } else {
+        alert("操作失敗，請重試");
       }
-    } catch (err) {
-      console.error("Toggle active error:", err);
+    } catch {
+      alert("網路錯誤，請檢查連線後重試");
     } finally {
       setToggling(false);
     }
