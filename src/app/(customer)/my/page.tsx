@@ -60,7 +60,7 @@ const BOOKING_STATUS: Record<string, { label: string; color: string }> = {
 };
 
 function MyPageContent() {
-  const { isReady, isLoggedIn, needsLogin, error, profile } = useLiff();
+  const { liff, isReady, isLoggedIn, needsLogin, error, profile } = useLiff();
   const { authFetch } = useAuthFetch();
   const { data: requests } = useAuthSWR<ServiceRequest[]>("/api/requests");
   const { data: bookings } = useAuthSWR<Booking[]>("/api/bookings");
@@ -121,9 +121,15 @@ function MyPageContent() {
               登入後即可查看您的需求紀錄與預約狀態。
             </p>
             <div className="space-y-3">
-              {liffUrl && (
+              {(liffUrl || liff) && (
                 <button
-                  onClick={() => { window.location.href = liffUrl; }}
+                  onClick={() => {
+                    if (liff) {
+                      liff.login({ redirectUri: window.location.href });
+                    } else if (liffUrl) {
+                      window.location.href = liffUrl;
+                    }
+                  }}
                   className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
                 >
                   用 LINE 登入

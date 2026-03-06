@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthSWR } from "@/lib/line/use-auth-swr";
+import { useLiff } from "@/lib/line/liff";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 
@@ -47,6 +48,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function ArtistDashboard() {
+  const { liff } = useLiff();
   const { data: me } = useAuthSWR<ArtistMe>("/api/artists/me");
   const { data: requests } = useAuthSWR<ServiceRequest[]>("/api/requests/matching");
   const { data: bookings } = useAuthSWR<Booking[]>(
@@ -97,9 +99,15 @@ export default function ArtistDashboard() {
             設計師後台需要透過 LINE 登入才能使用。
           </p>
           <div className="space-y-3">
-            {liffUrl && (
+            {(liffUrl || liff) && (
               <button
-                onClick={() => { window.location.href = liffUrl; }}
+                onClick={() => {
+                  if (liff) {
+                    liff.login({ redirectUri: window.location.href });
+                  } else if (liffUrl) {
+                    window.location.href = liffUrl;
+                  }
+                }}
                 className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
               >
                 用 LINE 登入
