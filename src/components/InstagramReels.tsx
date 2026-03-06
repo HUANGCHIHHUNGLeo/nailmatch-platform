@@ -46,6 +46,8 @@ export default function InstagramReelsCarousel() {
   const dragStartX = useRef(0)
   const dragScrollLeft = useRef(0)
   const hasDragged = useRef(false)
+  const autoScrollRef = useRef<number | null>(null)
+  const [isPaused, setIsPaused] = useState(false)
 
   // Preload all thumbnails
   useEffect(() => {
@@ -67,6 +69,28 @@ export default function InstagramReelsCarousel() {
     }
     fetchAll()
   }, [])
+
+  // Auto-scroll marquee — very slow continuous scroll, pause on interaction
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el || isPaused || selectedReel) return
+
+    const speed = 0.5 // px per frame (~30px/sec)
+    let animId: number
+
+    const step = () => {
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) {
+        el.scrollLeft = 0
+      } else {
+        el.scrollLeft += speed
+      }
+      animId = requestAnimationFrame(step)
+    }
+    animId = requestAnimationFrame(step)
+    autoScrollRef.current = animId
+
+    return () => cancelAnimationFrame(animId)
+  }, [isPaused, selectedReel])
 
   // Fetch post meta when selected
   useEffect(() => {
@@ -156,10 +180,13 @@ export default function InstagramReelsCarousel() {
           <div
             ref={scrollRef}
             className="hide-scrollbar flex cursor-grab gap-2 overflow-x-auto pb-3 select-none active:cursor-grabbing sm:gap-4"
-            onMouseDown={onMouseDown}
+            onMouseDown={(e) => { setIsPaused(true); onMouseDown(e) }}
             onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={onMouseUp}
+            onMouseUp={(e) => { onMouseUp(); setTimeout(() => setIsPaused(false), 3000) }}
+            onMouseLeave={() => { onMouseUp(); setTimeout(() => setIsPaused(false), 3000) }}
+            onMouseEnter={() => setIsPaused(true)}
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setTimeout(() => setIsPaused(false), 3000)}
           >
             {REELS.map((reel) => (
               <div
