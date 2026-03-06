@@ -63,9 +63,9 @@ function RequestContent() {
       {/* LINE Guidance Banner */}
       {liffUrl && (
         <div className="mx-auto max-w-lg px-4 pt-4">
-          <a
-            href={liffUrl}
-            className="flex items-center gap-3 rounded-xl bg-[#06C755] p-3 text-white shadow-sm transition hover:bg-[#05b34d]"
+          <button
+            onClick={() => { window.location.href = liffUrl; }}
+            className="flex w-full items-center gap-3 rounded-xl bg-[#06C755] p-3 text-left text-white shadow-sm transition hover:bg-[#05b34d]"
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-lg">
               L
@@ -77,7 +77,7 @@ function RequestContent() {
               </p>
             </div>
             <span className="shrink-0 text-white/80">→</span>
-          </a>
+          </button>
         </div>
       )}
 
