@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LiffProvider, useLiff } from "@/lib/line/liff";
+import { useAuthFetch } from "@/lib/line/use-auth-fetch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,13 +18,36 @@ import {
 } from "@/lib/utils/form-schema";
 import { LOCATION_GROUPS, NAIL_SERVICES, LASH_SERVICES, STYLES, PAYMENT_METHODS } from "@/lib/utils/constants";
 
+type RegStatus = "checking" | "not_registered" | "pending" | "verified";
+
 function ArtistFormContent() {
   const { liff, isReady, needsLogin, error: liffError, profile } = useLiff();
+  const { authFetch } = useAuthFetch();
+  const [regStatus, setRegStatus] = useState<RegStatus>("checking");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [role, setRole] = useState<"nail" | "lash" | "">("");
   const [consentAccepted, setConsentAccepted] = useState(false);
+
+  // Check if artist is already registered
+  useEffect(() => {
+    if (!isReady || needsLogin || liffError) return;
+    async function checkExisting() {
+      try {
+        const res = await authFetch("/api/artists/me");
+        if (res.ok) {
+          const data = await res.json();
+          setRegStatus(data.is_verified ? "verified" : "pending");
+        } else {
+          setRegStatus("not_registered");
+        }
+      } catch {
+        setRegStatus("not_registered");
+      }
+    }
+    checkExisting();
+  }, [isReady, needsLogin, liffError, authFetch]);
 
   const {
     register,
@@ -186,6 +210,64 @@ function ArtistFormContent() {
             {liffError && (
               <p className="mt-4 text-xs text-gray-400">錯誤資訊：{liffError.message}</p>
             )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Already registered — show status instead of form
+  if (regStatus === "checking") {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand-light)] border-t-[var(--brand)]" />
+          <p className="text-sm text-gray-500">確認身份中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (regStatus === "verified") {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="p-8">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl">
+              ✓
+            </div>
+            <h2 className="mb-2 text-xl font-bold text-gray-900">您已經是認證設計師</h2>
+            <p className="mb-6 text-sm text-gray-500">不需要重新註冊，可以直接進入後台管理。</p>
+            <a
+              href="/artist/dashboard"
+              className="block w-full rounded-lg bg-[var(--brand)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-dark)]"
+            >
+              前往設計師後台
+            </a>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (regStatus === "pending") {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="p-8">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 text-3xl">
+              ⏳
+            </div>
+            <h2 className="mb-2 text-xl font-bold text-gray-900">您的申請正在審核中</h2>
+            <p className="mb-6 text-sm text-gray-500">
+              您已經提交過註冊申請，我們正在審核中，審核通過後會透過 LINE 通知您。
+            </p>
+            <a
+              href="/"
+              className="block w-full rounded-lg border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+            >
+              回首頁
+            </a>
           </CardContent>
         </Card>
       </div>
