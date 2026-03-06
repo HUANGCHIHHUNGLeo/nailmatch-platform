@@ -21,10 +21,10 @@ const directBookingSchema = z.object({
   preferredDate: z.string().min(1, "請選擇預約日期"),
   preferredTime: z.string().min(1, "請選擇預約時段"),
   preferredDateCustom: z.string().optional(),
-  referenceImages: z.array(z.string()).optional().default([]),
-  additionalNotes: z.string().optional().default(""),
+  referenceImages: z.array(z.string()).default([]),
+  additionalNotes: z.string().default(""),
   customerName: z.string().min(1, "請輸入姓名"),
-  customerPhone: z.string().optional().default(""),
+  customerPhone: z.string().default(""),
   consentAccepted: z.boolean().refine((v) => v, "請同意服務條款"),
 });
 
