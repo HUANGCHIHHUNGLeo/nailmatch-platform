@@ -161,8 +161,9 @@ export async function setupRichMenus(): Promise<{
   artistMenuId: string;
 }> {
   // Delete existing rich menus
-  const existing = await client.getRichMenuList();
-  for (const menu of existing) {
+  const existingResult = await client.getRichMenuList();
+  const existing = Array.isArray(existingResult) ? existingResult : (existingResult as { richmenus?: unknown[] }).richmenus || [];
+  for (const menu of existing as { richMenuId: string }[]) {
     await client.deleteRichMenu(menu.richMenuId);
   }
 
@@ -170,14 +171,14 @@ export async function setupRichMenus(): Promise<{
   const customerMenu = await client.createRichMenu(CUSTOMER_MENU_CONFIG);
   const customerSvg = generateRichMenuSvg(CUSTOMER_BUTTONS, "NaLi Match ─ 美甲美睫媒合");
   const customerPng = await svgToPng(customerSvg);
-  await blobClient.setRichMenuImage(customerMenu.richMenuId, customerPng, "image/png");
+  await blobClient.setRichMenuImage(customerMenu.richMenuId, new Blob([new Uint8Array(customerPng)], { type: "image/png" }));
   await client.setDefaultRichMenu(customerMenu.richMenuId);
 
   // Create artist menu
   const artistMenu = await client.createRichMenu(ARTIST_MENU_CONFIG);
   const artistSvg = generateRichMenuSvg(ARTIST_BUTTONS, "NaLi Match ─ 設計師後台");
   const artistPng = await svgToPng(artistSvg);
-  await blobClient.setRichMenuImage(artistMenu.richMenuId, artistPng, "image/png");
+  await blobClient.setRichMenuImage(artistMenu.richMenuId, new Blob([new Uint8Array(artistPng)], { type: "image/png" }));
 
   return {
     customerMenuId: customerMenu.richMenuId,
@@ -188,8 +189,9 @@ export async function setupRichMenus(): Promise<{
 // Link artist rich menu to a specific user
 export async function linkArtistRichMenu(userId: string): Promise<void> {
   // Find the artist rich menu
-  const menus = await client.getRichMenuList();
-  const artistMenu = menus.find((m) => m.name === "NaLi Match — 設計師選單");
+  const menusResult = await client.getRichMenuList();
+  const menuList = Array.isArray(menusResult) ? menusResult : (menusResult as { richmenus?: { richMenuId: string; name: string }[] }).richmenus || [];
+  const artistMenu = menuList.find((m) => m.name === "NaLi Match — 設計師選單");
   if (artistMenu) {
     await client.linkRichMenuIdToUser(userId, artistMenu.richMenuId);
   }
