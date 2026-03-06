@@ -7,6 +7,7 @@ import {
   Home,
   Sparkles,
   LayoutDashboard,
+  LayoutList,
   Menu,
   X,
   User,
@@ -37,6 +38,7 @@ interface NavItem {
 const CUSTOMER_NAV: NavItem[] = [
   { href: "/", label: "首頁", icon: <Home className="h-5 w-5" /> },
   { href: "/request", label: "發佈需求", icon: <Sparkles className="h-5 w-5" />, description: "找設計師為您服務" },
+  { href: "/lobby", label: "配對大廳", icon: <LayoutList className="h-5 w-5" />, description: "瀏覽所有待配對需求" },
   { href: "/artists", label: "設計師總覽", icon: <Users className="h-5 w-5" />, description: "瀏覽各地區設計師" },
   { href: "/my", label: "我的帳號", icon: <Calendar className="h-5 w-5" />, description: "需求紀錄・預約管理" },
 ];
