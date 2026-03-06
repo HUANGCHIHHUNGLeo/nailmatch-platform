@@ -7,47 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { ArrowRight, Clock, ShieldCheck, HeartPulse, Sparkles } from "lucide-react";
-
-const steps = [
-  {
-    number: "01",
-    title: "送出需求",
-    description: "選擇地點、服務項目、預算、時間，3 分鐘填完",
-  },
-  {
-    number: "02",
-    title: "美甲師報價",
-    description: "符合條件的美甲師會主動找你，附上作品集和報價",
-  },
-  {
-    number: "03",
-    title: "挑選預約",
-    description: "看作品、比價格、選一個順眼的直接預約",
-  },
-];
-
-const features = [
-  {
-    title: "價格透明",
-    description: "不用一間間問，報價直接看",
-    icon: <ShieldCheck className="w-6 h-6 text-[var(--brand)]" />
-  },
-  {
-    title: "作品先看",
-    description: "每位美甲師都有作品集可以瀏覽",
-    icon: <Sparkles className="w-6 h-6 text-[var(--brand)]" />
-  },
-  {
-    title: "快速配對",
-    description: "平均 5 分鐘內收到第一個報價",
-    icon: <Clock className="w-6 h-6 text-[var(--brand)]" />
-  },
-  {
-    title: "免費使用",
-    description: "消費者完全免費，不收任何手續費",
-    icon: <HeartPulse className="w-6 h-6 text-[var(--brand)]" />
-  },
-];
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -65,24 +25,39 @@ const itemVariants = {
 };
 
 export default function HomePage() {
+  const { t } = useLanguage();
+
+  const steps = [
+    { number: "01", title: t.steps.step1.title, description: t.steps.step1.desc },
+    { number: "02", title: t.steps.step2.title, description: t.steps.step2.desc },
+    { number: "03", title: t.steps.step3.title, description: t.steps.step3.desc },
+  ];
+
+  const features = [
+    { title: t.features.feat1.title, description: t.features.feat1.desc, icon: <ShieldCheck className="w-6 h-6 text-[var(--brand)]" /> },
+    { title: t.features.feat2.title, description: t.features.feat2.desc, icon: <Sparkles className="w-6 h-6 text-[var(--brand)]" /> },
+    { title: t.features.feat3.title, description: t.features.feat3.desc, icon: <Clock className="w-6 h-6 text-[var(--brand)]" /> },
+    { title: t.features.feat4.title, description: t.features.feat4.desc, icon: <HeartPulse className="w-6 h-6 text-[var(--brand)]" /> },
+  ];
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-[var(--brand-light)]">
       {/* Header */}
       <header className="fixed top-0 z-50 w-full border-b border-white/20 bg-white/60 backdrop-blur-xl transition-all">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="group flex items-center gap-2 text-xl font-black tracking-tight text-slate-900">
-            <Image src="/logo.png" alt="NaLi Match" width={32} height={32} className="rounded transition-transform group-hover:scale-110" />
-            NaLi Match
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.png" alt="NaLi Match" width={32} height={32} className="rounded-lg" />
+            <span className="text-xl font-bold tracking-tight text-slate-900">NaLi Match</span>
           </Link>
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center gap-4">
             <Link
               href="/artist"
-              className="text-sm font-medium text-slate-600 transition-colors hover:text-[var(--brand-dark)]"
+              className="hidden text-sm font-medium text-slate-600 transition-colors hover:text-[var(--brand)] sm:block"
             >
-              美甲師入口
+              {t.nav.artistLogin}
             </Link>
             <Button asChild size="sm" className="text-white shadow-md transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, var(--brand), var(--brand-dark))' }}>
-              <Link href="/request">我要求配對</Link>
+              <Link href="/request">{t.nav.customerCta}</Link>
             </Button>
           </nav>
         </div>
@@ -96,21 +71,21 @@ export default function HomePage() {
 
         <div className="relative z-10 mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <Badge variant="outline" className="mb-6 border-[var(--brand-light)] bg-[var(--brand-light)]/50/50 px-4 py-1.5 text-sm font-medium text-[var(--brand-darker)] backdrop-blur-sm">
-              ✨ 顛覆傳統的美甲預約體驗
+              {t.hero.badge}
             </Badge>
             <h1 className="mb-8 text-5xl font-black tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-              不再一間間詢價，<br className="hidden sm:block" />
+              {t.hero.headline1}<br className="hidden sm:block" />
               <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--brand), var(--brand-rose))' }}>
-                讓美甲/美睫師主動找上門。
+                {t.hero.headline2}
               </span>
             </h1>
             <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-600 lg:text-xl leading-relaxed">
-              只需三分鐘填妥條件！符合需求與空檔的美甲/美睫師會親自為您報價。輕鬆瀏覽作品集比價，挑選最心儀的款式一鍵預約。
+              {t.hero.subtext}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button
@@ -120,7 +95,7 @@ export default function HomePage() {
                 style={{ background: 'linear-gradient(135deg, var(--brand), var(--brand-dark))', boxShadow: '0 10px 25px -5px rgba(196,160,138,0.3)' }}
               >
                 <Link href="/request">
-                  免費送出需求
+                  {t.hero.ctaPrimary}
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
@@ -130,7 +105,7 @@ export default function HomePage() {
                 size="lg"
                 className="h-14 border-slate-200 bg-white/50 px-8 text-lg font-medium text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-slate-50 hover:text-slate-900"
               >
-                <Link href="/line/liff/artist-form">我是美甲/美睫師</Link>
+                <Link href="/artist">{t.hero.ctaArtist}</Link>
               </Button>
             </div>
           </motion.div>
@@ -142,7 +117,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-              簡單三步驟，完成完美預約
+              {t.steps.sectionTitle}
             </h2>
             <div className="mx-auto mt-4 h-1 w-20 rounded bg-[var(--brand)]" />
           </div>
@@ -183,10 +158,10 @@ export default function HomePage() {
           <div className="mb-16 md:flex md:items-end md:justify-between">
             <div className="max-w-2xl">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                為什麼需要 NaLi Match？
+                {t.features.sectionTitle}
               </h2>
               <p className="mt-4 text-lg text-slate-400">
-                我們致力於解決尋找美甲/美睫師時的繁瑣過程，為雙方創造一個透明、高效的媒合環境。
+                {t.features.sectionDesc}
               </p>
             </div>
             <div className="mt-8 hidden md:block">
@@ -225,10 +200,10 @@ export default function HomePage() {
 
         <div className="relative z-10 mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-4xl font-black tracking-tight text-white sm:text-5xl">
-            準備好邂逅完美美甲/美睫了嗎？
+            {t.cta.title}
           </h2>
           <p className="mb-10 text-xl text-[var(--brand-light)] font-medium">
-            現在就送出需求，短短 3 分鐘即可開啟全新的美麗旅程！
+            {t.cta.subtitle}
           </p>
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -240,7 +215,7 @@ export default function HomePage() {
               className="h-16 rounded-full bg-white px-10 text-xl font-bold text-[var(--brand-dark)] shadow-xl transition-colors hover:bg-slate-50"
             >
               <Link href="/request">
-                立即送出您的第一筆需求
+                {t.cta.button}
               </Link>
             </Button>
           </motion.div>
@@ -254,10 +229,9 @@ export default function HomePage() {
             <Image src="/logo.png" alt="NaLi Match" width={24} height={24} className="rounded" />
             NaLi Match
           </div>
-          <p>&copy; {new Date().getFullYear()} NaLi Match Platform. Crafted with ❤️.</p>
+          <p>{t.footer.copyright}</p>
         </div>
       </footer>
     </div>
   );
 }
-

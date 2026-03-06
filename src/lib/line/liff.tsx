@@ -33,7 +33,13 @@ const LiffContext = createContext<LiffContextType>({
   profile: null,
 });
 
-export function LiffProvider({ children }: { children: ReactNode }) {
+export function LiffProvider({
+  children,
+  requireLogin = false,
+}: {
+  children: ReactNode;
+  requireLogin?: boolean;
+}) {
   const [liffInstance, setLiffInstance] = useState<Liff | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isInClient, setIsInClient] = useState(false);
@@ -77,9 +83,14 @@ export function LiffProvider({ children }: { children: ReactNode }) {
           } catch (err) {
             console.error("Failed to get LINE profile:", err);
           }
+          setIsReady(true);
+        } else if (requireLogin && !liffObj.isInClient()) {
+          // Redirect to LINE Login for pages that require authentication
+          liffObj.login({ redirectUri: window.location.href });
+          return; // Don't set isReady — page will reload after login
+        } else {
+          setIsReady(true);
         }
-
-        setIsReady(true);
       })
       .catch((err: Error) => {
         clearTimeout(timeout);

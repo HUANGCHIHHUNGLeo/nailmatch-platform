@@ -3,7 +3,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { resolveArtist } from "@/lib/auth/resolve-artist";
 
 const ARTIST_SELECT =
-  "id, display_name, avatar_url, services, styles, cities, min_price, max_price, gender, bio, phone, email, service_location_type, studio_address, instagram_handle, is_active";
+  "id, display_name, avatar_url, services, styles, cities, min_price, max_price, gender, bio, phone, email, service_location_type, studio_address, instagram_handle, is_active, is_verified";
 
 export async function GET(request: Request) {
   try {

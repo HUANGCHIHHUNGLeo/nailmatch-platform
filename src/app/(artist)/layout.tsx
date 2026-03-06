@@ -7,5 +7,5 @@ export default function ArtistLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <LiffProvider>{children}</LiffProvider>;
+  return <LiffProvider requireLogin>{children}</LiffProvider>;
 }
