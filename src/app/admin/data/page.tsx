@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Customer {
   id: string;
@@ -86,6 +85,7 @@ export default function AdminDataPage() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"customers" | "requests" | "bookings">("customers");
 
   useEffect(() => {
     async function fetchAll() {
@@ -172,15 +172,28 @@ export default function AdminDataPage() {
         </div>
 
         {/* Data Tabs */}
-        <Tabs defaultValue="customers">
-          <TabsList className="mb-4">
-            <TabsTrigger value="customers">客戶 ({customers.length})</TabsTrigger>
-            <TabsTrigger value="requests">需求 ({requests.length})</TabsTrigger>
-            <TabsTrigger value="bookings">預約 ({bookings.length})</TabsTrigger>
-          </TabsList>
+        <div className="mb-4 flex gap-1 rounded-lg bg-gray-100 p-1">
+          {([
+            ["customers", `客戶 (${customers.length})`],
+            ["requests", `需求 (${requests.length})`],
+            ["bookings", `預約 (${bookings.length})`],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
+                tab === key
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
           {/* Customers Table */}
-          <TabsContent value="customers">
+          {tab === "customers" && (
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -226,10 +239,10 @@ export default function AdminDataPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
           {/* Requests Table */}
-          <TabsContent value="requests">
+          {tab === "requests" && (
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -285,10 +298,10 @@ export default function AdminDataPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
           {/* Bookings Table */}
-          <TabsContent value="bookings">
+          {tab === "bookings" && (
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -340,8 +353,7 @@ export default function AdminDataPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          )}
       </main>
     </div>
   );

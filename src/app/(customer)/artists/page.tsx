@@ -136,9 +136,9 @@ export default function ArtistDirectoryPage() {
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {filtered.map((artist) => (
-              <Link key={artist.id} href={`/artists/${artist.id}`}>
-                <Card className="transition hover:shadow-md">
-                  <CardContent className="p-4">
+              <Link key={artist.id} href={`/artists/${artist.id}`} className="block h-full">
+                <Card className="h-full transition hover:shadow-md">
+                  <CardContent className="flex h-full flex-col p-4">
                     <div className="flex items-start gap-3">
                       <Avatar className="h-14 w-14 shrink-0">
                         <AvatarImage src={artist.avatar_url || undefined} />
@@ -162,40 +162,38 @@ export default function ArtistDirectoryPage() {
                           </Badge>
                         </div>
 
-                        {artist.studio_address && (
-                          <p className="mt-0.5 truncate text-xs text-gray-400">
-                            {artist.studio_address}
-                          </p>
-                        )}
-
-                        {/* Services */}
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {artist.services.slice(0, 3).map((s) => (
-                            <Badge key={s} variant="secondary" className="text-[10px]">
-                              {s}
-                            </Badge>
-                          ))}
-                          {artist.services.length > 3 && (
-                            <Badge variant="secondary" className="text-[10px]">
-                              +{artist.services.length - 3}
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* Price + City */}
-                        <div className="mt-2 flex items-center justify-between text-xs">
-                          <span className="text-gray-400">
-                            {artist.cities.length > 0
-                              ? artist.cities[0].split(" ")[0]
-                              : ""}
-                            {artist.cities.length > 1 && ` +${artist.cities.length - 1}`}
-                          </span>
-                          <span className="font-medium text-[var(--brand)]">
-                            NT${artist.min_price.toLocaleString()}
-                            {artist.max_price > artist.min_price && `~${artist.max_price.toLocaleString()}`}
-                          </span>
-                        </div>
+                        <p className="mt-0.5 truncate text-xs text-gray-400">
+                          {artist.studio_address || "\u00A0"}
+                        </p>
                       </div>
+                    </div>
+
+                    {/* Services — fixed height area */}
+                    <div className="mt-3 flex min-h-[28px] flex-wrap gap-1">
+                      {artist.services.slice(0, 3).map((s) => (
+                        <Badge key={s} variant="secondary" className="text-[10px]">
+                          {s}
+                        </Badge>
+                      ))}
+                      {artist.services.length > 3 && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          +{artist.services.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Price + City — pushed to bottom */}
+                    <div className="mt-auto flex items-center justify-between pt-3 text-xs">
+                      <span className="text-gray-400">
+                        {artist.cities.length > 0
+                          ? artist.cities[0].split(" ")[0]
+                          : ""}
+                        {artist.cities.length > 1 && ` +${artist.cities.length - 1}`}
+                      </span>
+                      <span className="font-medium text-[var(--brand)]">
+                        NT${artist.min_price.toLocaleString()}
+                        {artist.max_price > artist.min_price && `~${artist.max_price.toLocaleString()}`}
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
