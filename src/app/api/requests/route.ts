@@ -49,6 +49,7 @@ export async function POST(request: Request) {
         needs_removal: parsed.data.needsRemoval,
         reference_images: parsed.data.referenceImages || [],
         additional_notes: parsed.data.additionalNotes || "",
+        payment_preference: parsed.data.paymentPreference || [],
         status: "matching",
       })
       .select("id")

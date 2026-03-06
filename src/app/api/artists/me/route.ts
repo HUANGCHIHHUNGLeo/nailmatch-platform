@@ -3,7 +3,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { resolveArtist } from "@/lib/auth/resolve-artist";
 
 const ARTIST_SELECT =
-  "id, display_name, avatar_url, services, styles, cities, min_price, max_price, gender, bio, phone, email, service_location_type, studio_address, instagram_handle, is_active, is_verified";
+  "id, display_name, avatar_url, services, styles, cities, min_price, max_price, gender, bio, phone, email, service_location_type, studio_address, instagram_handle, is_active, is_verified, payment_methods";
 
 export async function GET(request: Request) {
   try {
@@ -61,6 +61,7 @@ export async function PUT(request: Request) {
       "instagram_handle",
       "avatar_url",
       "is_active",
+      "payment_methods",
     ];
 
     for (const field of updatable) {

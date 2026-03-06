@@ -17,6 +17,7 @@ import { ArtistPrefStep } from "./ArtistPrefStep";
 import { BudgetStep } from "./BudgetStep";
 import { RemovalStep } from "./RemovalStep";
 import { ReferenceStep } from "./ReferenceStep";
+import { PaymentStep } from "./PaymentStep";
 import { NotesStep } from "./NotesStep";
 
 interface StepDef {
@@ -37,6 +38,7 @@ const STEPS: StepDef[] = [
   { component: ArtistPrefStep, title: "設計師偏好", key: "artistGenderPref" },
   { component: BudgetStep, title: "預算範圍", key: "budgetRange" },
   { component: RemovalStep, title: "卸除需求", key: "needsRemoval" },
+  { component: PaymentStep, title: "付款方式", key: "paymentPreference" },
   { component: ReferenceStep, title: "參考圖片", key: "referenceImages" },
   { component: NotesStep, title: "補充需求", key: "additionalNotes" },
 ];
@@ -63,6 +65,7 @@ export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
       artistGenderPref: "",
       budgetRange: "",
       needsRemoval: "",
+      paymentPreference: [],
       referenceImages: [],
       additionalNotes: "",
     },
@@ -122,7 +125,7 @@ export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
     }
 
     // Optional steps skip validation
-    const isOptional = stepKey === "referenceImages" || stepKey === "additionalNotes" || stepKey === "nailLength";
+    const isOptional = stepKey === "referenceImages" || stepKey === "additionalNotes" || stepKey === "nailLength" || stepKey === "paymentPreference";
     const isValid = isOptional || (await methods.trigger(fieldsToValidate));
 
     if (isValid) {

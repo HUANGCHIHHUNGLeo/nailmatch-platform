@@ -50,6 +50,7 @@ export const NAIL_SERVICES = [
   { value: "removal", label: "卸甲", priceHint: "" },
   { value: "shape_care", label: "修型保養", priceHint: "" },
   { value: "custom_design", label: "客製款設計", priceHint: "NT$1200+" },
+  { value: "other_nail", label: "其他", priceHint: "" },
 ] as const;
 
 // Lash services
@@ -62,6 +63,7 @@ export const LASH_SERVICES = [
   { value: "lash_lift", label: "角蛋白翹睫術", priceHint: "NT$800+" },
   { value: "lash_refill", label: "睫毛補接", priceHint: "NT$600+" },
   { value: "lash_removal", label: "卸除睫毛", priceHint: "" },
+  { value: "other_lash", label: "其他", priceHint: "" },
 ] as const;
 
 // Helper to check if selected services contain nail/lash
@@ -129,6 +131,14 @@ export const GENDER_OPTIONS = [
 export const CHAT_PREFERENCES = [
   "不聊天",
   "可聊天",
+] as const;
+
+// Payment methods
+export const PAYMENT_METHODS = [
+  "現金",
+  "LINE Pay",
+  "信用卡",
+  "轉帳",
 ] as const;
 
 // Request status

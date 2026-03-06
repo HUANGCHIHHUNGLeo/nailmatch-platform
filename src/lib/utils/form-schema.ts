@@ -34,7 +34,10 @@ export const serviceRequestSchema = z.object({
   // Step 10: 參考圖片 (optional)
   referenceImages: z.array(z.string()).optional().default([]),
 
-  // Step 11: 補充需求 (optional)
+  // Step 11: 付款偏好 (optional)
+  paymentPreference: z.array(z.string()).optional().default([]),
+
+  // Step 12: 補充需求 (optional)
   additionalNotes: z.string().optional().default(""),
 });
 
@@ -56,6 +59,7 @@ export const artistRegistrationSchema = z.object({
   maxPrice: z.number().min(0, "價格不能為負數"),
   instagramHandle: z.string().optional().default(""),
   lineId: z.string().optional().default(""),
+  paymentMethods: z.array(z.string()).min(1, "請選擇至少一種付款方式"),
 }).refine(
   (data) => (data.instagramHandle && data.instagramHandle.length > 0) || (data.lineId && data.lineId.length > 0),
   { message: "LINE ID 或 Instagram 至少填寫一項", path: ["lineId"] }

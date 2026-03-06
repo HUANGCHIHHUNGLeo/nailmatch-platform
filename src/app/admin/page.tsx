@@ -22,6 +22,7 @@ interface Artist {
   service_location_type: string | null;
   bio: string | null;
   line_user_id: string | null;
+  payment_methods: string[] | null;
   is_verified: boolean;
   is_active: boolean;
   created_at: string;
@@ -257,6 +258,9 @@ export default function AdminDashboard() {
                       <DetailRow label="LINE ID" value={artist.line_id} />
                     )}
                     {artist.bio && <DetailRow label="自我介紹" value={artist.bio} />}
+                    {artist.payment_methods && artist.payment_methods.length > 0 && (
+                      <DetailRow label="付款方式" value={artist.payment_methods.join("、")} />
+                    )}
                     <DetailRow
                       label="LINE 綁定"
                       value={artist.line_user_id ? "已綁定" : "未綁定"}

@@ -36,6 +36,7 @@ export async function POST(request: Request) {
         max_price: parsed.data.maxPrice,
         instagram_handle: parsed.data.instagramHandle || null,
         line_id: parsed.data.lineId || null,
+        payment_methods: parsed.data.paymentMethods || [],
         role: role || "nail",
         is_verified: false,
         is_active: true,

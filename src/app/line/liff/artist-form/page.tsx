@@ -14,7 +14,7 @@ import {
   artistRegistrationSchema,
   type ArtistRegistrationFormData,
 } from "@/lib/utils/form-schema";
-import { LOCATION_GROUPS, NAIL_SERVICES, STYLES } from "@/lib/utils/constants";
+import { LOCATION_GROUPS, NAIL_SERVICES, LASH_SERVICES, STYLES, PAYMENT_METHODS } from "@/lib/utils/constants";
 
 function ArtistFormContent() {
   const { liff, isReady, profile } = useLiff();
@@ -46,15 +46,17 @@ function ArtistFormContent() {
       maxPrice: 3000,
       instagramHandle: "",
       lineId: "",
+      paymentMethods: [],
     },
   });
 
   const cities = watch("cities");
   const services = watch("services");
   const styles = watch("styles");
+  const paymentMethods = watch("paymentMethods");
 
   const toggleArrayField = (
-    field: "cities" | "services" | "styles",
+    field: "cities" | "services" | "styles" | "paymentMethods",
     value: string,
     current: string[]
   ) => {
@@ -64,6 +66,21 @@ function ArtistFormContent() {
       setValue(field, [...current, value], { shouldValidate: true });
     }
   };
+
+  const toggleAllDistricts = (group: typeof LOCATION_GROUPS[number]) => {
+    const groupLocations = group.city === "其他"
+      ? group.districts
+      : group.districts.map((d) => `${group.city} ${d}`);
+    const allSelected = groupLocations.every((loc) => cities.includes(loc));
+    if (allSelected) {
+      setValue("cities", cities.filter((c) => !groupLocations.includes(c)), { shouldValidate: true });
+    } else {
+      const newCities = [...new Set([...cities, ...groupLocations])];
+      setValue("cities", newCities, { shouldValidate: true });
+    }
+  };
+
+  const roleServices = role === "lash" ? LASH_SERVICES : NAIL_SERVICES;
 
   const onSubmit = async (data: ArtistRegistrationFormData) => {
     setIsSubmitting(true);
@@ -227,7 +244,7 @@ function ArtistFormContent() {
 
                 <div>
                   <Label>店名 / 工作室名稱 *</Label>
-                  <Input {...register("studioAddress")} placeholder="例：Nali Nail Studio" />
+                  <Input {...register("studioAddress")} placeholder="如無店名請填「姓名＋個人工作室」" />
                   {errors.studioAddress && (
                     <p className="mt-1 text-xs text-red-500">{errors.studioAddress.message}</p>
                   )}
@@ -238,20 +255,26 @@ function ArtistFormContent() {
                   <Textarea {...register("bio")} placeholder="介紹一下您的專長和經驗..." rows={3} />
                 </div>
 
-                <div>
-                  <Label>Instagram {!watch("lineId") && "*"}</Label>
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-400">@</span>
-                    <Input {...register("instagramHandle")} placeholder="your_handle" />
+                {/* IG & LINE — unified hint */}
+                <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3">
+                  <p className="mb-3 text-xs font-medium text-gray-600">
+                    以下 LINE ID 或 Instagram 請至少填寫一項，有助於審核通過
+                  </p>
+                  <div className="space-y-3">
+                    <div>
+                      <Label>Instagram</Label>
+                      <div className="flex items-center gap-1">
+                        <span className="text-gray-400">@</span>
+                        <Input {...register("instagramHandle")} placeholder="your_handle" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>LINE ID</Label>
+                      <Input {...register("lineId")} placeholder="例：@nalimatch" />
+                    </div>
                   </div>
-                  <p className="mt-1 text-xs text-gray-400">LINE ID 或 Instagram 至少填一項</p>
-                </div>
-
-                <div>
-                  <Label>LINE ID {!watch("instagramHandle") && "*"}</Label>
-                  <Input {...register("lineId")} placeholder="例：@nalimatch" />
                   {errors.lineId && (
-                    <p className="mt-1 text-xs text-red-500">{errors.lineId.message}</p>
+                    <p className="mt-2 text-xs text-red-500">{errors.lineId.message}</p>
                   )}
                 </div>
               </CardContent>
@@ -267,6 +290,7 @@ function ArtistFormContent() {
                     ? group.districts
                     : group.districts.map((d) => `${group.city} ${d}`);
                   const selectedCount = groupLocations.filter((loc) => cities.includes(loc)).length;
+                  const allSelected = selectedCount === groupLocations.length;
                   return (
                     <details key={group.city} className="rounded-lg border">
                       <summary className="flex cursor-pointer items-center justify-between p-3 font-medium">
@@ -277,24 +301,42 @@ function ArtistFormContent() {
                           </span>
                         )}
                       </summary>
-                      <div className="grid grid-cols-2 gap-2 border-t p-3">
-                        {groupLocations.map((loc) => (
-                          <Label
-                            key={loc}
-                            className={`flex cursor-pointer items-center gap-2 rounded-lg border-2 p-2 text-sm ${cities.includes(loc) ? "border-[var(--brand)] bg-[var(--brand-light)]/50" : "border-gray-200"
-                              }`}
+                      <div className="border-t p-3">
+                        {group.city !== "其他" && (
+                          <button
+                            type="button"
+                            onClick={() => toggleAllDistricts(group)}
+                            className={`mb-2 w-full rounded-lg border-2 border-dashed px-3 py-2 text-sm font-medium transition ${
+                              allSelected
+                                ? "border-[var(--brand)] bg-[var(--brand-light)]/50 text-[var(--brand-dark)]"
+                                : "border-gray-300 text-gray-500 hover:border-gray-400"
+                            }`}
                           >
-                            <Checkbox
-                              checked={cities.includes(loc)}
-                              onCheckedChange={() => toggleArrayField("cities", loc, cities)}
-                            />
-                            {group.city === "其他" ? loc : loc.replace(`${group.city} `, "")}
-                          </Label>
-                        ))}
+                            {allSelected ? `取消全選 ${group.city}` : `全選 ${group.city}`}
+                          </button>
+                        )}
+                        <div className="grid grid-cols-2 gap-2">
+                          {groupLocations.map((loc) => (
+                            <Label
+                              key={loc}
+                              className={`flex cursor-pointer items-center gap-2 rounded-lg border-2 p-2 text-sm ${cities.includes(loc) ? "border-[var(--brand)] bg-[var(--brand-light)]/50" : "border-gray-200"
+                                }`}
+                            >
+                              <Checkbox
+                                checked={cities.includes(loc)}
+                                onCheckedChange={() => toggleArrayField("cities", loc, cities)}
+                              />
+                              {group.city === "其他" ? loc : loc.replace(`${group.city} `, "")}
+                            </Label>
+                          ))}
+                        </div>
                       </div>
                     </details>
                   );
                 })}
+                {errors.cities && (
+                  <p className="mt-1 text-xs text-red-500">{errors.cities.message}</p>
+                )}
 
                 <div>
                   <Label>服務地點類型 *</Label>
@@ -322,7 +364,7 @@ function ArtistFormContent() {
               <CardContent className="space-y-4 p-4">
                 <h2 className="font-semibold">服務項目 *</h2>
                 <div className="grid grid-cols-2 gap-2">
-                  {NAIL_SERVICES.map((svc) => (
+                  {roleServices.map((svc) => (
                     <Label
                       key={svc.value}
                       className={`flex cursor-pointer items-center gap-2 rounded-lg border-2 p-3 text-sm ${services.includes(svc.label) ? "border-[var(--brand)] bg-[var(--brand-light)]/50" : "border-gray-200"
@@ -336,6 +378,9 @@ function ArtistFormContent() {
                     </Label>
                   ))}
                 </div>
+                {errors.services && (
+                  <p className="mt-1 text-xs text-red-500">{errors.services.message}</p>
+                )}
               </CardContent>
             </Card>
 
@@ -358,6 +403,9 @@ function ArtistFormContent() {
                     </Label>
                   ))}
                 </div>
+                {errors.styles && (
+                  <p className="mt-1 text-xs text-red-500">{errors.styles.message}</p>
+                )}
               </CardContent>
             </Card>
 
@@ -381,6 +429,32 @@ function ArtistFormContent() {
                     />
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Payment Methods */}
+            <Card>
+              <CardContent className="space-y-4 p-4">
+                <h2 className="font-semibold">接受付款方式 *</h2>
+                <p className="text-xs text-gray-500">選擇您接受的付款方式，讓客戶更方便選擇</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {PAYMENT_METHODS.map((method) => (
+                    <Label
+                      key={method}
+                      className={`flex cursor-pointer items-center gap-2 rounded-lg border-2 p-3 text-sm ${paymentMethods.includes(method) ? "border-[var(--brand)] bg-[var(--brand-light)]/50" : "border-gray-200"
+                        }`}
+                    >
+                      <Checkbox
+                        checked={paymentMethods.includes(method)}
+                        onCheckedChange={() => toggleArrayField("paymentMethods", method, paymentMethods)}
+                      />
+                      {method}
+                    </Label>
+                  ))}
+                </div>
+                {errors.paymentMethods && (
+                  <p className="mt-1 text-xs text-red-500">{errors.paymentMethods.message}</p>
+                )}
               </CardContent>
             </Card>
 
