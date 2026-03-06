@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { LOCATIONS, NAIL_SERVICES, STYLES } from "@/lib/utils/constants";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
+import { useLiff } from "@/lib/line/liff";
 
 interface ArtistProfile {
   id: string;
@@ -32,6 +33,7 @@ interface ArtistProfile {
 
 export default function ArtistProfilePage() {
   const router = useRouter();
+  const { isReady, isLoggedIn } = useLiff();
   const { authFetch } = useAuthFetch();
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,7 @@ export default function ArtistProfilePage() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
+    if (!isReady || !isLoggedIn) return;
     authFetch("/api/artists/me")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
@@ -46,7 +49,7 @@ export default function ArtistProfilePage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [isReady, isLoggedIn, authFetch]);
 
   const handleSave = async () => {
     if (!profile) return;

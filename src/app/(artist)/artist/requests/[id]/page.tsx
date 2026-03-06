@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
+import { useLiff } from "@/lib/line/liff";
 
 interface ServiceRequest {
   id: string;
@@ -34,6 +35,7 @@ interface ServiceRequest {
 export default function ArtistRequestDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { isReady, isLoggedIn } = useLiff();
   const { authFetch } = useAuthFetch();
   const [request, setRequest] = useState<ServiceRequest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,23 +49,21 @@ export default function ArtistRequestDetailPage() {
   const [availableTime, setAvailableTime] = useState("");
 
   useEffect(() => {
+    if (!isReady || !isLoggedIn) return;
     async function fetchData() {
       try {
-        // Fetch request details
         const res = await authFetch(`/api/requests/${id}`);
         if (res.ok) {
           const data = await res.json();
           setRequest(data);
         }
 
-        // Increment viewed count
         await authFetch(`/api/requests/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ increment_viewed: true }),
         });
 
-        // Get current artist ID
         const meRes = await authFetch("/api/artists/me");
         if (meRes.ok) {
           const me = await meRes.json();
@@ -76,7 +76,7 @@ export default function ArtistRequestDetailPage() {
       }
     }
     fetchData();
-  }, [id]);
+  }, [id, isReady, isLoggedIn, authFetch]);
 
   const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -18,6 +18,7 @@ import {
   FileText,
   Shield,
   BarChart3,
+  LogIn,
 } from "lucide-react";
 import {
   Sheet,
@@ -59,13 +60,10 @@ export function GlobalNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  // Hide on admin pages
-  if (pathname.startsWith("/admin")) return null;
+  // Hide on admin pages and LIFF pages
+  if (pathname.startsWith("/admin") || pathname.startsWith("/line/liff")) return null;
 
   const isArtistSection = pathname.startsWith("/artist");
-  const primaryNav = isArtistSection ? ARTIST_NAV : CUSTOMER_NAV;
-  const secondaryNav = isArtistSection ? CUSTOMER_NAV : ARTIST_NAV;
-  const secondaryLabel = isArtistSection ? "客戶功能" : "設計師功能";
 
   return (
     <>
@@ -98,68 +96,127 @@ export function GlobalNav() {
             </button>
           </div>
 
-          {/* Primary Nav */}
-          <nav className="px-3 py-3">
-            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
-              {isArtistSection ? "設計師後台" : "找設計師"}
-            </p>
-            {primaryNav.map((item) => {
-              const isActive = pathname === item.href;
-              return (
+          {isArtistSection ? (
+            <>
+              {/* Artist Section: show artist nav as primary */}
+              <nav className="px-3 py-3">
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  設計師後台
+                </p>
+                {ARTIST_NAV.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center gap-3 rounded-xl px-3 py-3 transition-colors ${
+                        isActive
+                          ? "bg-[var(--brand-light)] text-[var(--brand-darker)]"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <span className={isActive ? "text-[var(--brand)]" : "text-gray-400"}>
+                        {item.icon}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-sm font-medium ${isActive ? "text-[var(--brand-darker)]" : ""}`}>
+                          {item.label}
+                        </p>
+                        {item.description && (
+                          <p className="truncate text-xs text-gray-400">{item.description}</p>
+                        )}
+                      </div>
+                      {isActive && (
+                        <div className="h-2 w-2 rounded-full bg-[var(--brand)]" />
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <div className="px-5"><Separator /></div>
+
+              {/* Secondary: customer quick links */}
+              <nav className="px-3 py-3">
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  客戶功能
+                </p>
+                {CUSTOMER_NAV.slice(0, 3).map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
+                  >
+                    <span className="text-gray-300">{item.icon}</span>
+                    <span className="text-sm">{item.label}</span>
+                  </Link>
+                ))}
+              </nav>
+            </>
+          ) : (
+            <>
+              {/* Customer Section: show customer nav as primary */}
+              <nav className="px-3 py-3">
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  找設計師
+                </p>
+                {CUSTOMER_NAV.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center gap-3 rounded-xl px-3 py-3 transition-colors ${
+                        isActive
+                          ? "bg-[var(--brand-light)] text-[var(--brand-darker)]"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <span className={isActive ? "text-[var(--brand)]" : "text-gray-400"}>
+                        {item.icon}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-sm font-medium ${isActive ? "text-[var(--brand-darker)]" : ""}`}>
+                          {item.label}
+                        </p>
+                        {item.description && (
+                          <p className="truncate text-xs text-gray-400">{item.description}</p>
+                        )}
+                      </div>
+                      {isActive && (
+                        <div className="h-2 w-2 rounded-full bg-[var(--brand)]" />
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <div className="px-5"><Separator /></div>
+
+              {/* Secondary: single entry point for artists, not full backend links */}
+              <nav className="px-3 py-3">
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  設計師專區
+                </p>
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  href="/artist"
                   onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-3 transition-colors ${
-                    isActive
-                      ? "bg-[var(--brand-light)] text-[var(--brand-darker)]"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
                 >
-                  <span className={isActive ? "text-[var(--brand)]" : "text-gray-400"}>
-                    {item.icon}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-medium ${isActive ? "text-[var(--brand-darker)]" : ""}`}>
-                      {item.label}
-                    </p>
-                    {item.description && (
-                      <p className="truncate text-xs text-gray-400">{item.description}</p>
-                    )}
+                  <span className="text-gray-300"><LogIn className="h-5 w-5" /></span>
+                  <div>
+                    <span className="text-sm">設計師登入 / 註冊</span>
+                    <p className="text-xs text-gray-400">已有帳號？點此進入後台</p>
                   </div>
-                  {isActive && (
-                    <div className="h-2 w-2 rounded-full bg-[var(--brand)]" />
-                  )}
                 </Link>
-              );
-            })}
-          </nav>
+              </nav>
+            </>
+          )}
 
-          <div className="px-5">
-            <Separator />
-          </div>
-
-          {/* Secondary Nav */}
-          <nav className="px-3 py-3">
-            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
-              {secondaryLabel}
-            </p>
-            {secondaryNav.slice(0, 3).map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
-              >
-                <span className="text-gray-300">{item.icon}</span>
-                <span className="text-sm">{item.label}</span>
-              </Link>
-            ))}
-          </nav>
-
-          <div className="px-5">
-            <Separator />
-          </div>
+          <div className="px-5"><Separator /></div>
 
           {/* Footer Nav */}
           <nav className="px-3 py-3">

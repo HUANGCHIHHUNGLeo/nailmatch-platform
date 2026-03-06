@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
+import { useLiff } from "@/lib/line/liff";
 
 interface Booking {
   id: string;
@@ -34,11 +35,13 @@ const IS_PREMIUM = false; // 未來付費解鎖
 
 export default function ArtistReportPage() {
   const router = useRouter();
+  const { isReady, isLoggedIn } = useLiff();
   const { authFetch } = useAuthFetch();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isReady || !isLoggedIn) return;
     async function fetchData() {
       try {
         const meRes = await authFetch("/api/artists/me");
@@ -56,7 +59,7 @@ export default function ArtistReportPage() {
       }
     }
     fetchData();
-  }, []);
+  }, [isReady, isLoggedIn, authFetch]);
 
   const completed = bookings.filter((b) => b.status === "completed");
   const totalRevenue = completed.reduce((sum, b) => sum + (b.final_price || 0), 0);

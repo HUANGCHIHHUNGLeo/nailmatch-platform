@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
+import { useLiff } from "@/lib/line/liff";
 
 interface Booking {
   id: string;
@@ -33,21 +34,21 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 };
 
 export default function ArtistBookingsPage() {
+  const { isReady, isLoggedIn } = useLiff();
   const { authFetch } = useAuthFetch();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [artistId, setArtistId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isReady || !isLoggedIn) return;
     async function fetchData() {
       try {
-        // Get current artist
         const meRes = await authFetch("/api/artists/me");
         if (!meRes.ok) return;
         const me = await meRes.json();
         setArtistId(me.id);
 
-        // Fetch bookings
         const res = await authFetch(`/api/bookings?artistId=${me.id}`);
         if (res.ok) {
           setBookings(await res.json());
@@ -59,7 +60,7 @@ export default function ArtistBookingsPage() {
       }
     }
     fetchData();
-  }, []);
+  }, [isReady, isLoggedIn, authFetch]);
 
   const handleUpdateStatus = async (bookingId: string, status: string) => {
     try {

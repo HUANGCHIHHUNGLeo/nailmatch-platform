@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
+import { useLiff } from "@/lib/line/liff";
 
 interface ArtistProfile {
   id: string;
@@ -28,6 +29,7 @@ interface ArtistProfile {
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { isReady, isLoggedIn } = useLiff();
   const { authFetch } = useAuthFetch();
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,12 +37,13 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
+    if (!isReady || !isLoggedIn) return;
     authFetch("/api/artists/me")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => setProfile(data))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [isReady, isLoggedIn, authFetch]);
 
   const handleToggleActive = async () => {
     if (!profile) return;

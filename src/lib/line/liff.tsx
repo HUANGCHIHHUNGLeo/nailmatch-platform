@@ -74,6 +74,17 @@ export function LiffProvider({
         setIsInClient(liffObj.isInClient());
 
         if (liffObj.isLoggedIn()) {
+          // Check if ID token is still valid (expires after ~24h)
+          const idToken = liffObj.getIDToken();
+          if (!idToken && requireLogin) {
+            // ID token expired — show re-login prompt
+            console.warn("LIFF ID token expired, needs re-authentication");
+            setLiffInstance(liffObj);
+            setNeedsLogin(true);
+            setIsReady(true);
+            return;
+          }
+
           setIsLoggedIn(true);
           try {
             const userProfile = await liffObj.getProfile();
