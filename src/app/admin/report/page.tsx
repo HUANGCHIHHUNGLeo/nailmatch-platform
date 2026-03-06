@@ -206,8 +206,155 @@ export default function AdminReportPage() {
           </div>
         </Section>
 
-        {/* 6. Privacy & Compliance */}
-        <Section number="6" title="隱私與法遵">
+        {/* 6. Revenue Model */}
+        <Section number="6" title="商業模式與獲利分析">
+          <p className="mb-4">
+            NaLi Match 目前處於 MVP 免費階段，以快速累積用戶為優先。以下為平台三階段獲利策略：
+          </p>
+
+          <div className="mb-6 space-y-4">
+            <RevenueCard
+              phase="Phase 1：免費媒合期（現階段）"
+              timeline="0-6 個月"
+              model="完全免費"
+              description="客戶免費發需求，設計師免費接單。目標：累積設計師資源與客戶口碑，驗證產品市場適配性（PMF）。"
+              revenue="NT$0"
+              goal="建立雙邊網路效應，達到 50+ 設計師、500+ 客戶"
+            />
+            <RevenueCard
+              phase="Phase 2：佣金模式"
+              timeline="6-12 個月"
+              model="成交抽成 10-15%"
+              description="每筆成功預約，平台從設計師端收取 10-15% 服務費。平均客單價 NT$1,500，平台抽成 NT$150-225/單。透過 LINE Pay / 綠界金流整合自動扣款。"
+              revenue="月營收預估：100 筆/月 × NT$180 = NT$18,000"
+              goal="達到月均 100+ 成交訂單"
+            />
+            <RevenueCard
+              phase="Phase 3：多元營收"
+              timeline="12-24 個月"
+              model="佣金 + 訂閱 + 廣告"
+              description="設計師付費訂閱（月費 NT$299-599）可享置頂曝光、優先推薦、數據分析報表等進階功能。客戶端維持免費，搭配美甲/美睫品牌廣告合作。"
+              revenue="月營收預估：佣金 NT$50,000 + 訂閱 NT$30,000 + 廣告 NT$20,000 = NT$100,000"
+              goal="月營收突破 NT$100,000，開始獲利"
+            />
+          </div>
+
+          <div className="rounded-lg border bg-gray-50 p-4">
+            <h3 className="mb-2 font-semibold text-gray-900">單位經濟分析</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-xs text-gray-500">
+                    <th className="pb-2 pr-4 font-medium">指標</th>
+                    <th className="pb-2 pr-4 font-medium">數值</th>
+                    <th className="pb-2 font-medium">說明</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-700">
+                  <tr className="border-b"><td className="py-2 pr-4 font-medium">平均客單價 (AOV)</td><td className="py-2 pr-4">NT$1,500</td><td className="py-2 text-gray-500">美甲 NT$800-2,500，美睫 NT$1,000-3,000</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-4 font-medium">平台佣金率</td><td className="py-2 pr-4">10-15%</td><td className="py-2 text-gray-500">每筆成交抽 NT$150-225</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-4 font-medium">客戶獲取成本 (CAC)</td><td className="py-2 pr-4">NT$50-100</td><td className="py-2 text-gray-500">LINE OA 好友邀請 + 口碑推薦</td></tr>
+                  <tr className="border-b"><td className="py-2 pr-4 font-medium">客戶終身價值 (LTV)</td><td className="py-2 pr-4">NT$900-1,350</td><td className="py-2 text-gray-500">年均 6 次消費 × NT$150-225 佣金</td></tr>
+                  <tr><td className="py-2 pr-4 font-medium">LTV / CAC 比率</td><td className="py-2 pr-4 font-semibold text-green-600">9-27x</td><td className="py-2 text-gray-500">健康標準 &gt;3x ✓</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </Section>
+
+        {/* 7. Growth Targets */}
+        <Section number="7" title="成長目標與里程碑">
+          <div className="mb-6 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs text-gray-500">
+                  <th className="pb-2 pr-4 font-medium">指標</th>
+                  <th className="pb-2 pr-4 font-medium text-center">Month 1</th>
+                  <th className="pb-2 pr-4 font-medium text-center">Month 3</th>
+                  <th className="pb-2 pr-4 font-medium text-center">Month 6</th>
+                  <th className="pb-2 pr-4 font-medium text-center">Month 12</th>
+                  <th className="pb-2 font-medium text-center">Month 24</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-700">
+                <tr className="border-b">
+                  <td className="py-2.5 pr-4 font-medium">LINE 好友數</td>
+                  <td className="py-2.5 pr-4 text-center">100</td>
+                  <td className="py-2.5 pr-4 text-center">500</td>
+                  <td className="py-2.5 pr-4 text-center">2,000</td>
+                  <td className="py-2.5 pr-4 text-center">8,000</td>
+                  <td className="py-2.5 text-center">30,000</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2.5 pr-4 font-medium">活躍設計師</td>
+                  <td className="py-2.5 pr-4 text-center">10</td>
+                  <td className="py-2.5 pr-4 text-center">30</td>
+                  <td className="py-2.5 pr-4 text-center">80</td>
+                  <td className="py-2.5 pr-4 text-center">200</td>
+                  <td className="py-2.5 text-center">500</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2.5 pr-4 font-medium">月需求數</td>
+                  <td className="py-2.5 pr-4 text-center">20</td>
+                  <td className="py-2.5 pr-4 text-center">80</td>
+                  <td className="py-2.5 pr-4 text-center">300</td>
+                  <td className="py-2.5 pr-4 text-center">800</td>
+                  <td className="py-2.5 text-center">2,000</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2.5 pr-4 font-medium">月成交預約</td>
+                  <td className="py-2.5 pr-4 text-center">5</td>
+                  <td className="py-2.5 pr-4 text-center">25</td>
+                  <td className="py-2.5 pr-4 text-center">100</td>
+                  <td className="py-2.5 pr-4 text-center">300</td>
+                  <td className="py-2.5 text-center">800</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2.5 pr-4 font-medium">轉換率目標</td>
+                  <td className="py-2.5 pr-4 text-center">25%</td>
+                  <td className="py-2.5 pr-4 text-center">30%</td>
+                  <td className="py-2.5 pr-4 text-center">33%</td>
+                  <td className="py-2.5 pr-4 text-center">38%</td>
+                  <td className="py-2.5 text-center">40%</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 pr-4 font-medium text-[var(--brand)]">月營收預估</td>
+                  <td className="py-2.5 pr-4 text-center">-</td>
+                  <td className="py-2.5 pr-4 text-center">-</td>
+                  <td className="py-2.5 pr-4 text-center font-semibold text-[var(--brand)]">NT$18K</td>
+                  <td className="py-2.5 pr-4 text-center font-semibold text-[var(--brand)]">NT$54K</td>
+                  <td className="py-2.5 text-center font-semibold text-[var(--brand)]">NT$174K</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 print:grid-cols-2">
+            <div className="rounded-lg border p-4">
+              <h3 className="mb-2 font-semibold text-gray-900">成長策略</h3>
+              <ul className="ml-4 list-disc space-y-1.5 text-xs text-gray-600">
+                <li><strong>設計師端</strong>：與美甲美睫材料商合作推廣、美業 FB 社團招募、學院/補習班合作</li>
+                <li><strong>客戶端</strong>：LINE 好友邀請獎勵、IG/小紅書 KOL 合作、Google 在地商家 SEO</li>
+                <li><strong>留存提升</strong>：每月推播優惠、季節性活動（婚禮季、年節）、VIP 回客優惠</li>
+                <li><strong>口碑裂變</strong>：分享邀請碼送折扣、評價排行榜、設計師推薦獎金</li>
+              </ul>
+            </div>
+            <div className="rounded-lg border p-4">
+              <h3 className="mb-2 font-semibold text-gray-900">關鍵里程碑</h3>
+              <ul className="ml-4 list-disc space-y-1.5 text-xs text-gray-600">
+                <li><strong>M1</strong>：首 10 位設計師完成註冊 + 首筆成功預約</li>
+                <li><strong>M3</strong>：LINE 好友 500、月需求 80+、轉換率 30%+</li>
+                <li><strong>M6</strong>：開啟佣金模式、整合線上支付、月營收 NT$18K</li>
+                <li><strong>M12</strong>：200+ 活躍設計師、推出訂閱方案、月營收 NT$54K</li>
+                <li><strong>M18</strong>：擴展至全台主要城市、品牌廣告合作</li>
+                <li><strong>M24</strong>：月營收 NT$174K、評估 A 輪融資或持續自營獲利</li>
+              </ul>
+            </div>
+          </div>
+        </Section>
+
+        {/* 8. Privacy & Compliance */}
+        <Section number="8" title="隱私與法遵">
           <ul className="ml-4 list-disc space-y-2 text-gray-700">
             <li>完整隱私權政策頁面（/privacy）——涵蓋個資法第 8 條告知義務</li>
             <li>服務條款頁面（/terms）——明訂平台責任與使用規範</li>
@@ -219,8 +366,8 @@ export default function AdminReportPage() {
           </ul>
         </Section>
 
-        {/* 7. Roadmap */}
-        <Section number="7" title="後續發展方向">
+        {/* 9. Roadmap */}
+        <Section number="9" title="後續發展方向">
           <div className="grid gap-4 sm:grid-cols-2 print:grid-cols-2">
             <RoadmapCard
               phase="短期 (1-2 個月)"
@@ -338,6 +485,26 @@ function RoadmapCard({ phase, items }: { phase: string; items: string[] }) {
           <li key={item}>{item}</li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function RevenueCard({ phase, timeline, model, description, revenue, goal }: {
+  phase: string; timeline: string; model: string; description: string; revenue: string; goal: string;
+}) {
+  return (
+    <div className="rounded-lg border p-4">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="font-semibold text-gray-900">{phase}</h3>
+        <span className="rounded-full bg-[var(--brand-light)] px-2 py-0.5 text-xs font-medium text-[var(--brand-dark)]">{timeline}</span>
+      </div>
+      <p className="mb-2 text-xs text-gray-500">收費模式：<strong className="text-gray-700">{model}</strong></p>
+      <p className="mb-3 text-xs text-gray-600">{description}</p>
+      <div className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-2">
+        <span className="text-xs text-gray-500">營收預估</span>
+        <span className="text-sm font-semibold text-[var(--brand)]">{revenue}</span>
+      </div>
+      <p className="mt-2 text-xs text-gray-400">目標：{goal}</p>
     </div>
   );
 }
