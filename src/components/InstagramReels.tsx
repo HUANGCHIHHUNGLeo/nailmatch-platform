@@ -18,17 +18,10 @@ interface PostMeta {
 }
 
 // Instagram 貼文 / Reels — 合作網紅 & 設計師投稿
+// 上架方式：貼上 IG 網址，取出 id / type / username 加到這裡即可
+// 例如 https://www.instagram.com/p/ABC123/ → { id: "ABC123", type: "p", username: "xxx" }
+// 例如 https://www.instagram.com/reel/XYZ789/ → { id: "XYZ789", type: "reel", username: "xxx" }
 const REELS: ReelItem[] = [
-  { id: "DUM7TcKEdi9", type: "p", username: "kai_chi77" },
-  { id: "DUA5dcvkXPd", type: "p", username: "kai_chi77" },
-  { id: "DT-SPnrEZxO", type: "p", username: "kai_chi77" },
-  { id: "DTp2W-EEUlq", type: "p", username: "kai_chi77" },
-  { id: "DTj2E06EboD", type: "p", username: "kai_chi77" },
-  { id: "DTU43BSCXCw", type: "p", username: "kai_chi77" },
-  { id: "DTaIQpsk88v", type: "p", username: "kai_chi77" },
-  { id: "DTK79yok13-", type: "p", username: "kai_chi77" },
-  { id: "DTM3jowCUph", type: "p", username: "kai_chi77" },
-  { id: "DTdKK3dAURf", type: "p", username: "kai_chi77" },
 ]
 
 const IG_ICON_PATH =
@@ -75,7 +68,7 @@ export default function InstagramReelsCarousel() {
     const el = scrollRef.current
     if (!el || isPaused || selectedReel) return
 
-    const speed = 0.5 // px per frame (~30px/sec)
+    const speed = 0.25 // px per frame (~15px/sec)
     let animId: number
 
     const step = () => {
