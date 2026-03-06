@@ -16,9 +16,30 @@ export default function PrivacyPage() {
         <p className="mb-4 text-sm text-gray-500">最後更新日期：2025 年 3 月</p>
 
         <div className="space-y-6 text-sm leading-relaxed text-gray-700">
+          {/* 個資法第8條告知事項 */}
+          <section className="rounded-lg border-2 border-[var(--brand)] bg-[var(--brand-light)]/30 p-4">
+            <h2 className="mb-2 text-lg font-semibold text-gray-900">
+              個人資料蒐集告知聲明
+            </h2>
+            <p className="mb-2 text-xs text-gray-500">
+              依據中華民國《個人資料保護法》第 8 條規定，本平台於蒐集您的個人資料前，特此告知以下事項：
+            </p>
+            <ul className="ml-4 list-disc space-y-1 text-gray-700">
+              <li><strong>蒐集機關</strong>：NaLi Match 平台營運團隊</li>
+              <li><strong>蒐集目的</strong>：行銷業務（040）、消費者保護（090）、契約或類似契約之管理（069）、客戶管理（063）</li>
+              <li><strong>個資類別</strong>：辨識個人者（C001 姓名、C002 聯絡方式）、社會活動（C011 個人描述、消費紀錄）</li>
+              <li><strong>利用期間</strong>：帳號使用期間至停用後 2 年</li>
+              <li><strong>利用地區</strong>：中華民國境內</li>
+              <li><strong>利用對象</strong>：NaLi Match 平台及配對之設計師（僅限必要資料）</li>
+              <li><strong>利用方式</strong>：以自動化系統進行配對、LINE 推播通知、資料庫儲存</li>
+              <li><strong>當事人權利</strong>：您可依個資法第 3 條行使查詢、閱覽、製給複製本、補充或更正、停止蒐集處理利用、刪除等權利</li>
+              <li><strong>不提供之影響</strong>：若您選擇不提供個人資料，本平台將無法提供完整的媒合服務</li>
+            </ul>
+          </section>
+
           <section>
             <h2 className="mb-2 text-lg font-semibold text-gray-900">1. 資料蒐集項目</h2>
-            <p>NaLi Match（以下簡稱「本平台」）會蒐集以下個人資料：</p>
+            <p>NaLi Match（以下簡稱「本平台」）依個人資料保護法蒐集以下個人資料：</p>
             <ul className="ml-4 mt-2 list-disc space-y-1">
               <li><strong>LINE 帳號資訊</strong>：LINE User ID、顯示名稱、大頭貼（透過 LINE Login 授權取得）</li>
               <li><strong>聯絡資訊</strong>：姓名、電話號碼（選填）、Email（設計師）</li>

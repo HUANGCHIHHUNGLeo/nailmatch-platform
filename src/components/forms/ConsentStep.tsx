@@ -64,6 +64,7 @@ export function ConsentStep() {
           >
             隱私權政策
           </Link>
+          ，並同意本平台依個人資料保護法蒐集、處理及利用我的個人資料
         </span>
       </Label>
 

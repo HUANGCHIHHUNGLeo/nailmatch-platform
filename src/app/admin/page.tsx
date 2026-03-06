@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Artist {
   id: string;
@@ -113,15 +114,23 @@ export default function AdminDashboard() {
       <header className="border-b bg-white shadow-sm">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
           <h1 className="text-lg font-bold text-[var(--brand)]">NaLi Match 管理後台</h1>
-          <button
-            onClick={() => {
-              document.cookie = "admin_session=; path=/; max-age=0";
-              router.push("/admin/login");
-            }}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            登出
-          </button>
+          <div className="flex items-center gap-3">
+            <Link href="/admin/data" className="text-sm text-[var(--brand)] hover:underline">
+              資料統計
+            </Link>
+            <Link href="/admin/report" className="text-sm text-[var(--brand)] hover:underline">
+              MVP 報告
+            </Link>
+            <button
+              onClick={() => {
+                document.cookie = "admin_session=; path=/; max-age=0";
+                router.push("/admin/login");
+              }}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              登出
+            </button>
+          </div>
         </div>
       </header>
 
