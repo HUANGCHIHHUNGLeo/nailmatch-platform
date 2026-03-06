@@ -2,6 +2,7 @@ import crypto from "crypto";
 import type { WebhookEvent } from "@line/bot-sdk";
 import { createServiceClient } from "@/lib/supabase/server";
 import { pushMessage, pushFlexMessage, notifyArtistWelcomeBack, notifyHelperMenu, notifyArtistsOfNewRequest } from "./messaging";
+import { linkArtistRichMenu } from "./richmenu";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://nailmatch-platform.vercel.app";
 const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "";
@@ -53,6 +54,8 @@ async function handleFollow(userId: string) {
   if (artist) {
     await supabase.from("artists").update({ is_active: true }).eq("id", artist.id);
     await notifyArtistWelcomeBack(userId, artist.display_name);
+    // Switch to artist Rich Menu
+    await linkArtistRichMenu(userId).catch(() => {});
 
     // Send pending matching requests the artist may have missed
     try {

@@ -50,7 +50,7 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       const [artistRes, statsRes] = await Promise.all([
-        fetch("/api/admin/artists"),
+        fetch("/api/admin/artists?limit=100"),
         fetch("/api/admin/stats"),
       ]);
 
@@ -59,10 +59,10 @@ export default function AdminDashboard() {
         return;
       }
 
-      const artistData = await artistRes.json();
+      const artistResult = await artistRes.json();
       const statsData = await statsRes.json();
 
-      setArtists(artistData);
+      setArtists(artistResult.data || artistResult);
       setStats(statsData);
     } catch {
       router.push("/admin/login");
@@ -121,6 +121,23 @@ export default function AdminDashboard() {
             <Link href="/admin/report" className="text-sm text-[var(--brand)] hover:underline">
               MVP 報告
             </Link>
+            <button
+              onClick={async () => {
+                if (!confirm("確定要設定 LINE Rich Menu？這會覆蓋現有選單。")) return;
+                try {
+                  const res = await fetch("/api/admin/setup-richmenu", { method: "POST" });
+                  const data = await res.json();
+                  if (res.ok) {
+                    alert(`Rich Menu 設定成功！\n客戶選單: ${data.customerMenuId}\n設計師選單: ${data.artistMenuId}`);
+                  } else {
+                    alert(`設定失敗: ${data.error}`);
+                  }
+                } catch { alert("網路錯誤"); }
+              }}
+              className="text-sm text-[var(--brand)] hover:underline"
+            >
+              設定 Rich Menu
+            </button>
             <button
               onClick={() => {
                 document.cookie = "admin_session=; path=/; max-age=0";
