@@ -16,6 +16,7 @@ interface LiffContextType {
   isLoggedIn: boolean;
   isInClient: boolean;
   isReady: boolean;
+  needsLogin: boolean;
   error: Error | null;
   profile: {
     userId: string;
@@ -29,6 +30,7 @@ const LiffContext = createContext<LiffContextType>({
   isLoggedIn: false,
   isInClient: false,
   isReady: false,
+  needsLogin: false,
   error: null,
   profile: null,
 });
@@ -44,6 +46,7 @@ export function LiffProvider({
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isInClient, setIsInClient] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [needsLogin, setNeedsLogin] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [profile, setProfile] = useState<LiffContextType["profile"]>(null);
 
@@ -85,9 +88,10 @@ export function LiffProvider({
           }
           setIsReady(true);
         } else if (requireLogin && !liffObj.isInClient()) {
-          // Redirect to LINE Login for pages that require authentication
-          liffObj.login({ redirectUri: window.location.href });
-          return; // Don't set isReady — page will reload after login
+          // Don't call liff.login() — redirect URL may not be registered
+          // Instead, set flag so the page can show a friendly prompt
+          setNeedsLogin(true);
+          setIsReady(true);
         } else {
           setIsReady(true);
         }
@@ -104,7 +108,7 @@ export function LiffProvider({
 
   return (
     <LiffContext.Provider
-      value={{ liff: liffInstance, isLoggedIn, isInClient, isReady, error, profile }}
+      value={{ liff: liffInstance, isLoggedIn, isInClient, isReady, needsLogin, error, profile }}
     >
       {children}
     </LiffContext.Provider>
