@@ -209,7 +209,7 @@ export async function notifyCustomerOfQuote(
               weight: "bold",
             },
           ],
-          backgroundColor: "#06C755",
+          backgroundColor: "#D4A0A0",
           cornerRadius: "xl",
           paddingAll: "6px",
           paddingStart: "12px",
@@ -285,8 +285,10 @@ export async function notifyBookingConfirmed(
     time: string;
     artistName: string;
     location: string;
+    bookingId?: string;
   }
 ) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -346,8 +348,29 @@ export async function notifyBookingConfirmed(
         },
       ],
     },
+    footer: booking.bookingId
+      ? {
+          type: "box",
+          layout: "vertical",
+          paddingAll: "20px",
+          contents: [
+            {
+              type: "button",
+              action: {
+                type: "uri",
+                label: "查看預約詳情",
+                uri: `${appUrl}/booking/${booking.bookingId}`,
+              },
+              style: "primary",
+              color: "#D4A0A0",
+              height: "md",
+            },
+          ],
+        }
+      : undefined,
     styles: {
       body: { backgroundColor: "#FAFAF8" },
+      ...(booking.bookingId ? { footer: { backgroundColor: "#FAFAF8" } } : {}),
     },
   };
 
@@ -421,6 +444,291 @@ export async function notifyReviewPrompt(
   };
 
   return pushFlexMessage(customerLineId, `請為 ${info.artistName} 留下評價`, bubble);
+}
+
+// Notify returning artist (welcome back) — Flex Message
+export async function notifyArtistWelcomeBack(
+  userId: string,
+  displayName: string
+) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "text",
+          text: `歡迎回來，${displayName}！`,
+          weight: "bold",
+          size: "xl",
+          color: "#1a1a1a",
+        },
+        {
+          type: "text",
+          text: "有新的需求時會第一時間通知您。",
+          size: "sm",
+          color: "#666666",
+          wrap: true,
+          margin: "md",
+        },
+      ],
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "20px",
+      contents: [
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "查看新需求",
+            uri: `${appUrl}/artist/dashboard`,
+          },
+          style: "primary",
+          color: "#D4A0A0",
+          height: "md",
+        },
+      ],
+    },
+    styles: {
+      footer: { backgroundColor: "#FAFAF8" },
+    },
+  };
+  return pushFlexMessage(userId, `歡迎回來，${displayName}！`, bubble);
+}
+
+// Notify artist of approval — Flex Message
+export async function notifyArtistApproved(
+  userId: string,
+  displayName: string
+) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            {
+              type: "text",
+              text: "✓ 通過",
+              size: "xs",
+              color: "#FFFFFF",
+              weight: "bold",
+            },
+          ],
+          backgroundColor: "#22C55E",
+          cornerRadius: "xl",
+          paddingAll: "6px",
+          paddingStart: "12px",
+          paddingEnd: "12px",
+          width: "64px",
+        },
+        {
+          type: "text",
+          text: "審核通過！",
+          weight: "bold",
+          size: "xl",
+          color: "#1a1a1a",
+          margin: "md",
+        },
+        {
+          type: "text",
+          text: `恭喜 ${displayName}！您的設計師資格已通過審核，現在可以開始接案了。`,
+          size: "sm",
+          color: "#666666",
+          wrap: true,
+          margin: "md",
+        },
+      ],
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "20px",
+      contents: [
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "前往設計師後台",
+            uri: `${appUrl}/artist/dashboard`,
+          },
+          style: "primary",
+          color: "#D4A0A0",
+          height: "md",
+        },
+      ],
+    },
+    styles: {
+      footer: { backgroundColor: "#FAFAF8" },
+    },
+  };
+  return pushFlexMessage(userId, "恭喜！您的設計師審核已通過", bubble);
+}
+
+// Notify artist of rejection — Flex Message
+export async function notifyArtistRejected(
+  userId: string,
+  reason?: string
+) {
+  const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            {
+              type: "text",
+              text: "未通過",
+              size: "xs",
+              color: "#FFFFFF",
+              weight: "bold",
+            },
+          ],
+          backgroundColor: "#EF4444",
+          cornerRadius: "xl",
+          paddingAll: "6px",
+          paddingStart: "12px",
+          paddingEnd: "12px",
+          width: "60px",
+        },
+        {
+          type: "text",
+          text: "審核未通過",
+          weight: "bold",
+          size: "xl",
+          color: "#1a1a1a",
+          margin: "md",
+        },
+        {
+          type: "text",
+          text: reason || "很抱歉，您的申請目前未通過審核。請確認資料完整後重新申請。",
+          size: "sm",
+          color: "#666666",
+          wrap: true,
+          margin: "md",
+        },
+      ],
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "20px",
+      contents: [
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "重新申請",
+            uri: `https://liff.line.me/${liffId}/artist-form`,
+          },
+          style: "primary",
+          color: "#D4A0A0",
+          height: "md",
+        },
+      ],
+    },
+    styles: {
+      footer: { backgroundColor: "#FAFAF8" },
+    },
+  };
+  return pushFlexMessage(userId, "設計師審核結果通知", bubble);
+}
+
+// Generic helper menu with buttons — Flex Message
+export async function notifyHelperMenu(userId: string) {
+  const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "text",
+          text: "NaLi Match",
+          weight: "bold",
+          size: "xl",
+          color: "#1a1a1a",
+        },
+        {
+          type: "text",
+          text: "美甲・美睫媒合平台",
+          size: "sm",
+          color: "#999999",
+          margin: "sm",
+        },
+        { type: "separator", margin: "lg", color: "#f0f0f0" },
+        {
+          type: "text",
+          text: "請選擇您需要的服務：",
+          size: "sm",
+          color: "#666666",
+          margin: "lg",
+        },
+      ],
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      paddingAll: "20px",
+      contents: [
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "我要預約",
+            uri: `https://liff.line.me/${liffId}/customer-form`,
+          },
+          style: "primary",
+          color: "#D4A0A0",
+          height: "md",
+        },
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "查詢我的紀錄",
+            uri: `${appUrl}/my`,
+          },
+          style: "secondary",
+          color: "#F5F0EB",
+          height: "md",
+        },
+      ],
+    },
+    styles: {
+      footer: { backgroundColor: "#FAFAF8" },
+    },
+  };
+  return pushFlexMessage(userId, "NaLi Match — 請選擇服務", bubble);
 }
 
 // Notify customer that their request has expired

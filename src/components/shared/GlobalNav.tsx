@@ -36,7 +36,7 @@ const CUSTOMER_NAV: NavItem[] = [
   { href: "/", label: "首頁", icon: <Home className="h-5 w-5" /> },
   { href: "/request", label: "發佈需求", icon: <Sparkles className="h-5 w-5" />, description: "找設計師為您服務" },
   { href: "/artists", label: "設計師總覽", icon: <Users className="h-5 w-5" />, description: "瀏覽各地區設計師" },
-  { href: "/bookings", label: "我的預約", icon: <Calendar className="h-5 w-5" />, description: "查看預約紀錄" },
+  { href: "/my", label: "我的帳號", icon: <Calendar className="h-5 w-5" />, description: "需求紀錄・預約管理" },
 ];
 
 const ARTIST_NAV: NavItem[] = [

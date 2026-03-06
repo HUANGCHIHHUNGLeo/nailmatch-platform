@@ -4,6 +4,57 @@ import { serviceRequestSchema } from "@/lib/utils/form-schema";
 import { findMatchingArtists } from "@/lib/utils/matching";
 import { notifyArtistsOfNewRequest } from "@/lib/line/messaging";
 import { getLineUserId } from "@/lib/line/verify-token";
+import { resolveCustomer } from "@/lib/auth/resolve-customer";
+
+export async function GET(request: Request) {
+  try {
+    const customer = await resolveCustomer(request);
+    if (!customer) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    const supabase = await createServiceClient();
+
+    // Fetch all requests for this customer
+    const { data: requests, error } = await supabase
+      .from("service_requests")
+      .select("id, services, locations, budget_range, preferred_date, preferred_time, status, created_at, notified_count")
+      .eq("customer_id", customer.customerId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Fetch customer requests error:", error);
+      return NextResponse.json({ error: "Failed to fetch requests" }, { status: 500 });
+    }
+
+    // Get response counts for each request
+    const requestIds = (requests || []).map((r) => r.id);
+    let responseCounts: Record<string, number> = {};
+
+    if (requestIds.length > 0) {
+      const { data: responses } = await supabase
+        .from("artist_responses")
+        .select("request_id")
+        .in("request_id", requestIds);
+
+      if (responses) {
+        for (const r of responses) {
+          responseCounts[r.request_id] = (responseCounts[r.request_id] || 0) + 1;
+        }
+      }
+    }
+
+    const enriched = (requests || []).map((req) => ({
+      ...req,
+      response_count: responseCounts[req.id] || 0,
+    }));
+
+    return NextResponse.json(enriched);
+  } catch (error) {
+    console.error("Requests GET error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
 
 export async function POST(request: Request) {
   try {

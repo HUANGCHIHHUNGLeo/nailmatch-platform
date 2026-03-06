@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { verifyAdminSession } from "@/lib/admin/auth";
-import { pushMessage } from "@/lib/line/messaging";
+import { notifyArtistApproved, notifyArtistRejected } from "@/lib/line/messaging";
 
 export async function GET() {
   if (!(await verifyAdminSession())) {
@@ -58,19 +58,13 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Send LINE notification to artist
+    // Send LINE notification to artist (Flex Message)
     if (artist.line_user_id) {
       try {
         if (isApproved) {
-          await pushMessage(
-            artist.line_user_id,
-            `恭喜！${artist.display_name}，您的美甲師帳號已通過審核 🎉\n\n您現在可以開始接單了！有新的顧客需求時，我們會立即通知您。`
-          );
+          await notifyArtistApproved(artist.line_user_id, artist.display_name);
         } else {
-          await pushMessage(
-            artist.line_user_id,
-            `${artist.display_name}，很抱歉您的美甲師申請未通過審核。\n\n如有疑問，請聯繫我們的客服。`
-          );
+          await notifyArtistRejected(artist.line_user_id);
         }
       } catch (lineError) {
         console.error("Failed to send LINE notification:", lineError);

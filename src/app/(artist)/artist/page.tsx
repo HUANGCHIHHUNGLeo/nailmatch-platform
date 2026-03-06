@@ -14,7 +14,7 @@ type GateState = "loading" | "not_logged_in" | "not_registered" | "pending" | "v
 
 export default function ArtistGatePage() {
   const router = useRouter();
-  const { isReady, isLoggedIn, liff } = useLiff();
+  const { isReady, isLoggedIn } = useLiff();
   const { authFetch } = useAuthFetch();
   const [state, setState] = useState<GateState>("loading");
 
@@ -119,15 +119,10 @@ export default function ArtistGatePage() {
                       <p className="mt-1 text-sm text-gray-500">
                         使用您註冊時的 LINE 帳號登入後台
                       </p>
-                      <Button
-                        className="mt-3 w-full bg-[#06C755] text-white hover:bg-[#05b04c]"
-                        onClick={() => {
-                          if (liff) {
-                            liff.login({ redirectUri: window.location.href });
-                          }
-                        }}
-                      >
-                        LINE 登入
+                      <Button asChild className="mt-3 w-full bg-[#06C755] text-white hover:bg-[#05b04c]">
+                        <a href={`https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/artist-form`}>
+                          LINE 登入
+                        </a>
                       </Button>
                     </div>
                   </div>

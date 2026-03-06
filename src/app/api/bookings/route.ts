@@ -66,6 +66,7 @@ export async function POST(request: Request) {
       time: bookingTime || "待確認",
       artistName: artist?.display_name || "美甲師",
       location: artist?.studio_address || "待確認",
+      bookingId: booking.id,
     };
 
     // Notify customer

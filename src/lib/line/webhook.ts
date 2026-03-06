@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import type { WebhookEvent } from "@line/bot-sdk";
 import { createServiceClient } from "@/lib/supabase/server";
-import { pushMessage, pushFlexMessage } from "./messaging";
+import { pushMessage, pushFlexMessage, notifyArtistWelcomeBack, notifyHelperMenu } from "./messaging";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "";
@@ -52,7 +52,7 @@ async function handleFollow(userId: string) {
 
   if (artist) {
     await supabase.from("artists").update({ is_active: true }).eq("id", artist.id);
-    await pushMessage(userId, `歡迎回來，${artist.display_name}！\n\n有新的需求時會第一時間通知您。`);
+    await notifyArtistWelcomeBack(userId, artist.display_name);
     return;
   }
 
@@ -218,20 +218,17 @@ async function handleTextMessage(userId: string, text: string) {
         const label = statusLabels[latestRequest.status] || latestRequest.status;
         await pushMessage(
           userId,
-          `您最新的需求狀態：${label}\n\n查看詳情：${APP_URL}/request/${latestRequest.id}`
+          `您最新的需求狀態：${label}\n\n查看詳情：${APP_URL}/request/${latestRequest.id}\n\n查看所有紀錄：${APP_URL}/my`
         );
         return;
       }
     }
 
-    await pushMessage(userId, `目前沒有進行中的需求。\n\n立即送出需求：https://liff.line.me/${LIFF_ID}/customer-form`);
+    await pushMessage(userId, `目前沒有進行中的需求。\n\n立即送出需求：https://liff.line.me/${LIFF_ID}/customer-form\n\n查看歷史紀錄：${APP_URL}/my`);
     return;
   }
 
-  await pushMessage(
-    userId,
-    `感謝您的訊息！\n\n想預約美甲/美睫？輸入「預約」或點擊下方選單開始。\n想查詢進度？輸入「我的預約」。`
-  );
+  await notifyHelperMenu(userId);
 }
 
 async function handlePostback(userId: string, data: string) {

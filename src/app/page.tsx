@@ -41,18 +41,18 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-[var(--brand-light)]">
+    <div className="min-h-screen bg-[var(--brand-bg)] font-sans selection:bg-[var(--brand-light)]">
       {/* Header */}
       <header className="fixed top-0 z-50 w-full border-b border-white/20 bg-white/60 backdrop-blur-xl transition-all">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo.png" alt="NaLi Match" width={32} height={32} className="rounded-lg" />
-            <span className="text-xl font-bold tracking-tight text-slate-900">NaLi Match</span>
+            <span className="text-xl font-bold tracking-tight text-gray-900">NaLi Match</span>
           </Link>
           <nav className="flex items-center gap-4">
             <Link
               href="/artist"
-              className="hidden text-sm font-medium text-slate-600 transition-colors hover:text-[var(--brand)] sm:block"
+              className="hidden text-sm font-medium text-gray-600 transition-colors hover:text-[var(--brand)] sm:block"
             >
               {t.nav.artistLogin}
             </Link>
@@ -78,13 +78,13 @@ export default function HomePage() {
             <Badge variant="outline" className="mb-6 border-[var(--brand-light)] bg-[var(--brand-light)]/50/50 px-4 py-1.5 text-sm font-medium text-[var(--brand-darker)] backdrop-blur-sm">
               {t.hero.badge}
             </Badge>
-            <h1 className="mb-8 text-5xl font-black tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
+            <h1 className="mb-8 text-5xl font-black tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
               {t.hero.headline1}<br className="hidden sm:block" />
               <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--brand), var(--brand-rose))' }}>
                 {t.hero.headline2}
               </span>
             </h1>
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-600 lg:text-xl leading-relaxed">
+            <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-600 lg:text-xl leading-relaxed">
               {t.hero.subtext}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -103,7 +103,7 @@ export default function HomePage() {
                 asChild
                 variant="outline"
                 size="lg"
-                className="h-14 border-slate-200 bg-white/50 px-8 text-lg font-medium text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-slate-50 hover:text-slate-900"
+                className="h-14 border-gray-200 bg-white/50 px-8 text-lg font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all hover:bg-gray-50 hover:text-gray-900"
               >
                 <Link href="/artist">{t.hero.ctaArtist}</Link>
               </Button>
@@ -116,7 +116,7 @@ export default function HomePage() {
       <section className="relative py-24 bg-white">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
               {t.steps.sectionTitle}
             </h2>
             <div className="mx-auto mt-4 h-1 w-20 rounded bg-[var(--brand)]" />
@@ -131,16 +131,16 @@ export default function HomePage() {
           >
             {steps.map((step, index) => (
               <motion.div key={step.number} variants={itemVariants}>
-                <Card className="group relative overflow-hidden border-none bg-slate-50 shadow-none transition-all hover:bg-white hover:shadow-2xl hover:shadow-slate-200/50">
+                <Card className="group relative overflow-hidden border-none bg-gray-50 shadow-none transition-all hover:bg-white hover:shadow-2xl hover:shadow-gray-200/50">
                   <div className="absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" style={{ background: 'linear-gradient(to bottom right, rgba(196,160,138,0.08), rgba(212,169,169,0.08))' }} />
                   <CardContent className="relative p-8">
-                    <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl font-black text-[var(--brand)] shadow-sm ring-1 ring-slate-100 group-hover:scale-110 group-hover:rotate-3 transition-transform">
+                    <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl font-black text-[var(--brand)] shadow-sm ring-1 ring-gray-100 group-hover:scale-110 group-hover:rotate-3 transition-transform">
                       {step.number}
                     </div>
-                    <h3 className="mb-3 text-2xl font-bold text-slate-900">{step.title}</h3>
-                    <p className="text-slate-600 leading-relaxed">{step.description}</p>
+                    <h3 className="mb-3 text-2xl font-bold text-gray-900">{step.title}</h3>
+                    <p className="text-gray-600 leading-relaxed">{step.description}</p>
                     {index !== steps.length - 1 && (
-                      <div className="absolute -right-4 top-1/2 hidden -translate-y-1/2 text-slate-200 md:block">
+                      <div className="absolute -right-4 top-1/2 hidden -translate-y-1/2 text-gray-200 md:block">
                         <ArrowRight className="h-8 w-8" />
                       </div>
                     )}
@@ -153,14 +153,14 @@ export default function HomePage() {
       </section>
 
       {/* Features Grid */}
-      <section className="bg-slate-900 py-24 text-white">
+      <section className="bg-gray-900 py-24 text-white">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 md:flex md:items-end md:justify-between">
             <div className="max-w-2xl">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
                 {t.features.sectionTitle}
               </h2>
-              <p className="mt-4 text-lg text-slate-400">
+              <p className="mt-4 text-lg text-gray-400">
                 {t.features.sectionDesc}
               </p>
             </div>
@@ -178,12 +178,12 @@ export default function HomePage() {
           >
             {features.map((feature) => (
               <motion.div key={feature.title} variants={itemVariants}>
-                <div className="rounded-3xl border border-slate-800 bg-slate-800/50 p-8 transition-colors hover:bg-slate-800 hover:border-slate-700">
-                  <div className="mb-6 inline-flex rounded-xl bg-slate-900 p-3 shadow-inner ring-1 ring-slate-800">
+                <div className="rounded-3xl border border-gray-800 bg-gray-800/50 p-8 transition-colors hover:bg-gray-800 hover:border-gray-700">
+                  <div className="mb-6 inline-flex rounded-xl bg-gray-900 p-3 shadow-inner ring-1 ring-gray-800">
                     {feature.icon}
                   </div>
                   <h3 className="mb-3 text-xl font-bold">{feature.title}</h3>
-                  <p className="text-slate-400 leading-relaxed text-sm">
+                  <p className="text-gray-400 leading-relaxed text-sm">
                     {feature.description}
                   </p>
                 </div>
@@ -212,7 +212,7 @@ export default function HomePage() {
             <Button
               asChild
               size="lg"
-              className="h-16 rounded-full bg-white px-10 text-xl font-bold text-[var(--brand-dark)] shadow-xl transition-colors hover:bg-slate-50"
+              className="h-16 rounded-full bg-white px-10 text-xl font-bold text-[var(--brand-dark)] shadow-xl transition-colors hover:bg-gray-50"
             >
               <Link href="/request">
                 {t.cta.button}
@@ -223,9 +223,9 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white py-12 border-t border-slate-100">
-        <div className="mx-auto max-w-6xl px-4 flex flex-col items-center justify-between sm:flex-row sm:px-6 lg:px-8 text-sm text-slate-500">
-          <div className="flex items-center gap-2 font-bold text-slate-900 mb-4 sm:mb-0">
+      <footer className="bg-white py-12 border-t border-gray-100">
+        <div className="mx-auto max-w-6xl px-4 flex flex-col items-center justify-between sm:flex-row sm:px-6 lg:px-8 text-sm text-gray-500">
+          <div className="flex items-center gap-2 font-bold text-gray-900 mb-4 sm:mb-0">
             <Image src="/logo.png" alt="NaLi Match" width={24} height={24} className="rounded" />
             NaLi Match
           </div>
