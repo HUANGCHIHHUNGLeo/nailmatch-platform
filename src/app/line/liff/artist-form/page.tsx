@@ -559,7 +559,7 @@ function ArtistFormContent() {
 
 export default function LiffArtistForm() {
   return (
-    <LiffProvider>
+    <LiffProvider requireLogin>
       <ArtistFormContent />
     </LiffProvider>
   );
