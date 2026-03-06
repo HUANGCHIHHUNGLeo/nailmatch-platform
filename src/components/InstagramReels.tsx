@@ -223,7 +223,7 @@ export default function InstagramReelsCarousel() {
 
         {/* Dialog — mobile: top video / bottom text, desktop: left video / right text */}
         <Dialog open={!!selectedReel} onOpenChange={() => setSelectedReel(null)}>
-          <DialogContent className="max-h-[80vh] max-w-[950px] overflow-hidden p-0 md:max-h-[85vh]">
+          <DialogContent className="max-w-[950px] sm:max-w-[950px] max-h-[80vh] md:max-h-[85vh] p-0 overflow-hidden">
             <DialogTitle className="sr-only">Instagram Post</DialogTitle>
             {selectedReel && (
               <div className="flex h-[70vh] flex-col md:h-[80vh] md:flex-row">
