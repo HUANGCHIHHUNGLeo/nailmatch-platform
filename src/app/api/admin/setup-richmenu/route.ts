@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { verifyAdminSession } from "@/lib/admin/auth";
 import { setupRichMenus } from "@/lib/line/richmenu";
 
 export async function POST() {
-  // Admin auth check
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session");
-  if (session?.value !== process.env.ADMIN_SECRET) {
+  if (!(await verifyAdminSession())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
