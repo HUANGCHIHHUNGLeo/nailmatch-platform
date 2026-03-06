@@ -154,4 +154,5 @@ export const REQUEST_STATUS = {
   confirmed: { label: "已確認", color: "bg-green-100 text-green-800" },
   completed: { label: "已完成", color: "bg-gray-100 text-gray-800" },
   cancelled: { label: "已取消", color: "bg-red-100 text-red-800" },
+  expired: { label: "已過期", color: "bg-gray-100 text-gray-500" },
 } as const;

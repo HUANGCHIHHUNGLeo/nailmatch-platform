@@ -23,12 +23,17 @@ export async function GET(request: Request) {
     }
 
     // Fetch active requests that match this artist's profile
+    // Only show requests created within the last 7 days to avoid stale ones
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     let query = supabase
       .from("service_requests")
       .select(
         "id, services, locations, budget_range, preferred_date, preferred_time, preferred_styles, status, created_at"
       )
       .in("status", ["pending", "matching"])
+      .gte("created_at", sevenDaysAgo.toISOString())
       .order("created_at", { ascending: false })
       .limit(20);
 

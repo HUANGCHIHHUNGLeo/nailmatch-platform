@@ -422,3 +422,110 @@ export async function notifyReviewPrompt(
 
   return pushFlexMessage(customerLineId, `請為 ${info.artistName} 留下評價`, bubble);
 }
+
+// Notify customer that their request has expired
+export async function notifyRequestExpired(
+  customerLineId: string,
+  info: {
+    services: string[];
+    preferredDate: string;
+    requestId: string;
+  }
+) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+  const newRequestUrl = liffId
+    ? `https://liff.line.me/${liffId}/customer-form`
+    : `${appUrl}/request`;
+
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            {
+              type: "text",
+              text: "已過期",
+              size: "xs",
+              color: "#FFFFFF",
+              weight: "bold",
+            },
+          ],
+          backgroundColor: "#999999",
+          cornerRadius: "xl",
+          paddingAll: "6px",
+          paddingStart: "12px",
+          paddingEnd: "12px",
+          width: "60px",
+        },
+        {
+          type: "text",
+          text: "您的需求已過期",
+          weight: "bold",
+          size: "xl",
+          color: "#1a1a1a",
+          margin: "md",
+        },
+        {
+          type: "text",
+          text: `您的「${info.services.slice(0, 2).join("、")}」需求（預約日期：${info.preferredDate}）已超過預約時間，系統已自動關閉。`,
+          size: "sm",
+          color: "#666666",
+          wrap: true,
+          margin: "md",
+        },
+        {
+          type: "text",
+          text: "如果仍有需求，歡迎重新預約！",
+          size: "sm",
+          color: "#999999",
+          wrap: true,
+          margin: "sm",
+        },
+      ],
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      paddingAll: "20px",
+      contents: [
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "重新預約",
+            uri: newRequestUrl,
+          },
+          style: "primary",
+          color: "#D4A0A0",
+          height: "md",
+        },
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "查看原需求",
+            uri: `${appUrl}/request/${info.requestId}`,
+          },
+          style: "link",
+          color: "#999999",
+          height: "sm",
+        },
+      ],
+    },
+    styles: {
+      footer: { backgroundColor: "#FAFAF8" },
+    },
+  };
+
+  return pushFlexMessage(customerLineId, "您的需求已過期，歡迎重新預約", bubble);
+}
