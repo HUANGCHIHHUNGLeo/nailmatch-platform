@@ -1,49 +1,187 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Sparkles, LayoutDashboard } from "lucide-react";
+import {
+  Home,
+  Sparkles,
+  LayoutDashboard,
+  Menu,
+  X,
+  User,
+  Image as ImageIcon,
+  Calendar,
+  Settings,
+  Clock,
+  Users,
+  FileText,
+  Shield,
+} from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  description?: string;
+}
+
+const CUSTOMER_NAV: NavItem[] = [
+  { href: "/", label: "首頁", icon: <Home className="h-5 w-5" /> },
+  { href: "/request", label: "發佈需求", icon: <Sparkles className="h-5 w-5" />, description: "找設計師為您服務" },
+  { href: "/artists", label: "設計師總覽", icon: <Users className="h-5 w-5" />, description: "瀏覽各地區設計師" },
+  { href: "/bookings", label: "我的預約", icon: <Calendar className="h-5 w-5" />, description: "查看預約紀錄" },
+];
+
+const ARTIST_NAV: NavItem[] = [
+  { href: "/artist/dashboard", label: "接案總覽", icon: <LayoutDashboard className="h-5 w-5" />, description: "查看新需求與報價" },
+  { href: "/artist/portfolio", label: "作品管理", icon: <ImageIcon className="h-5 w-5" />, description: "上傳與管理作品集" },
+  { href: "/artist/profile", label: "個人資料", icon: <User className="h-5 w-5" />, description: "編輯公開檔案" },
+  { href: "/artist/bookings", label: "預約管理", icon: <Calendar className="h-5 w-5" />, description: "管理已確認的預約" },
+  { href: "/artist/availability", label: "時段管理", icon: <Clock className="h-5 w-5" />, description: "設定可接案時段" },
+  { href: "/artist/settings", label: "帳號設定", icon: <Settings className="h-5 w-5" />, description: "暫停接案、偏好設定" },
+];
+
+const FOOTER_NAV: NavItem[] = [
+  { href: "/terms", label: "服務條款", icon: <FileText className="h-5 w-5" /> },
+  { href: "/privacy", label: "隱私權政策", icon: <Shield className="h-5 w-5" /> },
+];
 
 export function GlobalNav() {
-    const pathname = usePathname();
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
-    // Hide on homepage since it already has all the navigation
-    if (pathname === "/") return null;
+  // Hide on admin pages
+  if (pathname.startsWith("/admin")) return null;
 
-    const isArtistSection = pathname.startsWith("/artist");
+  const isArtistSection = pathname.startsWith("/artist");
+  const primaryNav = isArtistSection ? ARTIST_NAV : CUSTOMER_NAV;
+  const secondaryNav = isArtistSection ? CUSTOMER_NAV : ARTIST_NAV;
+  const secondaryLabel = isArtistSection ? "客戶功能" : "設計師功能";
 
-    return (
-        <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-3">
-            {/* Artist dashboard link — show on artist pages but not on dashboard itself */}
-            {isArtistSection && !pathname.startsWith("/artist/dashboard") && (
-                <Link
-                    href="/artist/dashboard"
-                    className="flex h-12 items-center gap-2 rounded-full bg-[var(--brand-dark)] px-5 text-sm font-medium text-white shadow-lg transition-transform hover:scale-105"
-                >
-                    <LayoutDashboard className="h-4 w-4" />
-                    設計師後台
-                </Link>
-            )}
+  return (
+    <>
+      {/* Hamburger button — fixed bottom-right */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <button
+            className="fixed bottom-6 right-6 z-[100] flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand)] text-white shadow-xl transition-transform hover:scale-105 hover:bg-[var(--brand-dark)] active:scale-95"
+            aria-label="選單"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+        </SheetTrigger>
 
-            {/* 發佈需求 — show on non-artist, non-request pages */}
-            {!isArtistSection && !pathname.startsWith("/request") && (
-                <Link
-                    href="/request"
-                    className="flex h-12 items-center gap-2 rounded-full bg-[var(--brand)] px-5 text-sm font-medium text-white shadow-lg transition-transform hover:scale-105 hover:bg-[var(--brand-dark)]"
-                >
-                    <Sparkles className="h-4 w-4" />
-                    發佈需求
-                </Link>
-            )}
-
-            {/* 導回主頁 */}
+        <SheetContent side="right" className="w-80 p-0 overflow-y-auto [&>button]:hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b bg-[var(--brand-bg)] px-5 py-4">
             <Link
-                href="/"
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[var(--brand-dark)] shadow-xl transition-transform hover:scale-105 hover:bg-slate-50 border border-slate-100"
-                title="回主頁"
+              href="/"
+              onClick={() => setOpen(false)}
+              className="text-lg font-bold text-[var(--brand)]"
             >
-                <Home className="h-5 w-5" />
+              NaLi Match
             </Link>
-        </div>
-    );
+            <button
+              onClick={() => setOpen(false)}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Primary Nav */}
+          <nav className="px-3 py-3">
+            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+              {isArtistSection ? "設計師後台" : "找設計師"}
+            </p>
+            {primaryNav.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-3 transition-colors ${
+                    isActive
+                      ? "bg-[var(--brand-light)] text-[var(--brand-darker)]"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <span className={isActive ? "text-[var(--brand)]" : "text-gray-400"}>
+                    {item.icon}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-medium ${isActive ? "text-[var(--brand-darker)]" : ""}`}>
+                      {item.label}
+                    </p>
+                    {item.description && (
+                      <p className="truncate text-xs text-gray-400">{item.description}</p>
+                    )}
+                  </div>
+                  {isActive && (
+                    <div className="h-2 w-2 rounded-full bg-[var(--brand)]" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="px-5">
+            <Separator />
+          </div>
+
+          {/* Secondary Nav */}
+          <nav className="px-3 py-3">
+            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+              {secondaryLabel}
+            </p>
+            {secondaryNav.slice(0, 3).map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
+              >
+                <span className="text-gray-300">{item.icon}</span>
+                <span className="text-sm">{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+
+          <div className="px-5">
+            <Separator />
+          </div>
+
+          {/* Footer Nav */}
+          <nav className="px-3 py-3">
+            {FOOTER_NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
+              >
+                <span className="text-gray-300">{item.icon}</span>
+                <span className="text-xs">{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+
+          {/* Bottom branding */}
+          <div className="mt-auto border-t bg-[var(--brand-bg)] px-5 py-4">
+            <p className="text-center text-xs text-gray-400">
+              NaLi Match — 美甲美睫媒合平台
+            </p>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
 }

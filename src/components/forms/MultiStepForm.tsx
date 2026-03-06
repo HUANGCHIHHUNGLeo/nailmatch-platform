@@ -19,6 +19,8 @@ import { RemovalStep } from "./RemovalStep";
 import { ReferenceStep } from "./ReferenceStep";
 import { PaymentStep } from "./PaymentStep";
 import { NotesStep } from "./NotesStep";
+import { ContactStep } from "./ContactStep";
+import { ConsentStep } from "./ConsentStep";
 
 interface StepDef {
   component: React.ComponentType;
@@ -41,6 +43,8 @@ const STEPS: StepDef[] = [
   { component: PaymentStep, title: "付款方式", key: "paymentPreference" },
   { component: ReferenceStep, title: "參考圖片", key: "referenceImages" },
   { component: NotesStep, title: "補充需求", key: "additionalNotes" },
+  { component: ContactStep, title: "聯絡資訊", key: "customerName", extraKeys: ["customerPhone"] },
+  { component: ConsentStep, title: "確認送出", key: "consentAccepted" },
 ];
 
 interface MultiStepFormProps {
@@ -68,6 +72,9 @@ export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
       paymentPreference: [],
       referenceImages: [],
       additionalNotes: "",
+      customerName: "",
+      customerPhone: "",
+      consentAccepted: false,
     },
     mode: "onChange",
   });
@@ -125,7 +132,7 @@ export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
     }
 
     // Optional steps skip validation
-    const isOptional = stepKey === "referenceImages" || stepKey === "additionalNotes" || stepKey === "nailLength" || stepKey === "paymentPreference";
+    const isOptional = stepKey === "referenceImages" || stepKey === "additionalNotes" || stepKey === "nailLength" || stepKey === "paymentPreference" || stepKey === "customerPhone";
     const isValid = isOptional || (await methods.trigger(fieldsToValidate));
 
     if (isValid) {

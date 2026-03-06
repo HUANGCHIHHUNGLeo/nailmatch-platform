@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { serviceRequestSchema } from "@/lib/utils/form-schema";
 import { findMatchingArtists } from "@/lib/utils/matching";
 import { notifyArtistsOfNewRequest } from "@/lib/line/messaging";
+import { getLineUserId } from "@/lib/line/verify-token";
 
 export async function POST(request: Request) {
   try {
@@ -19,17 +20,72 @@ export async function POST(request: Request) {
 
     const supabase = await createServiceClient();
 
-    // Anonymous request - create temp customer
-    const { data: newCustomer, error: custError } = await supabase
-      .from("customers")
-      .insert({ display_name: "Anonymous" })
-      .select("id")
-      .single();
+    // Resolve customer identity (LINE auth or anonymous)
+    const lineUserId = getLineUserId(request);
+    const lineProfile = body.lineProfile as
+      | { displayName?: string; pictureUrl?: string }
+      | undefined;
+    let customerId: string;
 
-    if (custError || !newCustomer) {
-      return NextResponse.json({ error: "Failed to create customer" }, { status: 500 });
+    if (lineUserId) {
+      // LINE authenticated — find existing customer or create new one
+      const { data: existingCustomer } = await supabase
+        .from("customers")
+        .select("id")
+        .eq("line_user_id", lineUserId)
+        .single();
+
+      if (existingCustomer) {
+        customerId = existingCustomer.id;
+        // Update profile info from LINE
+        if (lineProfile?.displayName) {
+          await supabase
+            .from("customers")
+            .update({
+              display_name: lineProfile.displayName,
+              ...(lineProfile.pictureUrl
+                ? { avatar_url: lineProfile.pictureUrl }
+                : {}),
+            })
+            .eq("id", customerId);
+        }
+      } else {
+        // First time — create customer with LINE identity
+        const { data: newCustomer, error: custError } = await supabase
+          .from("customers")
+          .insert({
+            line_user_id: lineUserId,
+            display_name: lineProfile?.displayName || "LINE User",
+            avatar_url: lineProfile?.pictureUrl || null,
+          })
+          .select("id")
+          .single();
+
+        if (custError || !newCustomer) {
+          return NextResponse.json(
+            { error: "Failed to create customer" },
+            { status: 500 }
+          );
+        }
+        customerId = newCustomer.id;
+      }
+    } else {
+      // Anonymous request — no LINE identity
+      const displayName = parsed.data.customerName || "Anonymous";
+      const { data: newCustomer, error: custError } = await supabase
+        .from("customers")
+        .insert({ display_name: displayName })
+        .select("id")
+        .single();
+
+      if (custError || !newCustomer) {
+        return NextResponse.json(
+          { error: "Failed to create customer" },
+          { status: 500 }
+        );
+      }
+      customerId = newCustomer.id;
     }
-    const customerId = newCustomer.id;
 
     // Create service request
     const { data: serviceRequest, error: insertError } = await supabase
@@ -50,6 +106,9 @@ export async function POST(request: Request) {
         reference_images: parsed.data.referenceImages || [],
         additional_notes: parsed.data.additionalNotes || "",
         payment_preference: parsed.data.paymentPreference || [],
+        customer_name: parsed.data.customerName || null,
+        customer_phone: parsed.data.customerPhone || null,
+        consented_at: parsed.data.consentAccepted ? new Date().toISOString() : null,
         status: "matching",
       })
       .select("id")

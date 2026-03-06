@@ -178,7 +178,7 @@ export async function notifyArtistsOfNewRequest(
   );
 }
 
-// Notify customer of new quote
+// Notify customer of new quote (Flex Message)
 export async function notifyCustomerOfQuote(
   customerLineId: string,
   quote: {
@@ -187,13 +187,97 @@ export async function notifyCustomerOfQuote(
     requestId: string;
   }
 ) {
-  return pushMessage(
-    customerLineId,
-    `${quote.artistName} 已對您的需求報價 NT$${quote.price.toLocaleString()}\n\n查看報價詳情：${process.env.NEXT_PUBLIC_APP_URL}/responses/${quote.requestId}`
-  );
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            {
+              type: "text",
+              text: "NEW",
+              size: "xs",
+              color: "#FFFFFF",
+              weight: "bold",
+            },
+          ],
+          backgroundColor: "#06C755",
+          cornerRadius: "xl",
+          paddingAll: "6px",
+          paddingStart: "12px",
+          paddingEnd: "12px",
+          width: "52px",
+        },
+        {
+          type: "text",
+          text: "收到新報價！",
+          weight: "bold",
+          size: "xl",
+          color: "#1a1a1a",
+          margin: "md",
+        },
+        { type: "separator", margin: "lg", color: "#f0f0f0" },
+        {
+          type: "box",
+          layout: "vertical",
+          spacing: "sm",
+          margin: "lg",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "設計師", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: quote.artistName, size: "sm", color: "#333333", flex: 5, weight: "bold" },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "報價金額", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: `NT$${quote.price.toLocaleString()}`, size: "md", color: "#D4A0A0", flex: 5, weight: "bold" },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "20px",
+      contents: [
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "查看報價詳情",
+            uri: `${appUrl}/request/${quote.requestId}`,
+          },
+          style: "primary",
+          color: "#D4A0A0",
+          height: "md",
+        },
+      ],
+    },
+    styles: {
+      footer: { backgroundColor: "#FAFAF8" },
+    },
+  };
+
+  return pushFlexMessage(customerLineId, `${quote.artistName} 報價 NT$${quote.price.toLocaleString()}`, bubble);
 }
 
-// Notify booking confirmation
+// Notify booking confirmation (Flex Message)
 export async function notifyBookingConfirmed(
   userLineId: string,
   booking: {
@@ -203,8 +287,138 @@ export async function notifyBookingConfirmed(
     location: string;
   }
 ) {
-  return pushMessage(
-    userLineId,
-    `預約確認！\n\n日期：${booking.date}\n時間：${booking.time}\n美甲師：${booking.artistName}\n地點：${booking.location}\n\n期待為您服務！`
-  );
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "text",
+          text: "預約確認",
+          weight: "bold",
+          size: "xl",
+          color: "#1a1a1a",
+        },
+        { type: "separator", margin: "lg", color: "#f0f0f0" },
+        {
+          type: "box",
+          layout: "vertical",
+          spacing: "sm",
+          margin: "lg",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "日期", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: booking.date, size: "sm", color: "#333333", flex: 5 },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "時間", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: booking.time, size: "sm", color: "#333333", flex: 5 },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "設計師", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: booking.artistName, size: "sm", color: "#333333", flex: 5, weight: "bold" },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "地點", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: booking.location, size: "sm", color: "#333333", flex: 5, wrap: true },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    styles: {
+      body: { backgroundColor: "#FAFAF8" },
+    },
+  };
+
+  return pushFlexMessage(userLineId, `預約確認 - ${booking.artistName}`, bubble);
+}
+
+// Notify customer to leave a review after booking completion
+export async function notifyReviewPrompt(
+  customerLineId: string,
+  info: {
+    artistName: string;
+    bookingId: string;
+  }
+) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "text",
+          text: "服務已完成",
+          weight: "bold",
+          size: "xl",
+          color: "#1a1a1a",
+        },
+        {
+          type: "text",
+          text: `感謝您使用 NaLi Match！希望 ${info.artistName} 的服務讓您滿意。`,
+          size: "sm",
+          color: "#666666",
+          wrap: true,
+          margin: "md",
+        },
+        {
+          type: "text",
+          text: "留下您的評價，幫助其他人找到好設計師！",
+          size: "sm",
+          color: "#999999",
+          wrap: true,
+          margin: "sm",
+        },
+      ],
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "20px",
+      contents: [
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "留下評價",
+            uri: `${appUrl}/booking/${info.bookingId}`,
+          },
+          style: "primary",
+          color: "#D4A0A0",
+          height: "md",
+        },
+      ],
+    },
+    styles: {
+      footer: { backgroundColor: "#FAFAF8" },
+    },
+  };
+
+  return pushFlexMessage(customerLineId, `請為 ${info.artistName} 留下評價`, bubble);
 }

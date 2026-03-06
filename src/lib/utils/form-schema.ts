@@ -39,6 +39,15 @@ export const serviceRequestSchema = z.object({
 
   // Step 12: 補充需求 (optional)
   additionalNotes: z.string().optional().default(""),
+
+  // Step 13: 聯絡資訊
+  customerName: z.string().min(1, "請輸入姓名"),
+  customerPhone: z.string().optional().default(""),
+
+  // Step 14: 同意條款
+  consentAccepted: z
+    .boolean()
+    .refine((v) => v === true, "請同意服務條款與隱私權政策"),
 });
 
 export type ServiceRequestFormData = z.input<typeof serviceRequestSchema>;

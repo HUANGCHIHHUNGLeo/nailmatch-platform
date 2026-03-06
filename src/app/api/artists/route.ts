@@ -5,7 +5,7 @@ import { artistRegistrationSchema } from "@/lib/utils/form-schema";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { lineProfile, role, ...formData } = body;
+    const { lineProfile, role, consentAccepted, ...formData } = body;
 
     const parsed = artistRegistrationSchema.safeParse(formData);
     if (!parsed.success) {
@@ -40,6 +40,8 @@ export async function POST(request: Request) {
         role: role || "nail",
         is_verified: false,
         is_active: true,
+        terms_accepted_at: consentAccepted ? new Date().toISOString() : null,
+        privacy_accepted_at: consentAccepted ? new Date().toISOString() : null,
         updated_at: new Date().toISOString(),
       })
       .select("id")
@@ -66,7 +68,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from("artists")
-      .select("id, display_name, avatar_url, services, styles, min_price, max_price, cities")
+      .select("id, display_name, avatar_url, services, styles, min_price, max_price, cities, role, studio_address, payment_methods, instagram_handle")
       .eq("is_active", true)
       .eq("is_verified", true)
       .order("created_at", { ascending: false });

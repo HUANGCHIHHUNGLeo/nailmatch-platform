@@ -126,7 +126,7 @@ async function handleFollow(userId: string) {
           action: {
             type: "uri",
             label: "我要預約 Book Now",
-            uri: `${APP_URL}/request`,
+            uri: `https://liff.line.me/${LIFF_ID}/customer-form`,
           },
           style: "primary",
           color: "#D4A0A0",
@@ -137,7 +137,7 @@ async function handleFollow(userId: string) {
           action: {
             type: "uri",
             label: "我是設計師・註冊加入",
-            uri: `${APP_URL}/line/liff/artist-form`,
+            uri: `https://liff.line.me/${LIFF_ID}/artist-form`,
           },
           style: "secondary",
           color: "#F5F0EB",
@@ -180,10 +180,10 @@ async function handleTextMessage(userId: string, text: string) {
     return;
   }
 
-  if (["預約", "美甲", "我要預約", "找美甲師"].some((kw) => lowerText.includes(kw))) {
+  if (["預約", "美甲", "美睫", "我要預約", "找美甲師", "找設計師"].some((kw) => lowerText.includes(kw))) {
     await pushMessage(
       userId,
-      `想找美甲師嗎？點擊下方連結填寫需求，3 分鐘就能收到報價：\n\n${APP_URL}/request`
+      `想找設計師嗎？點擊下方連結填寫需求，3 分鐘就能收到報價：\n\nhttps://liff.line.me/${LIFF_ID}/customer-form`
     );
     return;
   }
@@ -224,13 +224,13 @@ async function handleTextMessage(userId: string, text: string) {
       }
     }
 
-    await pushMessage(userId, `目前沒有進行中的需求。\n\n立即送出需求：${APP_URL}/request`);
+    await pushMessage(userId, `目前沒有進行中的需求。\n\n立即送出需求：https://liff.line.me/${LIFF_ID}/customer-form`);
     return;
   }
 
   await pushMessage(
     userId,
-    `感謝您的訊息！\n\n想預約美甲？輸入「預約」或點擊下方選單開始。\n想查詢進度？輸入「我的預約」。`
+    `感謝您的訊息！\n\n想預約美甲/美睫？輸入「預約」或點擊下方選單開始。\n想查詢進度？輸入「我的預約」。`
   );
 }
 

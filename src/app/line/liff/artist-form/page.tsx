@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 import {
   artistRegistrationSchema,
   type ArtistRegistrationFormData,
@@ -22,6 +23,7 @@ function ArtistFormContent() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [role, setRole] = useState<"nail" | "lash" | "">("");
+  const [consentAccepted, setConsentAccepted] = useState(false);
 
   const {
     register,
@@ -95,6 +97,7 @@ function ArtistFormContent() {
           ...data,
           role: role || "nail",
           lineProfile: profile,
+          consentAccepted: true,
         }),
       });
 
@@ -458,9 +461,49 @@ function ArtistFormContent() {
               </CardContent>
             </Card>
 
+            {/* Consent */}
+            <Card>
+              <CardContent className="p-4">
+                <Label
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${
+                    consentAccepted
+                      ? "border-[var(--brand)] bg-[var(--brand-light)]/50"
+                      : "border-gray-200"
+                  }`}
+                  onClick={() => setConsentAccepted(!consentAccepted)}
+                >
+                  <Checkbox
+                    checked={consentAccepted}
+                    onCheckedChange={(checked) => setConsentAccepted(!!checked)}
+                    className="mt-0.5"
+                  />
+                  <span className="text-sm leading-relaxed text-gray-700">
+                    我已閱讀並同意{" "}
+                    <Link
+                      href="/terms"
+                      target="_blank"
+                      className="font-medium text-[var(--brand)] underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      服務條款
+                    </Link>{" "}
+                    與{" "}
+                    <Link
+                      href="/privacy"
+                      target="_blank"
+                      className="font-medium text-[var(--brand)] underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      隱私權政策
+                    </Link>
+                  </span>
+                </Label>
+              </CardContent>
+            </Card>
+
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !consentAccepted}
               className="w-full bg-[var(--brand)] py-6 text-lg hover:bg-[var(--brand-dark)]"
             >
               {isSubmitting ? "送出中..." : "送出申請"}

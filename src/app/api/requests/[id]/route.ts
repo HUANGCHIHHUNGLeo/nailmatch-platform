@@ -9,10 +9,10 @@ export async function GET(
     const { id } = await params;
     const supabase = await createServiceClient();
 
-    // Fetch request with customer info
+    // Fetch request with customer info (exclude PII like line_user_id)
     const { data: serviceRequest, error } = await supabase
       .from("service_requests")
-      .select("*, customers(id, display_name, line_user_id)")
+      .select("*, customers(id, display_name)")
       .eq("id", id)
       .single();
 

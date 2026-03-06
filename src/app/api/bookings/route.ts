@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { notifyBookingConfirmed } from "@/lib/line/messaging";
+import { resolveCustomer } from "@/lib/auth/resolve-customer";
+import { resolveArtist } from "@/lib/auth/resolve-artist";
 
 export async function POST(request: Request) {
   try {
@@ -93,15 +95,19 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const customerId = searchParams.get("customerId");
-    const artistId = searchParams.get("artistId");
-    const all = searchParams.get("all");
-
-    if (!customerId && !artistId && !all) {
-      return NextResponse.json({ error: "customerId, artistId, or all is required" }, { status: 400 });
-    }
-
     const supabase = await createServiceClient();
+
+    // Resolve identity — try customer first, then artist
+    const customer = await resolveCustomer(request);
+    const artist = await resolveArtist(request);
+
+    // Allow explicit ID params only if they match the authenticated user
+    const customerId = searchParams.get("customerId") || customer?.customerId;
+    const artistId = searchParams.get("artistId") || artist?.artistId;
+
+    if (!customerId && !artistId) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
 
     let query = supabase
       .from("bookings")

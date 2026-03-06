@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { notifyReviewPrompt } from "@/lib/line/messaging";
 
 export async function GET(
   _request: Request,
@@ -11,7 +12,7 @@ export async function GET(
 
     const { data: booking, error } = await supabase
       .from("bookings")
-      .select("*, service_requests(services, locations, budget_range, preferred_date, preferred_time, preferred_styles), artists(id, display_name, avatar_url, studio_address, phone, instagram_handle, styles), customers(id, display_name, line_user_id), artist_responses(quoted_price, message, available_time)")
+      .select("*, service_requests(services, locations, budget_range, preferred_date, preferred_time, preferred_styles), artists(id, display_name, avatar_url, studio_address, phone, instagram_handle, styles), customers(id, display_name), artist_responses(quoted_price, message, available_time)")
       .eq("id", id)
       .single();
 
@@ -65,6 +66,38 @@ export async function PATCH(
           .from("service_requests")
           .update({ status: "matching" })
           .eq("id", booking.request_id);
+      }
+    }
+
+    // If completed, notify customer to leave a review
+    if (body.status === "completed") {
+      const { data: bookingData } = await supabase
+        .from("bookings")
+        .select("customer_id, artist_id")
+        .eq("id", id)
+        .single();
+
+      if (bookingData) {
+        const { data: customer } = await supabase
+          .from("customers")
+          .select("line_user_id")
+          .eq("id", bookingData.customer_id)
+          .single();
+
+        const { data: artist } = await supabase
+          .from("artists")
+          .select("display_name")
+          .eq("id", bookingData.artist_id)
+          .single();
+
+        if (customer?.line_user_id) {
+          await notifyReviewPrompt(customer.line_user_id, {
+            artistName: artist?.display_name || "設計師",
+            bookingId: id,
+          }).catch((err) => {
+            console.error("Failed to send review prompt:", err);
+          });
+        }
       }
     }
 

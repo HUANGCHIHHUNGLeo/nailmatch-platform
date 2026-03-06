@@ -91,7 +91,7 @@ function CustomerFormContent() {
 
 export default function LiffCustomerForm() {
   return (
-    <LiffProvider>
+    <LiffProvider requireLogin>
       <CustomerFormContent />
     </LiffProvider>
   );
