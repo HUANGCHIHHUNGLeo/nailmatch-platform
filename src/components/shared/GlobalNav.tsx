@@ -17,6 +17,7 @@ import {
   Users,
   FileText,
   Shield,
+  BarChart3,
 } from "lucide-react";
 import {
   Sheet,
@@ -45,6 +46,7 @@ const ARTIST_NAV: NavItem[] = [
   { href: "/artist/profile", label: "個人資料", icon: <User className="h-5 w-5" />, description: "編輯公開檔案" },
   { href: "/artist/bookings", label: "預約管理", icon: <Calendar className="h-5 w-5" />, description: "管理已確認的預約" },
   { href: "/artist/availability", label: "時段管理", icon: <Clock className="h-5 w-5" />, description: "設定可接案時段" },
+  { href: "/artist/report", label: "業績報表", icon: <BarChart3 className="h-5 w-5" />, description: "收入統計與紀錄" },
   { href: "/artist/settings", label: "帳號設定", icon: <Settings className="h-5 w-5" />, description: "暫停接案、偏好設定" },
 ];
 

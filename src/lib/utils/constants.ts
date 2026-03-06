@@ -33,14 +33,13 @@ export const LOCATION_GROUPS: { city: string; districts: string[]; enabled?: boo
   {
     city: "其他",
     districts: ["到府服務", "店面服務"],
-    enabled: false,
   },
 ];
 
 export const LOCATIONS = LOCATION_GROUPS.flatMap(g =>
   g.enabled === false
     ? []
-    : g.districts.map(d => `${g.city} ${d}`)
+    : g.districts.map(d => g.city === "其他" ? d : `${g.city} ${d}`)
 );
 
 // Nail services

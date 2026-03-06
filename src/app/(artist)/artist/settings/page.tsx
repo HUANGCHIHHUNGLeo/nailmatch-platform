@@ -32,6 +32,7 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     authFetch("/api/artists/me")
@@ -66,6 +67,34 @@ export default function SettingsPage() {
       alert("網路錯誤，請檢查連線後重試");
     } finally {
       setToggling(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmFirst = confirm(
+      "確定要刪除帳號嗎？\n\n刪除後將無法復原，所有資料（個人檔案、作品集、報價紀錄）都會被永久移除。"
+    );
+    if (!confirmFirst) return;
+
+    const confirmSecond = confirm(
+      "再次確認：刪除帳號後無法復原。\n\n請輸入「確認」後按確定。"
+    );
+    if (!confirmSecond) return;
+
+    setDeleting(true);
+    try {
+      const res = await authFetch("/api/artists/me", { method: "DELETE" });
+      if (res.ok) {
+        alert("帳號已成功刪除");
+        window.location.href = "/";
+      } else {
+        const data = await res.json().catch(() => null);
+        alert(data?.error || "刪除失敗，請稍後再試");
+      }
+    } catch {
+      alert("網路錯誤，請檢查連線後重試");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -207,6 +236,9 @@ export default function SettingsPage() {
             <Button variant="ghost" className="w-full justify-start" asChild>
               <Link href="/artist/bookings">預約紀錄</Link>
             </Button>
+            <Button variant="ghost" className="w-full justify-start" asChild>
+              <Link href="/artist/report">業績報表</Link>
+            </Button>
           </CardContent>
         </Card>
 
@@ -231,6 +263,25 @@ export default function SettingsPage() {
             >
               {toggling && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {profile?.is_active ? "暫停接單" : "恢復接單"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Delete Account */}
+        <Card className="border-red-100">
+          <CardContent className="p-4">
+            <h2 className="mb-2 font-semibold text-red-600">刪除帳號</h2>
+            <p className="mb-3 text-sm text-gray-500">
+              刪除後所有資料將被永久移除，包含個人檔案、作品集、報價紀錄，且無法復原。
+            </p>
+            <Button
+              variant="outline"
+              className="w-full border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
+              onClick={handleDeleteAccount}
+              disabled={deleting}
+            >
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              刪除我的帳號
             </Button>
           </CardContent>
         </Card>

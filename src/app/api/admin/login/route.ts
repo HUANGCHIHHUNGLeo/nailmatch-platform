@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+import { checkRateLimit, getClientIp } from "@/lib/utils/rate-limit";
 
 export async function POST(request: Request) {
+  // 管理員登入：每分鐘最多 5 次（防暴力破解）
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`admin-login:${ip}`, { windowMs: 60_000, max: 5 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "嘗試過於頻繁，請稍後再試" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+    );
+  }
   try {
     const { password } = await request.json();
     const adminPassword = process.env.ADMIN_PASSWORD;

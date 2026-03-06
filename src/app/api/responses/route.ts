@@ -3,8 +3,19 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { artistQuoteSchema } from "@/lib/utils/form-schema";
 import { notifyCustomerOfQuote } from "@/lib/line/messaging";
 import { resolveArtist } from "@/lib/auth/resolve-artist";
+import { checkRateLimit, getClientIp } from "@/lib/utils/rate-limit";
 
 export async function POST(request: Request) {
+  // 報價：每分鐘最多 10 次
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`response-post:${ip}`, { windowMs: 60_000, max: 10 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "請求過於頻繁，請稍後再試" },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { requestId, artistId: providedArtistId, ...quoteData } = body;

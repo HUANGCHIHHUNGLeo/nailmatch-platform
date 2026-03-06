@@ -5,6 +5,7 @@ import { findMatchingArtists } from "@/lib/utils/matching";
 import { notifyArtistsOfNewRequest } from "@/lib/line/messaging";
 import { getLineUserId } from "@/lib/line/verify-token";
 import { resolveCustomer } from "@/lib/auth/resolve-customer";
+import { checkRateLimit, getClientIp } from "@/lib/utils/rate-limit";
 
 export async function GET(request: Request) {
   try {
@@ -57,6 +58,16 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  // 送出需求：每分鐘最多 5 次
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`request-post:${ip}`, { windowMs: 60_000, max: 5 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "請求過於頻繁，請稍後再試" },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await request.json();
 

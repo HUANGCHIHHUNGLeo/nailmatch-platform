@@ -103,3 +103,72 @@ export async function PUT(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const supabase = await createServiceClient();
+    const artistId = resolved.artistId;
+
+    // 1. 刪除作品集圖片（Storage + DB）
+    const { data: portfolioWorks } = await supabase
+      .from("portfolio_works")
+      .select("id, image_url")
+      .eq("artist_id", artistId);
+
+    if (portfolioWorks?.length) {
+      // 刪除 Supabase Storage 中的圖片
+      const storagePaths = portfolioWorks
+        .map((w) => {
+          const match = w.image_url?.match(/\/storage\/v1\/object\/public\/([^?]+)/);
+          return match ? match[1] : null;
+        })
+        .filter(Boolean) as string[];
+
+      if (storagePaths.length > 0) {
+        // 分 bucket 刪除
+        const byBucket = new Map<string, string[]>();
+        for (const p of storagePaths) {
+          const [bucket, ...rest] = p.split("/");
+          const existing = byBucket.get(bucket) || [];
+          existing.push(rest.join("/"));
+          byBucket.set(bucket, existing);
+        }
+        for (const [bucket, paths] of byBucket) {
+          await supabase.storage.from(bucket).remove(paths);
+        }
+      }
+
+      await supabase.from("portfolio_works").delete().eq("artist_id", artistId);
+    }
+
+    // 2. 刪除可用時段
+    await supabase.from("availability_slots").delete().eq("artist_id", artistId);
+
+    // 3. 刪除報價回應
+    await supabase.from("artist_responses").delete().eq("artist_id", artistId);
+
+    // 4. 刪除評價
+    await supabase.from("reviews").delete().eq("artist_id", artistId);
+
+    // 5. 將預約中的 artist 設為 null（保留客戶的預約紀錄）
+    await supabase.from("bookings").update({ artist_id: null }).eq("artist_id", artistId);
+
+    // 6. 刪除設計師本身
+    const { error } = await supabase.from("artists").delete().eq("id", artistId);
+
+    if (error) {
+      console.error("Artist delete error:", error);
+      return NextResponse.json({ error: "刪除失敗" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, message: "帳號已刪除" });
+  } catch (error) {
+    console.error("Artist DELETE error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

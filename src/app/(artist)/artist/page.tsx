@@ -119,10 +119,16 @@ export default function ArtistGatePage() {
                       <p className="mt-1 text-sm text-gray-500">
                         使用您註冊時的 LINE 帳號登入後台
                       </p>
-                      <Button asChild className="mt-3 w-full bg-[#06C755] text-white hover:bg-[#05b04c]">
-                        <a href={`https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/artist-form`}>
-                          LINE 登入
-                        </a>
+                      <Button
+                        className="mt-3 w-full bg-[#06C755] text-white hover:bg-[#05b04c]"
+                        onClick={() => {
+                          const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+                          if (liffId) {
+                            window.location.href = `https://liff.line.me/${liffId}/artist-form`;
+                          }
+                        }}
+                      >
+                        LINE 登入
                       </Button>
                     </div>
                   </div>

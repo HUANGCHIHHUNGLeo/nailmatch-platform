@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles, Calendar, Clock, MapPin } from "lucide-react";
+import { Sparkles, Calendar, Clock, MapPin, Loader2 } from "lucide-react";
 
 interface ServiceRequest {
   id: string;
@@ -64,6 +64,7 @@ function MyPageContent() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!isReady || !isLoggedIn) return;
@@ -86,6 +87,32 @@ function MyPageContent() {
 
     fetchData();
   }, [isReady, isLoggedIn, authFetch]);
+
+  const handleDeleteAccount = async () => {
+    const confirmFirst = confirm(
+      "確定要刪除帳號嗎？\n\n刪除後將無法復原，所有需求紀錄和預約資料都會被永久移除。"
+    );
+    if (!confirmFirst) return;
+
+    const confirmSecond = confirm("再次確認：刪除帳號後無法復原。確定要刪除嗎？");
+    if (!confirmSecond) return;
+
+    setDeleting(true);
+    try {
+      const res = await authFetch("/api/customers/me", { method: "DELETE" });
+      if (res.ok) {
+        alert("帳號已成功刪除");
+        window.location.href = "/";
+      } else {
+        const data = await res.json().catch(() => null);
+        alert(data?.error || "刪除失敗，請稍後再試");
+      }
+    } catch {
+      alert("網路錯誤，請檢查連線後重試");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (!isReady) {
     return (
@@ -113,12 +140,12 @@ function MyPageContent() {
             </p>
             <div className="space-y-3">
               {liffUrl && (
-                <a
-                  href={liffUrl}
-                  className="block rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
+                <button
+                  onClick={() => { window.location.href = liffUrl; }}
+                  className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
                 >
                   用 LINE 登入
-                </a>
+                </button>
               )}
               <Link
                 href="/"
@@ -309,13 +336,25 @@ function MyPageContent() {
         </Tabs>
 
         {/* Bottom CTA */}
-        <div className="mt-6 pb-8">
+        <div className="mt-6">
           <Button asChild className="w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)] h-12 text-base">
             <Link href="/request">
               <Sparkles className="mr-2 h-5 w-5" />
               發佈新需求
             </Link>
           </Button>
+        </div>
+
+        {/* Delete Account */}
+        <div className="mt-8 pb-8 text-center">
+          <button
+            onClick={handleDeleteAccount}
+            disabled={deleting}
+            className="inline-flex items-center text-xs text-gray-400 transition hover:text-red-500"
+          >
+            {deleting && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+            刪除我的帳號
+          </button>
         </div>
       </main>
     </div>

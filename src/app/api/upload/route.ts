@@ -1,7 +1,18 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { checkRateLimit, getClientIp } from "@/lib/utils/rate-limit";
 
 export async function POST(request: Request) {
+  // 上傳：每分鐘最多 20 次
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`upload:${ip}`, { windowMs: 60_000, max: 20 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "上傳過於頻繁，請稍後再試" },
+      { status: 429 }
+    );
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
