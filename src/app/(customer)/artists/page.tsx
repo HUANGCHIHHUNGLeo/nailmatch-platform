@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LOCATION_GROUPS } from "@/lib/utils/constants";
+import InstagramReelsCarousel from "@/components/InstagramReels";
 
 interface Artist {
   id: string;
@@ -83,6 +84,9 @@ export default function ArtistDirectoryPage() {
       </header>
 
       <main className="mx-auto max-w-3xl p-4">
+        {/* Instagram Reels */}
+        <InstagramReelsCarousel />
+
         {/* Filters */}
         <div className="mb-4 space-y-3">
           {/* Role filter */}

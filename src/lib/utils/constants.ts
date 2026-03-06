@@ -9,10 +9,6 @@ export const LOCATION_GROUPS = [
     districts: ["板橋區", "三重區", "中和區", "永和區", "新莊區", "新店區", "土城區", "蘆洲區", "汐止區", "樹林區", "三峽區", "淡水區", "林口區"]
   },
   {
-    city: "桃園市",
-    districts: ["桃園區", "中壢區", "平鎮區", "八德區", "楊梅區", "蘆竹區", "龜山區", "龍潭區"]
-  },
-  {
     city: "台中市",
     districts: ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "豐原區"]
   },
@@ -28,14 +24,10 @@ export const LOCATION_GROUPS = [
     city: "高雄市",
     districts: ["新興區", "前金區", "苓雅區", "鹽埕區", "鼓山區", "旗津區", "前鎮區", "三民區", "楠梓區", "小港區", "左營區", "鳳山區"]
   },
-  {
-    city: "其他",
-    districts: ["到府服務", "店面服務"]
-  }
 ];
 
 export const LOCATIONS = LOCATION_GROUPS.flatMap(g =>
-  g.city === "其他" ? g.districts : g.districts.map(d => `${g.city} ${d}`)
+  g.districts.map(d => `${g.city} ${d}`)
 );
 
 // Nail services
