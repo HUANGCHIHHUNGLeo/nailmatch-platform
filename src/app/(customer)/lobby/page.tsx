@@ -26,8 +26,8 @@ interface LobbyRequest {
   response_count: number;
 }
 
-const NAIL_LABELS = new Set(NAIL_SERVICES.map((s) => s.label));
-const LASH_LABELS = new Set(LASH_SERVICES.map((s) => s.label));
+const NAIL_LABELS = new Set<string>(NAIL_SERVICES.map((s) => s.label));
+const LASH_LABELS = new Set<string>(LASH_SERVICES.map((s) => s.label));
 
 const SERVICE_FILTERS = [
   { value: "all", label: "全部" },
