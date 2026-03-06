@@ -239,7 +239,7 @@ export default function InstagramReelsCarousel() {
                 </div>
 
                 {/* Caption panel */}
-                <div className="flex flex-1 flex-col overflow-hidden bg-white md:w-95 md:flex-none md:border-l">
+                <div className="flex flex-1 flex-col overflow-hidden bg-white md:w-[380px] md:flex-none md:border-l">
                   {/* Account header */}
                   <div className="flex shrink-0 items-center gap-3 border-b px-4 py-2">
                     <svg
