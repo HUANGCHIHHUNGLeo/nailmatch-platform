@@ -34,12 +34,10 @@ function ArtistGate({ children }: { children: React.ReactNode }) {
               {(liffUrl || liff) && (
                 <button
                   onClick={() => {
-                    if (liff?.isInClient()) {
+                    if (liff) {
                       liff.login({ redirectUri: window.location.href });
                     } else if (liffUrl) {
                       window.location.href = liffUrl;
-                    } else if (liff) {
-                      liff.login({ redirectUri: window.location.href });
                     }
                   }}
                   className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
