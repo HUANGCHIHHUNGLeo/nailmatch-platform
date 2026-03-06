@@ -60,8 +60,8 @@ export function GlobalNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  // Hide on admin pages and LIFF pages
-  if (pathname.startsWith("/admin") || pathname.startsWith("/line/liff")) return null;
+  // Hide on admin pages and LIFF registration forms (artist-form only)
+  if (pathname.startsWith("/admin") || pathname === "/line/liff/artist-form") return null;
 
   const isArtistSection = pathname.startsWith("/artist");
 
