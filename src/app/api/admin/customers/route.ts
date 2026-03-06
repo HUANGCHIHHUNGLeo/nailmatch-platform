@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from("customers")
-    .select("id, display_name, line_user_id, phone, email, created_at, terms_accepted_at, privacy_accepted_at")
+    .select("id, display_name, line_user_id, phone, email, created_at, terms_accepted_at")
     .order("created_at", { ascending: false })
     .range(from, to);
 

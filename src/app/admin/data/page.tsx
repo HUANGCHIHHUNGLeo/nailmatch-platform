@@ -118,11 +118,11 @@ export default function AdminDataPage() {
         const reqData: PaginatedResult<ServiceRequest> = await reqRes.json();
         const bookData: PaginatedResult<Booking> = await bookRes.json();
 
-        setCustomers(custData.data);
-        setRequests(reqData.data);
-        setBookings(bookData.data);
-        setTotals({ customers: custData.total, requests: reqData.total, bookings: bookData.total });
-        setHasMore({ customers: custData.hasMore, requests: reqData.hasMore, bookings: bookData.hasMore });
+        setCustomers(custData.data || []);
+        setRequests(reqData.data || []);
+        setBookings(bookData.data || []);
+        setTotals({ customers: custData.total || 0, requests: reqData.total || 0, bookings: bookData.total || 0 });
+        setHasMore({ customers: !!custData.hasMore, requests: !!reqData.hasMore, bookings: !!bookData.hasMore });
       } catch (err) {
         console.error("Failed to fetch admin data:", err);
       } finally {
