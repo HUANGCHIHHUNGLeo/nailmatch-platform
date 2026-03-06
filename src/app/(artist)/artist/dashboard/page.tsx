@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+
 
 interface ArtistMe {
   id: string;
@@ -115,6 +117,8 @@ export default function ArtistDashboard() {
     );
   }
 
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen bg-[var(--brand-bg)]">
       {/* Header */}
@@ -122,7 +126,7 @@ export default function ArtistDashboard() {
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
           <h1 className="text-lg font-semibold text-[var(--brand)]">NaLi Match</h1>
           <Link href="/artist/settings" className="text-sm text-gray-500">
-            設定
+            {t.nav.settings}
           </Link>
         </div>
       </header>
@@ -130,7 +134,7 @@ export default function ArtistDashboard() {
       <main className="mx-auto max-w-2xl p-4">
         {artistName && (
           <p className="mb-4 text-sm text-gray-500">
-            你好，{artistName}
+            {t.dashboard.greeting}{artistName}
           </p>
         )}
 
@@ -139,19 +143,19 @@ export default function ArtistDashboard() {
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-3xl font-bold text-[var(--brand)]">{stats.todayBookings}</p>
-              <p className="text-sm text-gray-500">今日預約</p>
+              <p className="text-sm text-gray-500">{t.dashboard.stats.todayBookings}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-3xl font-bold text-[var(--brand-dark)]">{stats.pendingRequests}</p>
-              <p className="text-sm text-gray-500">待回應需求</p>
+              <p className="text-sm text-gray-500">{t.dashboard.stats.pendingRequests}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-3xl font-bold text-[var(--brand-darker)]">{stats.totalQuotes}</p>
-              <p className="text-sm text-gray-500">累計接單</p>
+              <p className="text-sm text-gray-500">{t.dashboard.stats.totalOrders}</p>
             </CardContent>
           </Card>
           <Card>
@@ -159,7 +163,7 @@ export default function ArtistDashboard() {
               <p className="text-3xl font-bold text-emerald-600">
                 NT${stats.monthlyEarnings.toLocaleString()}
               </p>
-              <p className="text-sm text-gray-500">本月收入</p>
+              <p className="text-sm text-gray-500">{t.dashboard.stats.monthlyEarnings}</p>
             </CardContent>
           </Card>
         </div>
@@ -168,13 +172,13 @@ export default function ArtistDashboard() {
         <Tabs defaultValue="requests">
           <TabsList className="w-full">
             <TabsTrigger value="requests" className="flex-1">
-              新需求
+              {t.dashboard.tabs.newRequests}
               {requests.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{requests.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="bookings" className="flex-1">
-              我的預約
+              {t.dashboard.tabs.myBookings}
             </TabsTrigger>
           </TabsList>
 
@@ -182,8 +186,8 @@ export default function ArtistDashboard() {
             {requests.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center text-gray-400">
-                  <p>目前沒有新需求</p>
-                  <p className="mt-1 text-sm">有新需求時會透過 LINE 通知您</p>
+                  <p>{t.dashboard.emptyState.noRequests}</p>
+                  <p className="mt-1 text-sm">{t.dashboard.emptyState.notifyViaLine}</p>
                 </CardContent>
               </Card>
             ) : (
