@@ -11,6 +11,17 @@ import type liff from "@line/liff";
 
 type Liff = typeof liff;
 
+/** Decode JWT payload and check if token is expired (with 60s buffer) */
+function isTokenExpired(token: string | null): boolean {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return !payload.exp || payload.exp < Date.now() / 1000 - 60;
+  } catch {
+    return true;
+  }
+}
+
 interface LiffContextType {
   liff: Liff | null;
   isLoggedIn: boolean;
@@ -75,11 +86,11 @@ export function LiffProvider({
 
         if (liffObj.isLoggedIn()) {
           // Check if ID token is still valid (expires after ~24h)
+          // Note: getIDToken() can return an expired JWT string (not null)
           const idToken = liffObj.getIDToken();
-          if (!idToken && requireLogin) {
-            // ID token expired — show re-login prompt
-            console.warn("LIFF ID token expired, needs re-authentication");
-            setLiffInstance(liffObj);
+          if (isTokenExpired(idToken) && requireLogin) {
+            // ID token missing or expired — show re-login prompt
+            console.warn("LIFF ID token expired or missing, needs re-authentication");
             setNeedsLogin(true);
             setIsReady(true);
             return;

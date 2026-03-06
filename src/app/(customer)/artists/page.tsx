@@ -80,7 +80,7 @@ export default function ArtistDirectoryPage() {
     return artists.filter((a) => {
       if (roleFilter !== "all" && a.role !== roleFilter) return false;
       if (cityFilter !== "全部") {
-        const matchesCity = a.cities.some((c) => c.startsWith(cityFilter));
+        const matchesCity = (a.cities || []).some((c) => c.startsWith(cityFilter));
         if (!matchesCity) return false;
       }
       return true;
@@ -198,12 +198,12 @@ export default function ArtistDirectoryPage() {
 
                     {/* Services — fixed height area */}
                     <div className="mt-3 flex min-h-[28px] flex-wrap gap-1">
-                      {artist.services.slice(0, 3).map((s) => (
+                      {(artist.services || []).slice(0, 3).map((s) => (
                         <Badge key={s} variant="secondary" className="text-[10px]">
                           {s}
                         </Badge>
                       ))}
-                      {artist.services.length > 3 && (
+                      {(artist.services || []).length > 3 && (
                         <Badge variant="secondary" className="text-[10px]">
                           +{artist.services.length - 3}
                         </Badge>
@@ -213,14 +213,14 @@ export default function ArtistDirectoryPage() {
                     {/* Price + City — pushed to bottom */}
                     <div className="mt-auto flex items-center justify-between pt-3 text-xs">
                       <span className="text-gray-400">
-                        {artist.cities.length > 0
-                          ? artist.cities[0].split(" ")[0]
+                        {(artist.cities || []).length > 0
+                          ? (artist.cities || [])[0].split(" ")[0]
                           : ""}
-                        {artist.cities.length > 1 && ` +${artist.cities.length - 1}`}
+                        {(artist.cities || []).length > 1 && ` +${artist.cities.length - 1}`}
                       </span>
                       <span className="font-medium text-[var(--brand)]">
-                        NT${artist.min_price.toLocaleString()}
-                        {artist.max_price > artist.min_price && `~${artist.max_price.toLocaleString()}`}
+                        {artist.min_price != null ? `NT$${artist.min_price.toLocaleString()}` : ""}
+                        {artist.max_price != null && artist.max_price > (artist.min_price || 0) && `~${artist.max_price.toLocaleString()}`}
                       </span>
                     </div>
                   </CardContent>
