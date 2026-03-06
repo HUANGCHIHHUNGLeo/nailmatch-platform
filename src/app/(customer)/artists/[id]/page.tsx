@@ -176,7 +176,7 @@ export default function ArtistPublicPage() {
               {artist.line_id && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-green-500 px-3 py-1 text-xs font-medium text-white">
                   <MessageCircle className="h-3 w-3" />
-                  LINE: {artist.line_id}
+                  LINE 聯繫
                 </span>
               )}
             </div>
@@ -337,7 +337,7 @@ export default function ArtistPublicPage() {
             asChild
             className="w-full bg-[var(--brand)] hover:bg-[var(--brand-dark)] h-12 text-base"
           >
-            <Link href="/request">向這位設計師預約</Link>
+            <Link href={`/request?artistId=${id}`}>向這位設計師預約</Link>
           </Button>
         </div>
       </main>

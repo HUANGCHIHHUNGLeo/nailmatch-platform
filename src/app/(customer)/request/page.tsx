@@ -1,18 +1,46 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MultiStepForm } from "@/components/forms/MultiStepForm";
 import type { ServiceRequestFormData } from "@/lib/utils/form-schema";
 
-export default function RequestPage() {
+interface ArtistInfo {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+  cities: string[];
+  services: string[];
+  styles: string[];
+  min_price: number | null;
+  max_price: number | null;
+}
+
+function RequestContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const artistId = searchParams.get("artistId");
+  const [artist, setArtist] = useState<ArtistInfo | null>(null);
+
+  useEffect(() => {
+    if (!artistId) return;
+    fetch(`/api/artists/${artistId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setArtist(data);
+      })
+      .catch(() => {});
+  }, [artistId]);
 
   const handleSubmit = async (data: ServiceRequestFormData) => {
     try {
+      const body: Record<string, unknown> = { ...data };
+      if (artistId) body.preferredArtistId = artistId;
+
       const response = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) throw new Error("Failed to submit request");
@@ -31,14 +59,7 @@ export default function RequestPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-[var(--brand-bg)]">
-      {/* Header */}
-      <header className="border-b bg-white">
-        <div className="mx-auto flex h-14 max-w-lg items-center px-4">
-          <h1 className="text-lg font-semibold text-[var(--brand)]">NaLi Match</h1>
-        </div>
-      </header>
-
+    <>
       {/* LINE Guidance Banner */}
       {liffUrl && (
         <div className="mx-auto max-w-lg px-4 pt-4">
@@ -62,8 +83,34 @@ export default function RequestPage() {
 
       {/* Form */}
       <main className="px-4 py-8">
-        <MultiStepForm onSubmit={handleSubmit} />
+        <MultiStepForm
+          onSubmit={handleSubmit}
+          prefillArtist={artist ?? undefined}
+        />
       </main>
+    </>
+  );
+}
+
+export default function RequestPage() {
+  return (
+    <div className="min-h-screen bg-[var(--brand-bg)]">
+      {/* Header */}
+      <header className="border-b bg-white">
+        <div className="mx-auto flex h-14 max-w-lg items-center px-4">
+          <h1 className="text-lg font-semibold text-[var(--brand)]">NaLi Match</h1>
+        </div>
+      </header>
+
+      <Suspense
+        fallback={
+          <div className="flex min-h-[50vh] items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
+          </div>
+        }
+      >
+        <RequestContent />
+      </Suspense>
     </div>
   );
 }

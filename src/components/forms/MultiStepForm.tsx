@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { serviceRequestSchema, type ServiceRequestFormData } from "@/lib/utils/form-schema";
 import { hasNailServices } from "@/lib/utils/constants";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LocationStep } from "./LocationStep";
 import { ServiceStep } from "./ServiceStep";
 import { ProfileStep } from "./ProfileStep";
@@ -47,22 +48,34 @@ const STEPS: StepDef[] = [
   { component: ConsentStep, title: "確認送出", key: "consentAccepted" },
 ];
 
-interface MultiStepFormProps {
-  onSubmit: (data: ServiceRequestFormData) => Promise<void>;
+interface PrefillArtist {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+  cities: string[];
+  services: string[];
+  styles: string[];
+  min_price: number | null;
+  max_price: number | null;
 }
 
-export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
+interface MultiStepFormProps {
+  onSubmit: (data: ServiceRequestFormData) => Promise<void>;
+  prefillArtist?: PrefillArtist;
+}
+
+export function MultiStepForm({ onSubmit, prefillArtist }: MultiStepFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const methods = useForm<ServiceRequestFormData>({
     resolver: zodResolver(serviceRequestSchema),
     defaultValues: {
-      locations: [],
-      services: [],
+      locations: prefillArtist?.cities ?? [],
+      services: prefillArtist?.services ?? [],
       customerGender: "",
       nailLength: "",
-      preferredStyles: [],
+      preferredStyles: prefillArtist?.styles ?? [],
       preferredDate: "",
       preferredDateCustom: "",
       preferredTime: "",
@@ -78,6 +91,21 @@ export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
     },
     mode: "onChange",
   });
+
+  // When prefillArtist arrives async, update form values
+  useEffect(() => {
+    if (!prefillArtist) return;
+    const current = methods.getValues();
+    if (current.locations.length === 0 && prefillArtist.cities.length > 0) {
+      methods.setValue("locations", prefillArtist.cities);
+    }
+    if (current.services.length === 0 && prefillArtist.services.length > 0) {
+      methods.setValue("services", prefillArtist.services);
+    }
+    if (current.preferredStyles.length === 0 && prefillArtist.styles.length > 0) {
+      methods.setValue("preferredStyles", prefillArtist.styles);
+    }
+  }, [prefillArtist, methods]);
 
   // Check if a step should be skipped based on current form data
   const shouldSkipStep = useCallback(
@@ -170,6 +198,28 @@ export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
   return (
     <FormProvider {...methods}>
       <div className="mx-auto max-w-lg">
+        {/* Artist Info Banner */}
+        {prefillArtist && (
+          <div className="mb-4 flex items-center gap-3 rounded-xl border border-[var(--brand-light)] bg-white p-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={prefillArtist.avatar_url || undefined} />
+              <AvatarFallback className="bg-[var(--brand-light)] text-sm text-[var(--brand-dark)]">
+                {prefillArtist.display_name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-gray-900">
+                指定預約：{prefillArtist.display_name}
+              </p>
+              <p className="text-xs text-gray-500">
+                {prefillArtist.services.slice(0, 3).join("、")}
+                {prefillArtist.services.length > 3 && ` 等${prefillArtist.services.length}項`}
+                {prefillArtist.min_price && ` · NT$${prefillArtist.min_price.toLocaleString()} 起`}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Progress */}
         <div className="mb-2 flex items-center justify-between text-sm text-gray-500">
           <span>

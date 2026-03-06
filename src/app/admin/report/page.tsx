@@ -227,21 +227,70 @@ export default function AdminReportPage() {
               goal="50+ 活躍設計師、500+ 客戶、建立平台信任"
             />
             <RevenueCard
-              phase="Phase 2：設計師 SaaS 訂閱"
+              phase="Phase 2：訂閱 + 付費曝光"
               timeline="6-12 個月"
-              model="月費 NT$299 / NT$599 / NT$999"
-              description="免費版：基本曝光 + 每月 5 筆配對。Pro 版（NT$299）：無限配對 + 作品集精選展示 + 預約日曆。Premium 版（NT$599）：置頂曝光 + 數據報表 + 客戶回訪分析。Studio 版（NT$999）：多人工作室管理 + 品牌頁面。客戶端永遠免費。"
-              revenue="預估：200 位設計師 × 平均 NT$400/月 = NT$80,000/月"
-              goal="付費轉換率 40%+（因為免費版有配對數限制）"
+              model="月費 NT$299-999 + 置頂推廣 + 按需求付費"
+              description="免費版：基本曝光 + 每月 5 筆配對。Pro（NT$299）：無限配對 + 作品集 + 預約日曆。Premium（NT$599）：置頂曝光 + 數據報表 + CRM。Studio（NT$999）：多人管理 + 品牌頁面。另外推出「推廣置頂」按次計費（NT$50-100/次），讓設計師在搜尋結果中優先顯示。免費版設計師也能購買單次置頂。"
+              revenue="訂閱 NT$80K + 置頂推廣 NT$20K = NT$100K/月"
+              goal="付費轉換率 40%+，置頂購買率 20%+"
             />
             <RevenueCard
-              phase="Phase 3：生態系營收"
+              phase="Phase 3：生態系 + 工具鎖定"
               timeline="12-24 個月"
-              model="訂閱 + 品牌合作 + 教育課程"
-              description="美甲/美睫品牌廣告合作（材料商、產品品牌）。設計師線上課程平台（進階技術、經營技巧）抽成。與材料供應商合作團購，賺取差價或推薦費。舉辦線下美業交流活動。"
-              revenue="訂閱 NT$100K + 品牌合作 NT$50K + 課程/團購 NT$30K = NT$180K/月"
-              goal="多元營收結構，不依賴單一收入來源"
+              model="訂閱 + 置頂 + 金流 + 團購 + 課程"
+              description="線上金流整合（綠界/LINE Pay），收 2-3% 金流手續費（不是佣金，是支付服務費）。材料團購平台（美甲膠、飾品、工具），賺取批發價差。設計師線上課程（進階技術、經營技巧）抽成 20-30%。品牌廣告合作（材料商橫幅、新品推廣）。"
+              revenue="訂閱 NT$100K + 金流 NT$30K + 團購 NT$25K + 課程 NT$15K + 廣告 NT$20K = NT$190K/月"
+              goal="多元營收結構，5 條收入線"
             />
+          </div>
+
+          {/* Sticky Features */}
+          <div className="mb-4 rounded-lg border-2 border-purple-200 bg-purple-50 p-4">
+            <h3 className="mb-2 font-semibold text-purple-900">黏著性付費功能（設計師離不開的理由）</h3>
+            <div className="grid gap-3 sm:grid-cols-2 print:grid-cols-2">
+              <div className="rounded-md bg-white p-3">
+                <p className="mb-1 text-xs font-bold text-purple-800">1. 付費曝光/置頂推廣</p>
+                <p className="text-xs text-gray-600">
+                  設計師付費讓作品集在搜尋結果排前面。按次計費 NT$50-100，即見即效。
+                  業界最常見的獲利模式（美團、Yelp、Google Maps 都用）。
+                </p>
+              </div>
+              <div className="rounded-md bg-white p-3">
+                <p className="mb-1 text-xs font-bold text-purple-800">2. 預約管理 SaaS（最黏）</p>
+                <p className="text-xs text-gray-600">
+                  日曆管理、自動提醒、防放鴿子、線上收款。設計師拿來管「所有客戶」（不只平台來的）→
+                  數據越用越多，搬家成本極高。像 Fresha / SimplyBook 模式。
+                </p>
+              </div>
+              <div className="rounded-md bg-white p-3">
+                <p className="mb-1 text-xs font-bold text-purple-800">3. 客戶 CRM + 自動行銷</p>
+                <p className="text-xs text-gray-600">
+                  客戶偏好紀錄、消費歷史、生日自動祝福、回訪提醒、滿意度追蹤。
+                  資料累積越多越有價值 → 離開就等於丟掉多年客戶資料。
+                </p>
+              </div>
+              <div className="rounded-md bg-white p-3">
+                <p className="mb-1 text-xs font-bold text-purple-800">4. 線上金流（不是佣金）</p>
+                <p className="text-xs text-gray-600">
+                  提供線上刷卡/LINE Pay 收款，收 2-3% 金流處理費（跟綠界/Stripe 一樣）。
+                  設計師覺得合理，客戶付款更方便 → 雙方受益。
+                </p>
+              </div>
+              <div className="rounded-md bg-white p-3">
+                <p className="mb-1 text-xs font-bold text-purple-800">5. 材料團購</p>
+                <p className="text-xs text-gray-600">
+                  美甲膠、飾品、工具批發價團購，平台賺 10-20% 差價。
+                  設計師省錢、平台賺錢，利益一致。量越大價越好 → 網路效應。
+                </p>
+              </div>
+              <div className="rounded-md bg-white p-3">
+                <p className="mb-1 text-xs font-bold text-purple-800">6. 認證徽章 + 排名</p>
+                <p className="text-xs text-gray-600">
+                  「NaLi 認證設計師」徽章，需付費 + 通過審核。
+                  客戶信任有徽章的 → 徽章設計師接更多單 → 願意續費。
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="mb-4 rounded-lg border p-4">

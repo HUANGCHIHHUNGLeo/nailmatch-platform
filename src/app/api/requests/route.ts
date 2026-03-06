@@ -128,6 +128,21 @@ export async function POST(request: Request) {
       preferred_styles: parsed.data.preferredStyles,
     });
 
+    // If customer specified a preferred artist, ensure they are included
+    const preferredArtistId = body.preferredArtistId as string | undefined;
+    if (preferredArtistId && !matchingArtists.some((a) => a.id === preferredArtistId)) {
+      const { data: prefArtist } = await supabase
+        .from("artists")
+        .select("id, line_user_id, display_name, avatar_url, services, min_price, max_price, cities")
+        .eq("id", preferredArtistId)
+        .eq("is_active", true)
+        .eq("is_verified", true)
+        .single();
+      if (prefArtist) {
+        matchingArtists.unshift(prefArtist);
+      }
+    }
+
     // Update notified count
     await supabase
       .from("service_requests")
