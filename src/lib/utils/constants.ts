@@ -30,7 +30,7 @@ export const LOCATION_GROUPS = [
   },
   {
     city: "其他",
-    districts: ["到府服務", "美甲店服務"]
+    districts: ["到府服務", "店面服務"]
   }
 ];
 
@@ -51,6 +51,26 @@ export const NAIL_SERVICES = [
   { value: "shape_care", label: "修型保養", priceHint: "" },
   { value: "custom_design", label: "客製款設計", priceHint: "NT$1200+" },
 ] as const;
+
+// Lash services
+export const LASH_SERVICES = [
+  { value: "natural_lash", label: "自然款嫁接", priceHint: "NT$800+" },
+  { value: "volume_lash", label: "濃密款嫁接", priceHint: "NT$1200+" },
+  { value: "camellia_lash", label: "山茶花嫁接", priceHint: "NT$1200+" },
+  { value: "flat_lash", label: "扁毛嫁接", priceHint: "NT$1000+" },
+  { value: "lower_lash", label: "下睫毛嫁接", priceHint: "NT$500+" },
+  { value: "lash_lift", label: "角蛋白翹睫術", priceHint: "NT$800+" },
+  { value: "lash_refill", label: "睫毛補接", priceHint: "NT$600+" },
+  { value: "lash_removal", label: "卸除睫毛", priceHint: "" },
+] as const;
+
+// Helper to check if selected services contain nail/lash
+export function hasNailServices(services: string[]): boolean {
+  return NAIL_SERVICES.some((s) => services.includes(s.label));
+}
+export function hasLashServices(services: string[]): boolean {
+  return LASH_SERVICES.some((s) => services.includes(s.label));
+}
 
 // Nail length options
 export const NAIL_LENGTHS = [
@@ -94,6 +114,8 @@ export const REMOVAL_OPTIONS = [
   "不需要",
   "卸本店凝膠",
   "卸他店凝膠",
+  "卸除本店睫毛",
+  "卸除他店睫毛",
 ] as const;
 
 // Gender options

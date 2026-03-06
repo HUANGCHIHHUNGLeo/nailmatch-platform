@@ -11,8 +11,8 @@ export const serviceRequestSchema = z.object({
   // Step 3: 客戶性別
   customerGender: z.string().min(1, "請選擇性別"),
 
-  // Step 4: 指甲長度
-  nailLength: z.string().min(1, "請選擇指甲長度"),
+  // Step 4: 指甲長度 (optional — skipped for lash-only requests)
+  nailLength: z.string().optional().default(""),
 
   // Step 5: 偏好風格
   preferredStyles: z.array(z.string()).min(1, "請選擇至少一個偏好風格"),

@@ -11,8 +11,8 @@ export function RemovalStep() {
 
   return (
     <div>
-      <h2 className="mb-2 text-2xl font-bold text-gray-900">是否需要卸甲</h2>
-      <p className="mb-6 text-gray-500">讓美甲師更準確估算時間與費用</p>
+      <h2 className="mb-2 text-2xl font-bold text-gray-900">是否需要卸除</h2>
+      <p className="mb-6 text-gray-500">讓設計師更準確估算時間與費用</p>
 
       <div className="space-y-3">
         {REMOVAL_OPTIONS.map((option) => (
