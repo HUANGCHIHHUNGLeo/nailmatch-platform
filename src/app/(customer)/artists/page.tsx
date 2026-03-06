@@ -23,7 +23,7 @@ interface Artist {
   instagram_handle: string | null;
 }
 
-const CITY_FILTERS = ["全部", ...LOCATION_GROUPS.filter((g) => g.city !== "其他").map((g) => g.city)];
+const CITY_FILTERS = ["全部", ...LOCATION_GROUPS.filter((g) => g.enabled !== false).map((g) => g.city)];
 const ROLE_FILTERS = [
   { value: "all", label: "全部" },
   { value: "nail", label: "美甲師" },
