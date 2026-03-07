@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -7,9 +8,30 @@ import { Badge } from "@/components/ui/badge";
 import { NAIL_SERVICES, LASH_SERVICES } from "@/lib/utils/constants";
 import type { ServiceRequestFormData } from "@/lib/utils/form-schema";
 
+interface PriceHint {
+  service: string;
+  min: number;
+  max: number;
+  avg: number;
+  count: number;
+}
+
 export function ServiceStep() {
   const { watch, setValue, formState: { errors } } = useFormContext<ServiceRequestFormData>();
   const selected = watch("services") || [];
+  const [priceHints, setPriceHints] = useState<Record<string, PriceHint>>({});
+
+  // 載入歷史成交價
+  useEffect(() => {
+    fetch("/api/price-hints")
+      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then(({ data }) => {
+        const map: Record<string, PriceHint> = {};
+        for (const h of data || []) map[h.service] = h;
+        setPriceHints(map);
+      })
+      .catch(() => {});
+  }, []);
 
   const toggleService = (service: string) => {
     if (selected.includes(service)) {
@@ -17,6 +39,40 @@ export function ServiceStep() {
     } else {
       setValue("services", [...selected, service], { shouldValidate: true });
     }
+  };
+
+  /** 顯示價格提示：優先用歷史成交價，fallback 到靜態 priceHint */
+  const renderPriceBadge = (label: string, staticHint: string, isLash?: boolean) => {
+    const hint = priceHints[label];
+    if (hint && hint.count >= 2) {
+      return (
+        <Badge
+          variant="secondary"
+          className={`text-xs ${isLash ? "bg-purple-50 text-purple-600" : "bg-amber-50 text-amber-700"}`}
+        >
+          近期成交 NT${hint.min.toLocaleString()}~{hint.max.toLocaleString()}
+          <span className="ml-1 text-[10px] opacity-60">({hint.count}筆)</span>
+        </Badge>
+      );
+    }
+    if (hint && hint.count === 1) {
+      return (
+        <Badge
+          variant="secondary"
+          className={`text-xs ${isLash ? "bg-purple-50 text-purple-600" : "bg-amber-50 text-amber-700"}`}
+        >
+          近期成交 NT${hint.avg.toLocaleString()}
+        </Badge>
+      );
+    }
+    if (staticHint) {
+      return (
+        <Badge variant="secondary" className="text-xs">
+          {staticHint}
+        </Badge>
+      );
+    }
+    return null;
   };
 
   return (
@@ -43,11 +99,7 @@ export function ServiceStep() {
               />
               <span className="font-medium">{service.label}</span>
             </div>
-            {service.priceHint && (
-              <Badge variant="secondary" className="text-xs">
-                {service.priceHint}
-              </Badge>
-            )}
+            {renderPriceBadge(service.label, service.priceHint)}
           </Label>
         ))}
       </div>
@@ -71,14 +123,29 @@ export function ServiceStep() {
               />
               <span className="font-medium">{service.label}</span>
             </div>
-            {service.priceHint && (
-              <Badge variant="secondary" className="text-xs">
-                {service.priceHint}
-              </Badge>
-            )}
+            {renderPriceBadge(service.label, service.priceHint, true)}
           </Label>
         ))}
       </div>
+
+      {/* 已選服務的成交價摘要 */}
+      {selected.length > 0 && Object.keys(priceHints).length > 0 && (() => {
+        const matched = selected.filter((s) => priceHints[s]);
+        if (matched.length === 0) return null;
+        const totalMin = matched.reduce((sum, s) => sum + (priceHints[s]?.min || 0), 0);
+        const totalMax = matched.reduce((sum, s) => sum + (priceHints[s]?.max || 0), 0);
+        return (
+          <div className="mt-4 rounded-lg bg-amber-50 border border-amber-200 p-3">
+            <p className="text-sm text-amber-800">
+              <span className="font-semibold">已選服務近期成交價：</span>
+              NT${totalMin.toLocaleString()} ~ NT${totalMax.toLocaleString()}
+            </p>
+            <p className="mt-0.5 text-xs text-amber-600">
+              依據平台歷史成交數據，實際價格由設計師報價為準
+            </p>
+          </div>
+        );
+      })()}
 
       {errors.services && (
         <p className="mt-2 text-sm text-red-500">{errors.services.message}</p>

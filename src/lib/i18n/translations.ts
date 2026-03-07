@@ -13,10 +13,10 @@ export const translations = {
 
         // Homepage Hero
         hero: {
-            badge: "✨ 顛覆傳統的美甲美睫預約體驗",
-            headline1: "不再一間間詢價，",
-            headline2: "讓美甲/美睫師主動找上門。",
-            subtext: "只需三分鐘填妥條件！符合需求與空檔的美甲/美睫師會親自為您報價。輕鬆瀏覽作品集比價，挑選最心儀的款式一鍵預約。",
+            badge: "✨ 免費使用 · 不用一間間問 · 不怕踩雷",
+            headline1: "3 分鐘發需求，",
+            headline2: "5 分鐘收到設計師報價。",
+            subtext: "告別一間間私訊問價的日子。送出需求後，符合條件的美甲/美睫師會帶著作品集和報價主動找你。比價格、看作品、選最喜歡的一鍵預約。",
             ctaPrimary: "免費送出需求",
             ctaArtist: "我是美甲/美睫師",
         },
@@ -41,9 +41,9 @@ export const translations = {
 
         // Homepage CTA Section
         cta: {
-            title: "準備好邂逅完美美甲/美睫了嗎？",
-            subtitle: "現在就送出需求，短短 3 分鐘即可開啟全新的美麗旅程！",
-            button: "立即送出您的第一筆需求",
+            title: "還在一間間私訊問價嗎？",
+            subtitle: "送出需求只要 3 分鐘，設計師帶著作品集主動找你報價。免費、透明、不踩雷。",
+            button: "立即免費送出需求",
         },
 
         // Homepage Footer
@@ -289,10 +289,10 @@ export const translations = {
 
         // Homepage Hero
         hero: {
-            badge: "✨ A smarter way to book nail & lash services",
-            headline1: "No more calling around—",
-            headline2: "Let nail & lash artists come to you.",
-            subtext: "Fill in your preferences in 3 minutes. Qualified nail & lash artists will reach out with portfolio samples and quotes. Browse, compare, and book—all in one place.",
+            badge: "✨ Free to use · No more DM-ing around · No surprises",
+            headline1: "3 minutes to post,",
+            headline2: "5 minutes to get quotes.",
+            subtext: "Stop DM-ing artists one by one. Post your request and qualified nail & lash artists will reach out with portfolios and quotes. Compare prices, browse work, and book your favourite—all in one place.",
             ctaPrimary: "Post Your Request — It's Free",
             ctaArtist: "I'm a Nail / Lash Artist",
         },
