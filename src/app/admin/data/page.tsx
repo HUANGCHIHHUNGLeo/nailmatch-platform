@@ -87,6 +87,18 @@ interface PaginatedResult<T> {
   hasMore: boolean;
 }
 
+interface Analytics {
+  trend: { date: string; customers: number; requests: number; bookings: number; responses: number }[];
+  topServices: { name: string; count: number }[];
+  topLocations: { name: string; count: number }[];
+  budgetDistribution: Record<string, number>;
+  funnel: { requests: number; responses: number; bookings: number; completed: number; reviews: number };
+  revenue: { total: number; average: number; count: number };
+  avgRating: number;
+  statusBreakdown: Record<string, number>;
+  period: { from: string; to: string };
+}
+
 export default function AdminDataPage() {
   const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -95,18 +107,20 @@ export default function AdminDataPage() {
   const [totals, setTotals] = useState({ customers: 0, requests: 0, bookings: 0 });
   const [pages, setPages] = useState({ customers: 1, requests: 1, bookings: 1 });
   const [hasMore, setHasMore] = useState({ customers: false, requests: false, bookings: false });
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [tab, setTab] = useState<"customers" | "requests" | "bookings">("customers");
+  const [tab, setTab] = useState<"analytics" | "customers" | "requests" | "bookings">("analytics");
   const PAGE_LIMIT = 30;
 
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [custRes, reqRes, bookRes] = await Promise.all([
+        const [custRes, reqRes, bookRes, analyticsRes] = await Promise.all([
           fetch(`/api/admin/customers?limit=${PAGE_LIMIT}`),
           fetch(`/api/admin/requests?limit=${PAGE_LIMIT}`),
           fetch(`/api/admin/bookings?limit=${PAGE_LIMIT}`),
+          fetch("/api/admin/analytics"),
         ]);
 
         if (custRes.status === 401) {
@@ -117,6 +131,7 @@ export default function AdminDataPage() {
         const custData: PaginatedResult<Customer> = await custRes.json();
         const reqData: PaginatedResult<ServiceRequest> = await reqRes.json();
         const bookData: PaginatedResult<Booking> = await bookRes.json();
+        if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
 
         setCustomers(custData.data || []);
         setRequests(reqData.data || []);
@@ -215,6 +230,7 @@ export default function AdminDataPage() {
         {/* Data Tabs */}
         <div className="mb-4 flex gap-1 rounded-lg bg-gray-100 p-1">
           {([
+            ["analytics", "趨勢分析"],
             ["customers", `客戶 (${totals.customers})`],
             ["requests", `需求 (${totals.requests})`],
             ["bookings", `預約 (${totals.bookings})`],
@@ -232,6 +248,176 @@ export default function AdminDataPage() {
             </button>
           ))}
         </div>
+
+          {/* Analytics Dashboard */}
+          {tab === "analytics" && analytics && (
+            <div className="space-y-4">
+              {/* Conversion Funnel */}
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="mb-3 text-sm font-semibold text-gray-700">轉換漏斗（近 30 天）</h3>
+                  <div className="space-y-2">
+                    {[
+                      { label: "需求送出", value: analytics.funnel.requests, color: "bg-blue-500" },
+                      { label: "設計師報價", value: analytics.funnel.responses, color: "bg-indigo-500" },
+                      { label: "確認預約", value: analytics.funnel.bookings, color: "bg-green-500" },
+                      { label: "完成服務", value: analytics.funnel.completed, color: "bg-emerald-500" },
+                      { label: "留下評價", value: analytics.funnel.reviews, color: "bg-purple-500" },
+                    ].map((step) => {
+                      const pct = analytics.funnel.requests > 0 ? (step.value / analytics.funnel.requests) * 100 : 0;
+                      return (
+                        <div key={step.label} className="flex items-center gap-3">
+                          <span className="w-20 flex-shrink-0 text-xs text-gray-500">{step.label}</span>
+                          <div className="flex-1 rounded-full bg-gray-100 h-5 overflow-hidden">
+                            <div className={`h-full ${step.color} rounded-full transition-all`} style={{ width: `${Math.max(pct, 2)}%` }} />
+                          </div>
+                          <span className="w-16 flex-shrink-0 text-right text-xs font-medium">{step.value} ({Math.round(pct)}%)</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Daily Trend */}
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="mb-3 text-sm font-semibold text-gray-700">
+                    每日趨勢（{analytics.period.from} ~ {analytics.period.to}）
+                  </h3>
+                  <div className="flex items-end gap-[2px] h-32 overflow-x-auto">
+                    {analytics.trend.map((day) => {
+                      const total = day.customers + day.requests + day.bookings;
+                      const maxVal = Math.max(...analytics.trend.map((d) => d.customers + d.requests + d.bookings), 1);
+                      const height = (total / maxVal) * 100;
+                      return (
+                        <div key={day.date} className="flex-1 min-w-[8px] group relative flex flex-col items-center justify-end h-full">
+                          <div
+                            className="w-full rounded-t bg-[var(--brand)] opacity-80 hover:opacity-100 transition min-h-[2px]"
+                            style={{ height: `${Math.max(height, 2)}%` }}
+                          />
+                          <div className="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-[10px] text-white z-10">
+                            {day.date.slice(5)}: {day.requests}需求 {day.bookings}預約 {day.customers}新客
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-1 flex justify-between text-[10px] text-gray-400">
+                    <span>{analytics.trend[0]?.date.slice(5)}</span>
+                    <span>{analytics.trend[analytics.trend.length - 1]?.date.slice(5)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* Top Services */}
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="mb-3 text-sm font-semibold text-gray-700">熱門服務 Top 10</h3>
+                    <div className="space-y-2">
+                      {analytics.topServices.map((s, i) => {
+                        const maxCount = analytics.topServices[0]?.count || 1;
+                        return (
+                          <div key={s.name} className="flex items-center gap-2">
+                            <span className="w-4 text-xs text-gray-400">{i + 1}</span>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-700">{s.name}</span>
+                                <span className="font-medium">{s.count}</span>
+                              </div>
+                              <div className="mt-0.5 h-1.5 rounded-full bg-gray-100">
+                                <div className="h-full rounded-full bg-[var(--brand)]" style={{ width: `${(s.count / maxCount) * 100}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {analytics.topServices.length === 0 && (
+                        <p className="text-xs text-gray-400">尚無資料</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top Locations */}
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="mb-3 text-sm font-semibold text-gray-700">熱門地區</h3>
+                    <div className="space-y-2">
+                      {analytics.topLocations.map((l, i) => {
+                        const maxCount = analytics.topLocations[0]?.count || 1;
+                        return (
+                          <div key={l.name} className="flex items-center gap-2">
+                            <span className="w-4 text-xs text-gray-400">{i + 1}</span>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-700">{l.name}</span>
+                                <span className="font-medium">{l.count}</span>
+                              </div>
+                              <div className="mt-0.5 h-1.5 rounded-full bg-gray-100">
+                                <div className="h-full rounded-full bg-blue-500" style={{ width: `${(l.count / maxCount) * 100}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {analytics.topLocations.length === 0 && (
+                        <p className="text-xs text-gray-400">尚無資料</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Budget Distribution */}
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="mb-3 text-sm font-semibold text-gray-700">預算分佈</h3>
+                    <div className="space-y-2">
+                      {Object.entries(analytics.budgetDistribution)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([range, count]) => {
+                          const maxCount = Math.max(...Object.values(analytics.budgetDistribution), 1);
+                          return (
+                            <div key={range} className="flex items-center gap-2">
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-gray-700">{range}</span>
+                                  <span className="font-medium">{count}</span>
+                                </div>
+                                <div className="mt-0.5 h-1.5 rounded-full bg-gray-100">
+                                  <div className="h-full rounded-full bg-green-500" style={{ width: `${(count / maxCount) * 100}%` }} />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Revenue & Ratings */}
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="mb-3 text-sm font-semibold text-gray-700">營收與評價</h3>
+                    <div className="space-y-3">
+                      <div className="rounded-lg bg-green-50 p-3">
+                        <p className="text-xs text-green-600">平台總成交額（30天）</p>
+                        <p className="text-xl font-bold text-green-700">NT${analytics.revenue.total.toLocaleString()}</p>
+                        <p className="text-xs text-green-500">{analytics.revenue.count} 筆完成・平均 NT${analytics.revenue.average.toLocaleString()}</p>
+                      </div>
+                      <div className="rounded-lg bg-purple-50 p-3">
+                        <p className="text-xs text-purple-600">平均評價</p>
+                        <p className="text-xl font-bold text-purple-700">
+                          {analytics.avgRating > 0 ? `${analytics.avgRating} / 5.0` : "尚無評價"}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
 
           {/* Customers Table */}
           {tab === "customers" && (

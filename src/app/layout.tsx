@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_TC, Noto_Serif_TC } from "next/font/google";
 import { GlobalNav } from "@/components/shared/GlobalNav";
+import { GoogleAnalytics } from "@/components/shared/GoogleAnalytics";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import "./globals.css";
@@ -37,6 +38,7 @@ export default function RootLayout({
   return (
     <html lang="zh-Hant-TW" className="scroll-smooth">
       <body className={`${notoSansTC.variable} ${notoSerifTC.variable} font-sans antialiased bg-[var(--brand-bg)] text-slate-800 min-h-screen flex flex-col selection:bg-[var(--brand-light)] selection:text-[var(--brand-dark)]`}>
+        <GoogleAnalytics />
         <LanguageProvider>
           {children}
           <GlobalNav />
