@@ -2,6 +2,66 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { resolveCustomer } from "@/lib/auth/resolve-customer";
 
+export async function GET(request: Request) {
+  try {
+    const resolved = await resolveCustomer(request);
+    if (!resolved) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const supabase = await createServiceClient();
+    const { data, error } = await supabase
+      .from("customers")
+      .select("id, display_name, show_contact_to_artist")
+      .eq("id", resolved.customerId)
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Customer GET error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const resolved = await resolveCustomer(request);
+    if (!resolved) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const supabase = await createServiceClient();
+
+    const updateData: Record<string, unknown> = {};
+    if (typeof body.show_contact_to_artist === "boolean") {
+      updateData.show_contact_to_artist = body.show_contact_to_artist;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: "No update data" }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from("customers")
+      .update(updateData)
+      .eq("id", resolved.customerId);
+
+    if (error) {
+      return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Customer PATCH error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     const resolved = await resolveCustomer(request);

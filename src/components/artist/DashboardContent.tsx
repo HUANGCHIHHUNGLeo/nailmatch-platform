@@ -369,6 +369,12 @@ export default function DashboardContent() {
                           <span className="text-[11px] text-gray-400">{timeAgo(quote.created_at)}</span>
                         </div>
                       </div>
+                      {/* Link to booking management when accepted */}
+                      {(requestConfirmed || quote.status === "accepted") && (
+                        <Button size="sm" variant="outline" className="mt-3 w-full text-[var(--brand)]" asChild>
+                          <Link href="/artist/bookings">查看預約詳情</Link>
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 );

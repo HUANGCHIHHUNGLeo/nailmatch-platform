@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { BookingMessages } from "@/components/shared/BookingMessages";
+import { useAuthFetch } from "@/lib/line/use-auth-fetch";
 
 interface Booking {
   id: string;
@@ -53,9 +55,12 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 export default function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { authFetch, isReady: liffReady } = useAuthFetch();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [showContact, setShowContact] = useState(false);
+  const [togglingContact, setTogglingContact] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -80,6 +85,33 @@ export default function BookingDetailPage() {
     }
     fetchBooking();
   }, [id]);
+
+  // Load customer contact visibility setting
+  useEffect(() => {
+    if (!liffReady) return;
+    authFetch("/api/customers/me").then(async (res) => {
+      if (res.ok) {
+        const data = await res.json();
+        setShowContact(!!data.show_contact_to_artist);
+      }
+    }).catch(() => {});
+  }, [liffReady, authFetch]);
+
+  const handleToggleContact = async (checked: boolean) => {
+    setTogglingContact(true);
+    setShowContact(checked);
+    try {
+      await authFetch("/api/customers/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ show_contact_to_artist: checked }),
+      });
+    } catch {
+      setShowContact(!checked); // revert on error
+    } finally {
+      setTogglingContact(false);
+    }
+  };
 
   const handleCancel = async () => {
     if (!confirm("確定要取消此預約嗎？")) return;
@@ -230,6 +262,88 @@ export default function BookingDetailPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Contact Exchange — only shown when confirmed/completed */}
+        {["confirmed", "completed"].includes(booking.status) && (
+          <Card className="mb-4 border-[var(--brand)]/30 bg-[var(--brand-bg)]">
+            <CardContent className="p-4">
+              <h2 className="mb-3 font-semibold text-gray-700">聯繫設計師</h2>
+              <p className="mb-3 text-xs text-gray-500">預約已確認，您可以透過以下方式與設計師討論細節</p>
+              <div className="space-y-2">
+                {booking.artists.phone && (
+                  <a
+                    href={`tel:${booking.artists.phone}`}
+                    className="flex items-center gap-3 rounded-lg bg-white p-3 transition hover:bg-gray-50"
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100">
+                      <span className="text-lg">📞</span>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">電話</p>
+                      <p className="font-medium text-gray-900">{booking.artists.phone}</p>
+                    </div>
+                  </a>
+                )}
+                {booking.artists.instagram_handle && (
+                  <a
+                    href={`https://instagram.com/${booking.artists.instagram_handle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 rounded-lg bg-white p-3 transition hover:bg-gray-50"
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-pink-100">
+                      <span className="text-lg">📸</span>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Instagram</p>
+                      <p className="font-medium text-gray-900">@{booking.artists.instagram_handle}</p>
+                    </div>
+                  </a>
+                )}
+                {booking.artists.studio_address && (
+                  <div className="flex items-center gap-3 rounded-lg bg-white p-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-100">
+                      <span className="text-lg">📍</span>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">工作室地址</p>
+                      <p className="font-medium text-gray-900">{booking.artists.studio_address}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Customer contact visibility toggle */}
+              <div className="mt-3 flex items-center justify-between rounded-lg bg-white p-3">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">讓設計師看到我的電話</p>
+                  <p className="text-xs text-gray-400">開啟後設計師可直接致電聯繫您</p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showContact}
+                  disabled={togglingContact}
+                  onClick={() => handleToggleContact(!showContact)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${
+                    showContact ? "bg-[var(--brand)]" : "bg-gray-200"
+                  } ${togglingContact ? "opacity-50" : ""}`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ${
+                      showContact ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Messages — only for confirmed/completed bookings */}
+        {["confirmed", "completed"].includes(booking.status) && (
+          <BookingMessages bookingId={booking.id} role="customer" fetchFn={authFetch} />
+        )}
 
         {/* Booking Details */}
         <Card className="mb-4">

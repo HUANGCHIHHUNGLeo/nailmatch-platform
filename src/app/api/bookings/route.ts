@@ -136,7 +136,7 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from("bookings")
-      .select("*, service_requests(services, locations, budget_range), artists(display_name, avatar_url, studio_address), customers(display_name)")
+      .select("*, service_requests(services, locations, budget_range, customer_phone), artists(display_name, avatar_url, studio_address), customers(display_name, show_contact_to_artist)")
       .order("created_at", { ascending: false })
       .limit(50);
 

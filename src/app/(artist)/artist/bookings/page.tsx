@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthFetch } from "@/lib/line/use-auth-fetch";
 import { useAuthSWR } from "@/lib/line/use-auth-swr";
+import { BookingMessages } from "@/components/shared/BookingMessages";
 
 interface ArtistMe {
   id: string;
@@ -24,9 +25,11 @@ interface Booking {
     services: string[];
     locations: string[];
     budget_range: string;
+    customer_phone: string | null;
   };
   customers: {
     display_name: string;
+    show_contact_to_artist?: boolean;
   };
 }
 
@@ -135,6 +138,26 @@ export default function ArtistBookingsPage() {
             </div>
             <Badge className={statusInfo.color}>{statusInfo.label}</Badge>
           </div>
+
+          {/* Customer Contact — only when customer has opted in */}
+          {booking.status === "confirmed" && booking.customers?.show_contact_to_artist && booking.service_requests?.customer_phone && (
+            <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3">
+              <p className="mb-1 text-xs font-medium text-blue-700">顧客聯繫方式</p>
+              <a
+                href={`tel:${booking.service_requests.customer_phone}`}
+                className="text-sm font-medium text-blue-900 hover:underline"
+              >
+                📞 {booking.service_requests.customer_phone}
+              </a>
+            </div>
+          )}
+
+          {/* Messages */}
+          {booking.status === "confirmed" && (
+            <div className="mt-3">
+              <BookingMessages bookingId={booking.id} role="artist" fetchFn={authFetch} />
+            </div>
+          )}
 
           {booking.status === "confirmed" && rescheduleId === booking.id && (
             <div className="mt-3 space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
