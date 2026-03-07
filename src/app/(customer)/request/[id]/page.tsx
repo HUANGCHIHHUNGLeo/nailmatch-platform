@@ -87,6 +87,7 @@ export default function RequestDetailPage() {
           customerId: request.customer_id,
           artistId: response.artists.id,
           bookingDate: request.preferred_date,
+          bookingTime: response.available_time || request.preferred_time || null,
           finalPrice: response.quoted_price,
         }),
       });

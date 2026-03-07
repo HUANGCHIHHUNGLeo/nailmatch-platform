@@ -85,7 +85,7 @@ export async function POST(request: Request) {
 
       if (customer?.line_user_id) {
         notifyCustomerOfQuote(customer.line_user_id, {
-          artistName: artist.display_name,
+          artistName: artist.display_name || "設計師",
           price: parsed.data.quotedPrice,
           requestId,
         }).catch((err) => {

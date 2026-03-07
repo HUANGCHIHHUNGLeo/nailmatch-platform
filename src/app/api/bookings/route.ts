@@ -15,6 +15,30 @@ export async function POST(request: Request) {
 
     const supabase = await createServiceClient();
 
+    // Verify the request belongs to this customer and response belongs to this request
+    const { data: validRequest } = await supabase
+      .from("service_requests")
+      .select("id")
+      .eq("id", requestId)
+      .eq("customer_id", customerId)
+      .single();
+
+    if (!validRequest) {
+      return NextResponse.json({ error: "Invalid request or customer" }, { status: 403 });
+    }
+
+    const { data: validResponse } = await supabase
+      .from("artist_responses")
+      .select("id")
+      .eq("id", responseId)
+      .eq("request_id", requestId)
+      .eq("artist_id", artistId)
+      .single();
+
+    if (!validResponse) {
+      return NextResponse.json({ error: "Invalid response" }, { status: 403 });
+    }
+
     // Create booking
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
