@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     }
 
     if (!artist.is_verified) {
-      return NextResponse.json({ error: "Artist not verified" }, { status: 403 });
+      return NextResponse.json([]);
     }
 
     // Fetch active requests that match this artist's profile

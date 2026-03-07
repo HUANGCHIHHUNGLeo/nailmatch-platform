@@ -15,6 +15,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 interface ArtistMe {
   id: string;
   display_name: string;
+  is_verified: boolean;
 }
 
 interface ServiceRequest {
@@ -133,6 +134,17 @@ export default function ArtistDashboard() {
           <p className="mb-4 text-sm text-gray-500">
             {t.dashboard.greeting}{artistName}
           </p>
+        )}
+
+        {me && !me.is_verified && (
+          <Card className="mb-4 border-yellow-200 bg-yellow-50">
+            <CardContent className="p-4 text-center">
+              <p className="font-medium text-yellow-800">帳號審核中</p>
+              <p className="mt-1 text-sm text-yellow-600">
+                管理員正在審核您的資料，審核通過後即可接收客戶需求並報價。
+              </p>
+            </CardContent>
+          </Card>
         )}
 
         {/* Stats */}
