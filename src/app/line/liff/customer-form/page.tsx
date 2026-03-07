@@ -29,14 +29,18 @@ function CustomerFormContent() {
 
       const result = await response.json();
 
-      // Send confirmation message in LINE chat
+      // Send confirmation message in LINE chat (non-blocking)
       if (liff?.isInClient()) {
-        await liff.sendMessages([
-          {
-            type: "text",
-            text: `美甲需求已送出！\n\n服務項目：${data.services.join("、")}\n預算：${data.budgetRange}\n\n系統正在為您配對合適的美甲師，請稍候...`,
-          },
-        ]);
+        try {
+          await liff.sendMessages([
+            {
+              type: "text",
+              text: `美甲需求已送出！\n\n服務項目：${data.services.join("、")}\n預算：${data.budgetRange}\n\n系統正在為您配對合適的美甲師，請稍候...`,
+            },
+          ]);
+        } catch (msgErr) {
+          console.warn("sendMessages failed (permission issue):", msgErr);
+        }
         liff.closeWindow();
       } else {
         router.push(`/request/${result.id}`);
