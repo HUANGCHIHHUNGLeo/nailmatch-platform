@@ -60,12 +60,11 @@ const BOOKING_STATUS: Record<string, { label: string; color: string }> = {
 };
 
 export default function MyPageContent() {
-  const { liff, isReady, isLoggedIn, needsLogin, error, profile } = useLiff();
+  const { isReady, isLoggedIn, needsLogin, error, profile } = useLiff();
   const { authFetch } = useAuthFetch();
   const { data: requests, error: reqError } = useAuthSWR<ServiceRequest[]>("/api/requests");
   const { data: bookings, error: bookError } = useAuthSWR<Booking[]>("/api/bookings");
   const [deleting, setDeleting] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   const fetchError = reqError || bookError;
   const loading = isReady && isLoggedIn && !requests && !bookings && !fetchError;
@@ -206,29 +205,6 @@ export default function MyPageContent() {
                   >
                     重新整理
                   </Button>
-                  <Button
-                    variant="outline"
-                    className="mt-2"
-                    onClick={async () => {
-                      try {
-                        const idToken = liff?.getIDToken?.();
-                        const headers: Record<string, string> = {};
-                        if (idToken) headers["Authorization"] = `Bearer ${idToken}`;
-                        const res = await fetch("/api/debug/auth", { method: "POST", headers });
-                        const data = await res.json();
-                        setDebugInfo(JSON.stringify(data, null, 2));
-                      } catch (e) {
-                        setDebugInfo(String(e));
-                      }
-                    }}
-                  >
-                    診斷問題
-                  </Button>
-                  {debugInfo && (
-                    <pre className="mt-3 text-left text-xs text-gray-500 bg-gray-50 p-3 rounded overflow-x-auto whitespace-pre-wrap">
-                      {debugInfo}
-                    </pre>
-                  )}
                 </CardContent>
               </Card>
             ) : loading ? (
