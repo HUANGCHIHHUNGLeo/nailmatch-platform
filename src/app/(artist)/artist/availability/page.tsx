@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Trash2, Loader2, Clock } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, Clock, CalendarDays, List, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,15 @@ export default function AvailabilityPage() {
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  const [view, setView] = useState<"list" | "calendar">("calendar");
+  const [calMonth, setCalMonth] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  });
+
+  // Bookings for calendar
+  const [bookings, setBookings] = useState<{ booking_date: string | null; booking_time: string | null; status: string; customers: { display_name: string } | null }[]>([]);
+
   // Form
   const [showForm, setShowForm] = useState(false);
   const [newDate, setNewDate] = useState("");
@@ -44,7 +53,8 @@ export default function AvailabilityPage() {
 
   useEffect(() => {
     fetchSlots();
-  }, []);
+    fetchBookings();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSlots = async () => {
     try {
@@ -57,6 +67,18 @@ export default function AvailabilityPage() {
       console.error("Failed to fetch slots:", e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBookings = async () => {
+    try {
+      const res = await authFetch("/api/bookings");
+      if (res.ok) {
+        const data = await res.json();
+        setBookings(data.filter((b: { status: string }) => ["confirmed", "completed"].includes(b.status)));
+      }
+    } catch (e) {
+      console.error("Failed to fetch bookings:", e);
     }
   };
 
@@ -176,13 +198,27 @@ export default function AvailabilityPage() {
       </header>
 
       <main className="mx-auto max-w-2xl space-y-4 p-4">
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Button size="sm" className="bg-[var(--brand)] hover:bg-[var(--brand-dark)]" onClick={() => setShowForm(true)}>
             <Plus className="mr-1 h-4 w-4" /> 新增時段
           </Button>
           <Button size="sm" variant="outline" onClick={handleQuickAdd} disabled={adding}>
             <Clock className="mr-1 h-4 w-4" /> 快速新增 7 天
           </Button>
+          <div className="ml-auto flex rounded-lg border p-0.5">
+            <button
+              onClick={() => setView("calendar")}
+              className={`rounded-md p-1.5 ${view === "calendar" ? "bg-[var(--brand)] text-white" : "text-gray-400"}`}
+            >
+              <CalendarDays className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setView("list")}
+              className={`rounded-md p-1.5 ${view === "list" ? "bg-[var(--brand)] text-white" : "text-gray-400"}`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* Add Form */}
@@ -226,15 +262,104 @@ export default function AvailabilityPage() {
           </Card>
         )}
 
+        {/* Calendar View */}
+        {view === "calendar" && (
+          <Card>
+            <CardContent className="p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <button onClick={() => setCalMonth((prev) => {
+                  const d = new Date(prev.year, prev.month - 1);
+                  return { year: d.getFullYear(), month: d.getMonth() };
+                })}>
+                  <ChevronLeft className="h-5 w-5 text-gray-500" />
+                </button>
+                <h3 className="font-semibold">
+                  {calMonth.year} 年 {calMonth.month + 1} 月
+                </h3>
+                <button onClick={() => setCalMonth((prev) => {
+                  const d = new Date(prev.year, prev.month + 1);
+                  return { year: d.getFullYear(), month: d.getMonth() };
+                })}>
+                  <ChevronRight className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Weekday headers */}
+              <div className="grid grid-cols-7 gap-0.5 text-center text-xs text-gray-400 mb-1">
+                {["日", "一", "二", "三", "四", "五", "六"].map((d) => (
+                  <div key={d} className="py-1">{d}</div>
+                ))}
+              </div>
+
+              {/* Calendar days */}
+              <div className="grid grid-cols-7 gap-0.5">
+                {(() => {
+                  const firstDay = new Date(calMonth.year, calMonth.month, 1).getDay();
+                  const daysInMonth = new Date(calMonth.year, calMonth.month + 1, 0).getDate();
+                  const todayStr = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" });
+                  const cells = [];
+
+                  // Empty cells before first day
+                  for (let i = 0; i < firstDay; i++) {
+                    cells.push(<div key={`e-${i}`} className="h-14" />);
+                  }
+
+                  for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${calMonth.year}-${String(calMonth.month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                    const daySlots = slots.filter((s) => s.date === dateStr);
+                    const dayBookings = bookings.filter((b) => b.booking_date === dateStr);
+                    const isToday = dateStr === todayStr;
+                    const isPast = dateStr < todayStr;
+
+                    cells.push(
+                      <div
+                        key={day}
+                        className={`relative h-14 rounded-lg border p-1 text-center text-xs ${
+                          isToday ? "border-[var(--brand)] bg-[var(--brand-light)]" : isPast ? "bg-gray-50 text-gray-300" : "border-gray-100"
+                        }`}
+                      >
+                        <span className={`text-[11px] ${isToday ? "font-bold text-[var(--brand)]" : ""}`}>{day}</span>
+                        <div className="mt-0.5 flex flex-col items-center gap-0.5">
+                          {daySlots.length > 0 && (
+                            <div className="h-1.5 w-1.5 rounded-full bg-green-400" title={`${daySlots.length} 個可預約時段`} />
+                          )}
+                          {dayBookings.length > 0 && (
+                            <div className="h-1.5 w-1.5 rounded-full bg-blue-500" title={`${dayBookings.length} 筆預約`} />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return cells;
+                })()}
+              </div>
+
+              {/* Legend */}
+              <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                <div className="flex items-center gap-1">
+                  <div className="h-2 w-2 rounded-full bg-green-400" />
+                  <span>可預約</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="h-2 w-2 rounded-full bg-blue-500" />
+                  <span>已預約</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Slots List */}
-        {Object.keys(grouped).length === 0 ? (
+        {view === "list" && Object.keys(grouped).length === 0 && (
           <Card>
             <CardContent className="p-8 text-center text-gray-400">
               <p>還沒有設定可預約時段</p>
               <p className="mt-1 text-sm">新增時段後，客戶才能看到你的可預約時間</p>
             </CardContent>
           </Card>
-        ) : (
+        )}
+        {view === "list" && Object.keys(grouped).length > 0 &&
           Object.entries(grouped).map(([date, dateSlots]) => (
             <Card key={date}>
               <CardContent className="p-4">
@@ -272,8 +397,7 @@ export default function AvailabilityPage() {
                 </div>
               </CardContent>
             </Card>
-          ))
-        )}
+          ))}
       </main>
     </div>
   );
