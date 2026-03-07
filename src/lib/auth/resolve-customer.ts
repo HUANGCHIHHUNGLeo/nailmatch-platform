@@ -12,7 +12,7 @@ export async function resolveCustomer(
 ): Promise<{ customerId: string; lineUserId: string | null } | null> {
   const supabase = await createServiceClient();
 
-  const lineUserId = getLineUserId(request);
+  const lineUserId = await getLineUserId(request);
   if (!lineUserId) return null;
 
   const { data: customer } = await supabase

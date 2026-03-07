@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     const supabase = await createServiceClient();
 
     // Resolve customer identity (LINE auth or anonymous)
-    const lineUserId = getLineUserId(request);
+    const lineUserId = await getLineUserId(request);
     const lineProfile = body.lineProfile as
       | { displayName?: string; pictureUrl?: string }
       | undefined;

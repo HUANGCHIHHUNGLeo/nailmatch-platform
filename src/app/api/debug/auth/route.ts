@@ -59,7 +59,7 @@ export async function POST(request: Request) {
   }
 
   // Local verify
-  const result = verifyLineIdToken(token);
+  const result = await verifyLineIdToken(token);
   checks.local_verify = result ? "success" : "failed";
   if (result) checks.user_id_prefix = result.userId.substring(0, 8) + "...";
 
