@@ -120,6 +120,143 @@ export const translations = {
             loggingIn: "驗證中...",
         },
 
+        // Lobby
+        lobby: {
+            title: "配對大廳",
+            subtitle: "瀏覽所有待配對需求",
+            filter: { all: "全部", nail: "美甲", lash: "美睫" },
+            resultCount: "共 {count} 筆需求",
+            loadMore: "載入更多",
+            noResults: "目前沒有符合條件的需求",
+            card: {
+                quotesCount: "{count} 位設計師已報價",
+                timeAgo: "{time}前",
+            },
+        },
+
+        // Artists browse
+        artists: {
+            title: "設計師總覽",
+            searchPlaceholder: "搜尋設計師...",
+            filters: { all: "全部", nail: "美甲", lash: "美睫" },
+            resultCount: "共 {count} 位設計師",
+            card: {
+                startingFrom: "起",
+                reviews: "{count} 則評價",
+                noReviews: "尚無評價",
+                viewProfile: "查看檔案",
+            },
+        },
+
+        // Booking detail
+        booking: {
+            title: "預約詳情",
+            success: "預約成功！",
+            artistInfo: "美甲師資訊",
+            details: "預約詳情",
+            serviceItems: "服務項目",
+            location: "地點",
+            date: "預約日期",
+            time: "預約時間",
+            price: "確認價格",
+            artistMessage: "美甲師留言",
+            reviewTitle: "評價美甲師",
+            reviewPlaceholder: "分享你的體驗...",
+            submitReview: "送出評價",
+            submittingReview: "送出中...",
+            reviewThanks: "感謝你的評價！",
+            reschedule: "申請改期",
+            rescheduleTitle: "申請改期",
+            newDate: "新日期",
+            newTime: "新時段",
+            submitReschedule: "送出改期請求",
+            cancelBooking: "取消預約",
+            cancelling: "取消中...",
+            status: {
+                confirmed: "已確認",
+                completed: "已完成",
+                cancelled: "已取消",
+                no_show: "未到場",
+            },
+        },
+
+        // Artist bookings
+        artistBookings: {
+            title: "預約管理",
+            tabs: { upcoming: "待服務", completed: "已完成", cancelled: "已取消" },
+            markComplete: "標記完成",
+            reschedule: "改期",
+            empty: {
+                upcoming: "目前沒有待服務的預約",
+                completed: "尚無已完成的預約",
+                cancelled: "沒有已取消的預約",
+            },
+        },
+
+        // Availability
+        availability: {
+            title: "時段管理",
+            addSlot: "新增時段",
+            quickAdd: "快速新增 7 天",
+            calendar: "月曆",
+            list: "列表",
+            newSlotTitle: "新增可預約時段",
+            dateLabel: "日期",
+            startTime: "開始時間",
+            endTime: "結束時間",
+            booked: "已預約",
+            available: "可預約",
+            emptyState: "還沒有設定可預約時段",
+            emptyHint: "新增時段後，客戶才能看到你的可預約時間",
+            timeSlots: {
+                morning: "上午 (10:00-12:00)",
+                afternoon: "下午 (13:00-17:00)",
+                evening: "晚上 (18:00-21:00)",
+            },
+        },
+
+        // Artist profile / settings
+        profile: {
+            editTitle: "編輯個人檔案",
+            displayName: "顯示名稱",
+            phone: "電話",
+            email: "Email",
+            bio: "自我介紹",
+            cities: "服務地區",
+            services: "服務項目",
+            styles: "擅長風格",
+            priceRange: "價格範圍",
+            instagram: "Instagram",
+            saveChanges: "儲存變更",
+            saving: "儲存中...",
+        },
+
+        // Settings
+        settings: {
+            title: "帳號設定",
+            pauseService: "暫停接單",
+            pauseDesc: "暫停後不會收到新的需求通知",
+            activeStatus: "營業中",
+            pausedStatus: "已暫停",
+        },
+
+        // Customer "My" page
+        myPage: {
+            title: "我的需求",
+            noRequests: "還沒有送出需求",
+            postFirst: "現在就送出你的第一筆需求吧！",
+            postRequest: "送出需求",
+            viewDetail: "查看詳情",
+            requestStatus: {
+                pending: "等待中",
+                matching: "配對中",
+                confirmed: "已確認",
+                completed: "已完成",
+                cancelled: "已取消",
+                expired: "已過期",
+            },
+        },
+
         // Common
         common: {
             loading: "載入中...",
@@ -130,6 +267,13 @@ export const translations = {
             save: "儲存",
             submit: "送出",
             close: "關閉",
+            home: "回首頁",
+            notFound: "找不到此頁面",
+            budget: "預算",
+            services: "服務項目",
+            location: "地點",
+            date: "日期",
+            time: "時間",
         },
     },
 
@@ -252,6 +396,143 @@ export const translations = {
             loggingIn: "Verifying...",
         },
 
+        // Lobby
+        lobby: {
+            title: "Matching Lobby",
+            subtitle: "Browse all open requests",
+            filter: { all: "All", nail: "Nail", lash: "Lash" },
+            resultCount: "{count} requests",
+            loadMore: "Load More",
+            noResults: "No matching requests found",
+            card: {
+                quotesCount: "{count} artists quoted",
+                timeAgo: "{time} ago",
+            },
+        },
+
+        // Artists browse
+        artists: {
+            title: "Browse Artists",
+            searchPlaceholder: "Search artists...",
+            filters: { all: "All", nail: "Nail", lash: "Lash" },
+            resultCount: "{count} artists",
+            card: {
+                startingFrom: "from",
+                reviews: "{count} reviews",
+                noReviews: "No reviews yet",
+                viewProfile: "View Profile",
+            },
+        },
+
+        // Booking detail
+        booking: {
+            title: "Booking Details",
+            success: "Booking Confirmed!",
+            artistInfo: "Artist Info",
+            details: "Booking Details",
+            serviceItems: "Services",
+            location: "Location",
+            date: "Booking Date",
+            time: "Booking Time",
+            price: "Confirmed Price",
+            artistMessage: "Artist's Message",
+            reviewTitle: "Review Artist",
+            reviewPlaceholder: "Share your experience...",
+            submitReview: "Submit Review",
+            submittingReview: "Submitting...",
+            reviewThanks: "Thanks for your review!",
+            reschedule: "Request Reschedule",
+            rescheduleTitle: "Request Reschedule",
+            newDate: "New Date",
+            newTime: "New Time Slot",
+            submitReschedule: "Submit Reschedule",
+            cancelBooking: "Cancel Booking",
+            cancelling: "Cancelling...",
+            status: {
+                confirmed: "Confirmed",
+                completed: "Completed",
+                cancelled: "Cancelled",
+                no_show: "No Show",
+            },
+        },
+
+        // Artist bookings
+        artistBookings: {
+            title: "Booking Management",
+            tabs: { upcoming: "Upcoming", completed: "Completed", cancelled: "Cancelled" },
+            markComplete: "Mark Complete",
+            reschedule: "Reschedule",
+            empty: {
+                upcoming: "No upcoming bookings",
+                completed: "No completed bookings yet",
+                cancelled: "No cancelled bookings",
+            },
+        },
+
+        // Availability
+        availability: {
+            title: "Availability",
+            addSlot: "Add Slot",
+            quickAdd: "Quick Add 7 Days",
+            calendar: "Calendar",
+            list: "List",
+            newSlotTitle: "Add Available Time Slot",
+            dateLabel: "Date",
+            startTime: "Start Time",
+            endTime: "End Time",
+            booked: "Booked",
+            available: "Available",
+            emptyState: "No time slots set up yet",
+            emptyHint: "Add time slots so customers can see your availability",
+            timeSlots: {
+                morning: "Morning (10:00-12:00)",
+                afternoon: "Afternoon (13:00-17:00)",
+                evening: "Evening (18:00-21:00)",
+            },
+        },
+
+        // Artist profile / settings
+        profile: {
+            editTitle: "Edit Profile",
+            displayName: "Display Name",
+            phone: "Phone",
+            email: "Email",
+            bio: "About Me",
+            cities: "Service Areas",
+            services: "Services",
+            styles: "Specialised Styles",
+            priceRange: "Price Range",
+            instagram: "Instagram",
+            saveChanges: "Save Changes",
+            saving: "Saving...",
+        },
+
+        // Settings
+        settings: {
+            title: "Account Settings",
+            pauseService: "Pause Service",
+            pauseDesc: "While paused, you won't receive new request notifications",
+            activeStatus: "Active",
+            pausedStatus: "Paused",
+        },
+
+        // Customer "My" page
+        myPage: {
+            title: "My Requests",
+            noRequests: "No requests yet",
+            postFirst: "Post your first request now!",
+            postRequest: "Post Request",
+            viewDetail: "View Details",
+            requestStatus: {
+                pending: "Pending",
+                matching: "Matching",
+                confirmed: "Confirmed",
+                completed: "Completed",
+                cancelled: "Cancelled",
+                expired: "Expired",
+            },
+        },
+
         // Common
         common: {
             loading: "Loading...",
@@ -262,6 +543,13 @@ export const translations = {
             save: "Save",
             submit: "Submit",
             close: "Close",
+            home: "Home",
+            notFound: "Page not found",
+            budget: "Budget",
+            services: "Services",
+            location: "Location",
+            date: "Date",
+            time: "Time",
         },
     },
 } as const;
