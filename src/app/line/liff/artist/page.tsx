@@ -1,30 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
 import { LiffProvider, useLiff } from "@/lib/line/liff";
+import DashboardContent from "@/components/artist/DashboardContent";
 
-function ArtistRedirect() {
+function ArtistLiffGate() {
   const { isReady, isLoggedIn, needsLogin, error } = useLiff();
-
-  useEffect(() => {
-    if (isReady && isLoggedIn) {
-      // Full page navigation to (artist) route group — ensures its layout + LiffProvider init cleanly
-      window.location.href = "/artist/dashboard";
-    }
-  }, [isReady, isLoggedIn]);
 
   if (!isReady) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--brand-bg)]">
         <div className="text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
-          <p className="text-sm text-gray-500">正在前往設計師後台...</p>
+          <p className="text-sm text-gray-500">載入中...</p>
         </div>
       </div>
     );
   }
 
-  // Error or not logged in — show fallback
   if (error || needsLogin || !isLoggedIn) {
     const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
     return (
@@ -58,21 +50,13 @@ function ArtistRedirect() {
     );
   }
 
-  // isLoggedIn is true — redirecting
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--brand-bg)]">
-      <div className="text-center">
-        <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
-        <p className="text-sm text-gray-500">正在前往設計師後台...</p>
-      </div>
-    </div>
-  );
+  return <DashboardContent />;
 }
 
 export default function LiffArtistPage() {
   return (
     <LiffProvider requireLogin>
-      <ArtistRedirect />
+      <ArtistLiffGate />
     </LiffProvider>
   );
 }
