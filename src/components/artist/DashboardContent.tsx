@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthSWR } from "@/lib/line/use-auth-swr";
-import { useLiff } from "@/lib/line/liff";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface ArtistMe {
@@ -49,7 +48,6 @@ function timeAgo(dateStr: string): string {
 
 export default function DashboardContent() {
   const { t } = useLanguage();
-  const { liff } = useLiff();
   const { data: me, error: meError } = useAuthSWR<ArtistMe>("/api/artists/me");
   const { data: requests, error: reqError } = useAuthSWR<ServiceRequest[]>("/api/requests/matching");
   const { data: bookings } = useAuthSWR<Booking[]>(
@@ -92,21 +90,37 @@ export default function DashboardContent() {
 
   if (fetchError && !me) {
     const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+    const errorStatus = (fetchError as Error & { status?: number })?.status;
+    const isNotRegistered = errorStatus === 404;
+
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--brand-bg)] p-4">
         <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-sm">
-          <h2 className="mb-2 text-xl font-bold text-gray-900">無法載入資料</h2>
+          <h2 className="mb-2 text-xl font-bold text-gray-900">
+            {isNotRegistered ? "尚未註冊為設計師" : "無法載入資料"}
+          </h2>
           <p className="mb-6 text-sm text-gray-500">
-            請重新登入後再試。
+            {isNotRegistered
+              ? "此 LINE 帳號尚未註冊為設計師，請先填寫註冊資料。"
+              : "請重新登入後再試。"}
           </p>
           <div className="space-y-3">
-            {liffId && (
+            {isNotRegistered && liffId ? (
               <a
-                href={`https://liff.line.me/${liffId}/artist`}
-                className="block w-full rounded-lg bg-[#06C755] px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#05a647]"
+                href={`https://liff.line.me/${liffId}/artist-form`}
+                className="block w-full rounded-lg bg-[var(--brand)] px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--brand-dark)]"
               >
-                重新登入
+                註冊成為設計師
               </a>
+            ) : (
+              liffId && (
+                <a
+                  href={`https://liff.line.me/${liffId}/artist`}
+                  className="block w-full rounded-lg bg-[#06C755] px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#05a647]"
+                >
+                  重新登入
+                </a>
+              )
             )}
             <button
               onClick={() => window.location.reload()}
@@ -114,12 +128,6 @@ export default function DashboardContent() {
             >
               重新整理
             </button>
-          </div>
-          <div className="mt-4 rounded bg-gray-50 p-3 text-left text-xs text-gray-400 break-all">
-            <p>error: {fetchError?.message || "unknown"}</p>
-            <p>status: {(fetchError as Error & { status?: number })?.status || "N/A"}</p>
-            <p>hasToken: {liff?.getIDToken?.() ? "yes" : "no"}</p>
-            <p>tokenPrefix: {liff?.getIDToken?.()?.substring(0, 20) || "none"}...</p>
           </div>
         </div>
       </div>
