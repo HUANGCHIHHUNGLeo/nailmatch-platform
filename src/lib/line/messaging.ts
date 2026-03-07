@@ -133,7 +133,7 @@ export async function notifyArtistsOfNewRequest(
           action: {
             type: "uri",
             label: "查看需求詳情",
-            uri: `${APP_URL}/artist/requests/${requestSummary.requestId}`,
+            uri: `https://liff.line.me/${LIFF_ID}/artist/requests/${requestSummary.requestId}`,
           },
           style: "primary",
           color: "#D4A0A0",

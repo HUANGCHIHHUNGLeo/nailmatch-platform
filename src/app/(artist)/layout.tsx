@@ -1,10 +1,12 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { LiffProvider, useLiff } from "@/lib/line/liff";
 import { Card, CardContent } from "@/components/ui/card";
 
 function ArtistGate({ children }: { children: React.ReactNode }) {
   const { liff, isReady, needsLogin, error } = useLiff();
+  const pathname = usePathname();
 
   if (!isReady) {
     return (
@@ -16,7 +18,9 @@ function ArtistGate({ children }: { children: React.ReactNode }) {
 
   if (needsLogin || error) {
     const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-    const liffUrl = liffId ? `https://liff.line.me/${liffId}/artist-form` : null;
+    // Map current path to LIFF subpath (e.g. /artist/requests/123 → artist/requests/123)
+    const subpath = pathname.replace(/^\//, "");
+    const liffUrl = liffId ? `https://liff.line.me/${liffId}/${subpath}` : null;
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--brand-bg)] p-4">
         <Card className="w-full max-w-md text-center">
