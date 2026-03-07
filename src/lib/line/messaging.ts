@@ -725,6 +725,17 @@ export async function notifyHelperMenu(userId: string) {
           color: "#F5F0EB",
           height: "md",
         },
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "設計師登入",
+            uri: `https://liff.line.me/${liffId}/artist`,
+          },
+          style: "secondary",
+          color: "#F5F0EB",
+          height: "md",
+        },
       ],
     },
     styles: {

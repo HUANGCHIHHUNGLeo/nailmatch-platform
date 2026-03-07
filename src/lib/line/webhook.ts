@@ -217,6 +217,14 @@ async function handleTextMessage(userId: string, text: string) {
     return;
   }
 
+  if (["登入", "後台", "設計師登入", "我是設計師"].some((kw) => lowerText.includes(kw))) {
+    await pushMessage(
+      userId,
+      `設計師後台入口：\n\nhttps://liff.line.me/${LIFF_ID}/artist`
+    );
+    return;
+  }
+
   if (["預約", "美甲", "美睫", "我要預約", "找美甲師", "找設計師"].some((kw) => lowerText.includes(kw))) {
     await pushMessage(
       userId,
