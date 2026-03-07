@@ -48,13 +48,14 @@ function timeAgo(dateStr: string): string {
 
 export default function DashboardContent() {
   const { t } = useLanguage();
-  const { data: me } = useAuthSWR<ArtistMe>("/api/artists/me");
-  const { data: requests } = useAuthSWR<ServiceRequest[]>("/api/requests/matching");
+  const { data: me, error: meError } = useAuthSWR<ArtistMe>("/api/artists/me");
+  const { data: requests, error: reqError } = useAuthSWR<ServiceRequest[]>("/api/requests/matching");
   const { data: bookings } = useAuthSWR<Booking[]>(
     me?.id ? `/api/bookings?artistId=${me.id}` : null
   );
 
-  const loading = !me && !requests;
+  const fetchError = meError || reqError;
+  const loading = !me && !requests && !fetchError;
   const artistName = me?.display_name || "";
   const requestList = requests || [];
   const bookingList = bookings || [];
@@ -83,6 +84,36 @@ export default function DashboardContent() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (fetchError && !me) {
+    const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--brand-bg)] p-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-sm">
+          <h2 className="mb-2 text-xl font-bold text-gray-900">無法載入資料</h2>
+          <p className="mb-6 text-sm text-gray-500">
+            請重新登入後再試。
+          </p>
+          <div className="space-y-3">
+            {liffId && (
+              <a
+                href={`https://liff.line.me/${liffId}/artist`}
+                className="block w-full rounded-lg bg-[#06C755] px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#05a647]"
+              >
+                重新登入
+              </a>
+            )}
+            <button
+              onClick={() => window.location.reload()}
+              className="block w-full rounded-lg border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+            >
+              重新整理
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
