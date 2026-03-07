@@ -695,6 +695,15 @@ export async function notifyHelperMenu(userId: string) {
           color: "#666666",
           margin: "lg",
         },
+        {
+          type: "text",
+          text: "💡 也可以輸入關鍵字：\n「預約」填寫需求｜「查詢」查看進度｜「登入」設計師後台",
+          size: "xs",
+          color: "#aaaaaa",
+          margin: "md",
+          wrap: true,
+          lineSpacing: "4px",
+        },
       ],
     },
     footer: {
