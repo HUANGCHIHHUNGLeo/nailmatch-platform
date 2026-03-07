@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ interface MultiStepFormProps {
 export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   const methods = useForm<ServiceRequestFormData>({
     resolver: zodResolver(serviceRequestSchema),
@@ -137,6 +138,8 @@ export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
 
     if (isValid) {
       if (isLastStep) {
+        if (submittingRef.current) return;
+        submittingRef.current = true;
         setIsSubmitting(true);
         try {
           await methods.handleSubmit(
@@ -153,6 +156,7 @@ export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
           console.error("Submit error:", err);
         } finally {
           setIsSubmitting(false);
+          submittingRef.current = false;
         }
       } else {
         setCurrentStep(getNextStep(currentStep));

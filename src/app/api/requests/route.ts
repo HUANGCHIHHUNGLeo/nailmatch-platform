@@ -149,6 +149,19 @@ export async function POST(request: Request) {
       customerId = newCustomer.id;
     }
 
+    // Dedup: reject if same customer submitted similar request within 60 seconds
+    const { data: recentDup } = await supabase
+      .from("service_requests")
+      .select("id")
+      .eq("customer_id", customerId)
+      .gte("created_at", new Date(Date.now() - 60_000).toISOString())
+      .limit(1)
+      .single();
+
+    if (recentDup) {
+      return NextResponse.json({ id: recentDup.id, matchedArtists: 0, deduplicated: true });
+    }
+
     // Create service request
     const { data: serviceRequest, error: insertError } = await supabase
       .from("service_requests")
