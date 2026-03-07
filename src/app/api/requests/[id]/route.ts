@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { checkRateLimit, getClientIp } from "@/lib/utils/rate-limit";
 
 export async function GET(
   _request: Request,
@@ -75,14 +76,18 @@ export async function PATCH(
 
     if (body.status) updateData.status = body.status;
     if (body.increment_viewed) {
-      // Increment viewed_count
-      const { data: current } = await supabase
-        .from("service_requests")
-        .select("viewed_count")
-        .eq("id", id)
-        .single();
+      // Rate-limit viewed_count: same IP can only count once per 10 minutes per request
+      const viewIp = getClientIp(request);
+      const viewRl = checkRateLimit(`view:${id}:${viewIp}`, { windowMs: 600_000, max: 1 });
+      if (viewRl.allowed) {
+        const { data: current } = await supabase
+          .from("service_requests")
+          .select("viewed_count")
+          .eq("id", id)
+          .single();
 
-      updateData.viewed_count = (current?.viewed_count || 0) + 1;
+        updateData.viewed_count = (current?.viewed_count || 0) + 1;
+      }
     }
 
     if (Object.keys(updateData).length === 0) {

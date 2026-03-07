@@ -13,8 +13,8 @@ export async function GET(request: Request) {
   }
 
   const supabase = await createServiceClient();
-  const now = new Date();
-  const todayStr = now.toISOString().split("T")[0]; // "2026-03-06"
+  // Use Taiwan time (UTC+8) for date calculations
+  const todayStr = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" }); // "2026-03-06"
 
   // Fetch all active requests (pending/matching) that might be expired
   const { data: requests, error } = await supabase
@@ -77,6 +77,18 @@ export async function GET(request: Request) {
   });
 }
 
+// Convert a Date to "YYYY-MM-DD" in Taiwan time (UTC+8)
+function toTaiwanDateStr(d: Date): string {
+  return d.toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" });
+}
+
+// Add days to a date and return Taiwan date string
+function addDaysTW(base: Date, days: number): string {
+  const d = new Date(base);
+  d.setDate(d.getDate() + days);
+  return toTaiwanDateStr(d);
+}
+
 // Calculate the deadline date string ("YYYY-MM-DD") after which the request expires
 function calculateDeadline(
   preferredDate: string | null,
@@ -86,42 +98,30 @@ function calculateDeadline(
   const created = new Date(createdAt);
 
   switch (preferredDate) {
-    case "今天": {
+    case "今天":
       // Expires the day after the request was created
-      const d = new Date(created);
-      d.setDate(d.getDate() + 1);
-      return d.toISOString().split("T")[0];
-    }
-    case "明天": {
+      return addDaysTW(created, 1);
+    case "明天":
       // Expires 2 days after creation
-      const d = new Date(created);
-      d.setDate(d.getDate() + 2);
-      return d.toISOString().split("T")[0];
-    }
+      return addDaysTW(created, 2);
     case "本週": {
       // Expires at end of the week (Sunday) + 1 day
-      const d = new Date(created);
-      const daysUntilSunday = 7 - d.getDay();
-      d.setDate(d.getDate() + daysUntilSunday + 1);
-      return d.toISOString().split("T")[0];
+      // Get day-of-week in Taiwan time
+      const twDay = new Date(created.toLocaleString("en-US", { timeZone: "Asia/Taipei" })).getDay();
+      const daysUntilSunday = 7 - twDay;
+      return addDaysTW(created, daysUntilSunday + 1);
     }
     case "其他日期": {
       if (preferredDateCustom) {
         // Expires the day after the custom date
-        const d = new Date(preferredDateCustom);
-        d.setDate(d.getDate() + 1);
-        return d.toISOString().split("T")[0];
+        const d = new Date(preferredDateCustom + "T00:00:00+08:00");
+        return addDaysTW(d, 1);
       }
       // Fallback: 7 days after creation
-      const d = new Date(created);
-      d.setDate(d.getDate() + 7);
-      return d.toISOString().split("T")[0];
+      return addDaysTW(created, 7);
     }
-    default: {
+    default:
       // No date specified — expire after 7 days
-      const d = new Date(created);
-      d.setDate(d.getDate() + 7);
-      return d.toISOString().split("T")[0];
-    }
+      return addDaysTW(created, 7);
   }
 }

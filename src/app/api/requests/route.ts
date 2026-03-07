@@ -132,11 +132,21 @@ export async function POST(request: Request) {
         customerId = newCustomer.id;
       }
     } else {
-      // Anonymous request — no LINE identity
+      // No LINE identity — require phone number so we can contact them
+      if (!parsed.data.customerPhone) {
+        return NextResponse.json(
+          { error: "請透過 LINE 登入，或填寫手機號碼以便聯繫" },
+          { status: 400 }
+        );
+      }
+
       const displayName = parsed.data.customerName || "Anonymous";
       const { data: newCustomer, error: custError } = await supabase
         .from("customers")
-        .insert({ display_name: displayName })
+        .insert({
+          display_name: displayName,
+          phone: parsed.data.customerPhone,
+        })
         .select("id")
         .single();
 

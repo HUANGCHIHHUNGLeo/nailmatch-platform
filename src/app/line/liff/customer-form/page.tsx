@@ -93,14 +93,8 @@ function CustomerFormContent() {
               </button>
             )}
             <a
-              href="/request"
-              className="block rounded-lg border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
-            >
-              不登入，直接填寫需求
-            </a>
-            <a
               href="/"
-              className="block text-sm text-gray-400 hover:text-gray-600"
+              className="block rounded-lg border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
             >
               回首頁
             </a>
