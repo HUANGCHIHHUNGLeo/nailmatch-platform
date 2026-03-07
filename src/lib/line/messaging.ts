@@ -4,6 +4,9 @@ const client = new messagingApi.MessagingApiClient({
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || "",
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://nailmatch-platform.vercel.app";
+const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "";
+
 // Send push message to a single user
 export async function pushMessage(userId: string, text: string) {
   return client.pushMessage({
@@ -130,7 +133,7 @@ export async function notifyArtistsOfNewRequest(
           action: {
             type: "uri",
             label: "查看需求詳情",
-            uri: `${process.env.NEXT_PUBLIC_APP_URL}/artist/requests/${requestSummary.requestId}`,
+            uri: `${APP_URL}/artist/requests/${requestSummary.requestId}`,
           },
           style: "primary",
           color: "#D4A0A0",
@@ -187,7 +190,7 @@ export async function notifyCustomerOfQuote(
     requestId: string;
   }
 ) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -288,7 +291,7 @@ export async function notifyBookingConfirmed(
     bookingId?: string;
   }
 ) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -385,7 +388,7 @@ export async function notifyReviewPrompt(
     bookingId: string;
   }
 ) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -451,7 +454,7 @@ export async function notifyArtistWelcomeBack(
   userId: string,
   displayName: string
 ) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -508,7 +511,7 @@ export async function notifyArtistApproved(
   userId: string,
   displayName: string
 ) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -585,7 +588,7 @@ export async function notifyArtistRejected(
   userId: string,
   reason?: string
 ) {
-  const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+  const liffId = LIFF_ID;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -659,8 +662,8 @@ export async function notifyArtistRejected(
 
 // Generic helper menu with buttons — Flex Message
 export async function notifyHelperMenu(userId: string) {
-  const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nailmatch-platform.vercel.app";
+  const liffId = LIFF_ID;
+  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -740,8 +743,8 @@ export async function notifyRequestExpired(
     requestId: string;
   }
 ) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+  const appUrl = APP_URL;
+  const liffId = LIFF_ID;
   const newRequestUrl = liffId
     ? `https://liff.line.me/${liffId}/customer-form`
     : `${appUrl}/request`;
