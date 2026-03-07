@@ -6,7 +6,7 @@ import { linkArtistRichMenu } from "./richmenu";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://nailmatch-platform.vercel.app";
 const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "";
-const LIFF_URL = LIFF_ID ? `https://liff.line.me/${LIFF_ID}` : APP_URL;
+
 
 // Verify LINE webhook signature
 export function verifySignature(
@@ -276,7 +276,7 @@ async function handleTextMessage(userId: string, text: string) {
         const label = statusLabels[latestRequest.status] || latestRequest.status;
         await pushMessage(
           userId,
-          `您最新的需求狀態：${label}\n\n查看詳情：${APP_URL}/request/${latestRequest.id}\n\n查看所有紀錄：https://liff.line.me/${LIFF_ID}/my`
+          `您最新的需求狀態：${label}\n\n查看詳情：https://liff.line.me/${LIFF_ID}/request/${latestRequest.id}\n\n查看所有紀錄：https://liff.line.me/${LIFF_ID}/my`
         );
         return;
       }
@@ -297,12 +297,12 @@ async function handlePostback(userId: string, data: string) {
     case "view_request": {
       const requestId = params.get("requestId");
       if (requestId) {
-        await pushMessage(userId, `查看需求詳情：\n${APP_URL}/artist/requests/${requestId}`);
+        await pushMessage(userId, `查看需求詳情：\nhttps://liff.line.me/${LIFF_ID}/artist/requests/${requestId}`);
       }
       break;
     }
     case "new_request": {
-      await pushMessage(userId, `填寫需求表單：\n${APP_URL}/request`);
+      await pushMessage(userId, `填寫需求表單：\nhttps://liff.line.me/${LIFF_ID}/customer-form`);
       break;
     }
     default: {

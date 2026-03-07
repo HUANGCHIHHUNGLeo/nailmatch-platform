@@ -4,7 +4,6 @@ const client = new messagingApi.MessagingApiClient({
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || "",
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://nailmatch-platform.vercel.app";
 const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "";
 
 // Send push message to a single user
@@ -190,7 +189,6 @@ export async function notifyCustomerOfQuote(
     requestId: string;
   }
 ) {
-  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -264,7 +262,7 @@ export async function notifyCustomerOfQuote(
           action: {
             type: "uri",
             label: "查看報價詳情",
-            uri: `${appUrl}/request/${quote.requestId}`,
+            uri: `https://liff.line.me/${LIFF_ID}/request/${quote.requestId}`,
           },
           style: "primary",
           color: "#D4A0A0",
@@ -291,7 +289,6 @@ export async function notifyBookingConfirmed(
     bookingId?: string;
   }
 ) {
-  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -362,7 +359,7 @@ export async function notifyBookingConfirmed(
               action: {
                 type: "uri",
                 label: "查看預約詳情",
-                uri: `${appUrl}/booking/${booking.bookingId}`,
+                uri: `https://liff.line.me/${LIFF_ID}/booking/${booking.bookingId}`,
               },
               style: "primary",
               color: "#D4A0A0",
@@ -388,7 +385,6 @@ export async function notifyReviewPrompt(
     bookingId: string;
   }
 ) {
-  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -433,7 +429,7 @@ export async function notifyReviewPrompt(
           action: {
             type: "uri",
             label: "留下評價",
-            uri: `${appUrl}/booking/${info.bookingId}`,
+            uri: `https://liff.line.me/${LIFF_ID}/booking/${info.bookingId}`,
           },
           style: "primary",
           color: "#D4A0A0",
@@ -454,7 +450,6 @@ export async function notifyArtistWelcomeBack(
   userId: string,
   displayName: string
 ) {
-  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -491,7 +486,7 @@ export async function notifyArtistWelcomeBack(
           action: {
             type: "uri",
             label: "查看新需求",
-            uri: `${appUrl}/artist/dashboard`,
+            uri: `https://liff.line.me/${LIFF_ID}/artist`,
           },
           style: "primary",
           color: "#D4A0A0",
@@ -511,7 +506,6 @@ export async function notifyArtistApproved(
   userId: string,
   displayName: string
 ) {
-  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -568,7 +562,7 @@ export async function notifyArtistApproved(
           action: {
             type: "uri",
             label: "前往設計師後台",
-            uri: `${appUrl}/artist/dashboard`,
+            uri: `https://liff.line.me/${LIFF_ID}/artist`,
           },
           style: "primary",
           color: "#D4A0A0",
@@ -663,7 +657,6 @@ export async function notifyArtistRejected(
 // Generic helper menu with buttons — Flex Message
 export async function notifyHelperMenu(userId: string) {
   const liffId = LIFF_ID;
-  const appUrl = APP_URL;
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",
@@ -763,11 +756,7 @@ export async function notifyRequestExpired(
     requestId: string;
   }
 ) {
-  const appUrl = APP_URL;
-  const liffId = LIFF_ID;
-  const newRequestUrl = liffId
-    ? `https://liff.line.me/${liffId}/customer-form`
-    : `${appUrl}/request`;
+  const newRequestUrl = `https://liff.line.me/${LIFF_ID}/customer-form`;
 
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
@@ -845,7 +834,7 @@ export async function notifyRequestExpired(
           action: {
             type: "uri",
             label: "查看原需求",
-            uri: `${appUrl}/request/${info.requestId}`,
+            uri: `https://liff.line.me/${LIFF_ID}/request/${info.requestId}`,
           },
           style: "link",
           color: "#999999",
