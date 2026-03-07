@@ -660,7 +660,7 @@ export async function notifyArtistRejected(
 // Generic helper menu with buttons — Flex Message
 export async function notifyHelperMenu(userId: string) {
   const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nailmatch-platform.vercel.app";
   const bubble: messagingApi.FlexBubble = {
     type: "bubble",
     size: "mega",

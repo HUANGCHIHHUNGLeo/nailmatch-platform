@@ -88,14 +88,8 @@ export function LiffProvider({
           // Check if ID token is expired (not null — null means scope issue, not expiry)
           // getIDToken() can return an expired JWT string (not null)
           const idToken = liffObj.getIDToken();
-          if (idToken && isTokenExpired(idToken) && requireLogin) {
-            if (liffObj.isInClient()) {
-              // Inside LINE app: call liff.login() to refresh token
-              console.warn("LIFF ID token expired in LINE client, refreshing...");
-              liffObj.login({ redirectUri: window.location.href });
-              return; // page will reload after login
-            }
-            // Outside LINE: show re-login prompt
+          if (idToken && isTokenExpired(idToken) && requireLogin && !liffObj.isInClient()) {
+            // Outside LINE: show re-login prompt (in LINE client, user is always logged in — skip expiry check)
             console.warn("LIFF ID token expired, needs re-authentication");
             setNeedsLogin(true);
             setIsReady(true);
