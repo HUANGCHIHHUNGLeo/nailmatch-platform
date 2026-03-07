@@ -286,11 +286,7 @@ async function handleTextMessage(userId: string, text: string) {
     return;
   }
 
-  // Unrecognized text — send a short hint instead of the full menu card
-  await pushMessage(
-    userId,
-    `感謝您的訊息！💡 您可以輸入：\n\n「預約」→ 填寫需求\n「查詢」→ 查看進度\n「登入」→ 設計師後台\n「註冊」→ 成為設計師\n\n或輸入「選單」查看完整功能`
-  );
+  // Unrecognized text — do nothing, let human staff reply manually
 }
 
 async function handlePostback(userId: string, data: string) {
