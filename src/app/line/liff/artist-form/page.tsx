@@ -593,7 +593,7 @@ function ArtistFormContent() {
             {/* Consent */}
             <Card>
               <CardContent className="p-4">
-                <Label
+                <div
                   className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${
                     consentAccepted
                       ? "border-[var(--brand)] bg-[var(--brand-light)]/50"
@@ -603,7 +603,11 @@ function ArtistFormContent() {
                 >
                   <Checkbox
                     checked={consentAccepted}
-                    onCheckedChange={(checked) => setConsentAccepted(!!checked)}
+                    onCheckedChange={(checked) => {
+                      // Prevent double-toggle: stop event from bubbling to parent div
+                      setConsentAccepted(!!checked);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
                     className="mt-0.5"
                   />
                   <span className="text-sm leading-relaxed text-gray-700">
@@ -627,7 +631,7 @@ function ArtistFormContent() {
                     </Link>
                     ，並同意本平台依個人資料保護法蒐集、處理及利用我的個人資料
                   </span>
-                </Label>
+                </div>
               </CardContent>
             </Card>
 
