@@ -31,19 +31,13 @@ function ArtistGate({ children }: { children: React.ReactNode }) {
               設計師後台需要透過 LINE 登入才能使用，請從 LINE 官方帳號開啟。
             </p>
             <div className="space-y-3">
-              {(liffUrl || liff) && (
-                <button
-                  onClick={() => {
-                    if (liff) {
-                      liff.login({ redirectUri: window.location.href });
-                    } else if (liffUrl) {
-                      window.location.href = liffUrl;
-                    }
-                  }}
-                  className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
+              {liffUrl && (
+                <a
+                  href={liffUrl}
+                  className="block w-full rounded-lg bg-[#06C755] px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#05a647]"
                 >
-                  用 LINE 登入
-                </button>
+                  用 LINE 開啟
+                </a>
               )}
               <a
                 href="/"

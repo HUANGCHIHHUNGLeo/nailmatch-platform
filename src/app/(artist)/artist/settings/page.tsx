@@ -30,7 +30,7 @@ interface ArtistProfile {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { liff } = useLiff();
+  useLiff();
   const { authFetch } = useAuthFetch();
   const { data: profile, mutate } = useAuthSWR<ArtistProfile>("/api/artists/me");
   const [toggling, setToggling] = useState(false);
@@ -113,19 +113,13 @@ export default function SettingsPage() {
             請透過 LINE 重新登入後再進入設定頁面。
           </p>
           <div className="space-y-3">
-            {(liffUrl || liff) && (
-              <button
-                onClick={() => {
-                  if (liff) {
-                    liff.login({ redirectUri: window.location.href });
-                  } else if (liffUrl) {
-                    window.location.href = liffUrl;
-                  }
-                }}
-                className="w-full rounded-lg bg-[#06C755] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#05a647]"
+            {liffUrl && (
+              <a
+                href={liffUrl}
+                className="block w-full rounded-lg bg-[#06C755] px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#05a647]"
               >
-                用 LINE 重新登入
-              </button>
+                用 LINE 開啟
+              </a>
             )}
             <button
               onClick={() => router.back()}
