@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 interface Booking {
   id: string;
@@ -59,6 +60,10 @@ export default function BookingDetailPage() {
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState("");
+  const [rescheduleTime, setRescheduleTime] = useState("");
+  const [rescheduling, setRescheduling] = useState(false);
 
   useEffect(() => {
     async function fetchBooking() {
@@ -83,7 +88,7 @@ export default function BookingDetailPage() {
       const res = await fetch(`/api/bookings/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "cancelled" }),
+        body: JSON.stringify({ status: "cancelled", cancelledBy: "客戶" }),
       });
       if (res.ok) {
         setBooking((prev) => prev ? { ...prev, status: "cancelled" } : null);
@@ -92,6 +97,32 @@ export default function BookingDetailPage() {
       console.error("Cancel failed:", err);
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleReschedule = async () => {
+    if (!rescheduleDate || !rescheduleTime) return;
+    setRescheduling(true);
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reschedule: { newDate: rescheduleDate, newTime: rescheduleTime, requestedBy: "客戶" },
+        }),
+      });
+      if (res.ok) {
+        setBooking((prev) =>
+          prev ? { ...prev, booking_date: rescheduleDate, booking_time: rescheduleTime } : null
+        );
+        setShowReschedule(false);
+        setRescheduleDate("");
+        setRescheduleTime("");
+      }
+    } catch (err) {
+      console.error("Reschedule failed:", err);
+    } finally {
+      setRescheduling(false);
     }
   };
 
@@ -297,17 +328,71 @@ export default function BookingDetailPage() {
           </Card>
         )}
 
+        {/* Reschedule Form */}
+        {showReschedule && booking.status === "confirmed" && (
+          <Card className="mb-4">
+            <CardContent className="p-4">
+              <h2 className="mb-3 font-semibold text-gray-700">申請改期</h2>
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-sm text-gray-500">新日期</label>
+                  <Input
+                    type="date"
+                    value={rescheduleDate}
+                    onChange={(e) => setRescheduleDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-gray-500">新時段</label>
+                  <select
+                    value={rescheduleTime}
+                    onChange={(e) => setRescheduleTime(e.target.value)}
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                  >
+                    <option value="">請選擇</option>
+                    <option value="上午 (10:00-12:00)">上午 (10:00-12:00)</option>
+                    <option value="下午 (13:00-17:00)">下午 (13:00-17:00)</option>
+                    <option value="晚上 (18:00-21:00)">晚上 (18:00-21:00)</option>
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    className="flex-1 bg-[var(--brand)] hover:bg-[var(--brand-dark)]"
+                    onClick={handleReschedule}
+                    disabled={!rescheduleDate || !rescheduleTime || rescheduling}
+                  >
+                    {rescheduling ? "送出中..." : "送出改期請求"}
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowReschedule(false)}>
+                    取消
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Actions */}
         <div className="space-y-3">
-          {booking.status === "confirmed" && (
-            <Button
-              variant="outline"
-              className="w-full text-red-500 hover:bg-red-50 hover:text-red-600"
-              onClick={handleCancel}
-              disabled={cancelling}
-            >
-              {cancelling ? "取消中..." : "取消預約"}
-            </Button>
+          {booking.status === "confirmed" && !showReschedule && (
+            <>
+              <Button
+                variant="outline"
+                className="w-full text-amber-600 hover:bg-amber-50 hover:text-amber-700"
+                onClick={() => setShowReschedule(true)}
+              >
+                申請改期
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full text-red-500 hover:bg-red-50 hover:text-red-600"
+                onClick={handleCancel}
+                disabled={cancelling}
+              >
+                {cancelling ? "取消中..." : "取消預約"}
+              </Button>
+            </>
           )}
           <Button asChild variant="outline" className="w-full">
             <Link href="/">回首頁</Link>

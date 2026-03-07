@@ -44,6 +44,10 @@ export default function ArtistBookingsPage() {
     me?.id ? `/api/bookings?artistId=${me.id}` : null
   );
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [rescheduleId, setRescheduleId] = useState<string | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState("");
+  const [rescheduleTime, setRescheduleTime] = useState("");
+  const [rescheduling, setRescheduling] = useState(false);
 
   const loading = !me;
   const bookingList = bookings || [];
@@ -54,7 +58,7 @@ export default function ArtistBookingsPage() {
       const res = await authFetch(`/api/bookings/${bookingId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, cancelledBy: status === "cancelled" ? "設計師" : undefined }),
       });
       if (res.ok) {
         // Optimistic update + revalidate
@@ -67,6 +71,35 @@ export default function ArtistBookingsPage() {
       console.error("Update failed:", err);
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleReschedule = async (bookingId: string) => {
+    if (!rescheduleDate || !rescheduleTime) return;
+    setRescheduling(true);
+    try {
+      const res = await authFetch(`/api/bookings/${bookingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reschedule: { newDate: rescheduleDate, newTime: rescheduleTime, requestedBy: "設計師" },
+        }),
+      });
+      if (res.ok) {
+        mutate(
+          bookingList.map((b) =>
+            b.id === bookingId ? { ...b, booking_date: rescheduleDate, booking_time: rescheduleTime } : b
+          ),
+          { revalidate: true }
+        );
+        setRescheduleId(null);
+        setRescheduleDate("");
+        setRescheduleTime("");
+      }
+    } catch (err) {
+      console.error("Reschedule failed:", err);
+    } finally {
+      setRescheduling(false);
     }
   };
 
@@ -103,7 +136,43 @@ export default function ArtistBookingsPage() {
             <Badge className={statusInfo.color}>{statusInfo.label}</Badge>
           </div>
 
-          {booking.status === "confirmed" && (
+          {booking.status === "confirmed" && rescheduleId === booking.id && (
+            <div className="mt-3 space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="text-sm font-medium text-amber-800">申請改期</p>
+              <input
+                type="date"
+                value={rescheduleDate}
+                onChange={(e) => setRescheduleDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                className="w-full rounded-md border px-3 py-1.5 text-sm"
+              />
+              <select
+                value={rescheduleTime}
+                onChange={(e) => setRescheduleTime(e.target.value)}
+                className="w-full rounded-md border px-3 py-1.5 text-sm"
+              >
+                <option value="">選擇時段</option>
+                <option value="上午 (10:00-12:00)">上午 (10:00-12:00)</option>
+                <option value="下午 (13:00-17:00)">下午 (13:00-17:00)</option>
+                <option value="晚上 (18:00-21:00)">晚上 (18:00-21:00)</option>
+              </select>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="flex-1 bg-amber-500 hover:bg-amber-600"
+                  onClick={() => handleReschedule(booking.id)}
+                  disabled={!rescheduleDate || !rescheduleTime || rescheduling}
+                >
+                  {rescheduling ? "送出中..." : "確認改期"}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setRescheduleId(null)}>
+                  取消
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {booking.status === "confirmed" && rescheduleId !== booking.id && (
             <div className="mt-3 flex gap-2">
               <Button
                 size="sm"
@@ -112,6 +181,14 @@ export default function ArtistBookingsPage() {
                 disabled={updatingId === booking.id}
               >
                 標記完成
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 text-amber-600"
+                onClick={() => setRescheduleId(booking.id)}
+              >
+                改期
               </Button>
               <Button
                 size="sm"

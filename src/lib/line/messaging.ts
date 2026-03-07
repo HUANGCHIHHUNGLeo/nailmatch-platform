@@ -377,6 +377,194 @@ export async function notifyBookingConfirmed(
   return pushFlexMessage(userLineId, `預約確認 - ${booking.artistName}`, bubble);
 }
 
+// Notify that a booking has been cancelled
+export async function notifyBookingCancelled(
+  userLineId: string,
+  info: {
+    cancelledBy: string; // "客戶" or "設計師"
+    artistName: string;
+    services: string[];
+    bookingDate: string;
+    bookingId: string;
+  }
+) {
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            {
+              type: "text",
+              text: "預約已取消",
+              weight: "bold",
+              size: "xl",
+              color: "#dc2626",
+            },
+          ],
+        },
+        { type: "separator", margin: "lg", color: "#f0f0f0" },
+        {
+          type: "box",
+          layout: "vertical",
+          spacing: "sm",
+          margin: "lg",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "取消方", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.cancelledBy, size: "sm", color: "#dc2626", flex: 5, weight: "bold" },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "設計師", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.artistName, size: "sm", color: "#333333", flex: 5 },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "服務", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.services.join("、"), size: "sm", color: "#333333", flex: 5, wrap: true },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "日期", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.bookingDate, size: "sm", color: "#333333", flex: 5 },
+              ],
+            },
+          ],
+        },
+        {
+          type: "text",
+          text: "需求已重新開放配對，您可以繼續接受其他報價。",
+          size: "xs",
+          color: "#999999",
+          margin: "lg",
+          wrap: true,
+        },
+      ],
+    },
+    styles: { body: { backgroundColor: "#FAFAF8" } },
+  };
+
+  return pushFlexMessage(userLineId, `預約已取消 - ${info.artistName}`, bubble);
+}
+
+// Notify that a booking reschedule has been requested
+export async function notifyBookingReschedule(
+  userLineId: string,
+  info: {
+    requestedBy: string;
+    artistName: string;
+    oldDate: string;
+    newDate: string;
+    newTime: string;
+    bookingId: string;
+  }
+) {
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "text",
+          text: "改期請求",
+          weight: "bold",
+          size: "xl",
+          color: "#d97706",
+        },
+        { type: "separator", margin: "lg", color: "#f0f0f0" },
+        {
+          type: "box",
+          layout: "vertical",
+          spacing: "sm",
+          margin: "lg",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "申請方", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.requestedBy, size: "sm", color: "#d97706", flex: 5, weight: "bold" },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "設計師", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.artistName, size: "sm", color: "#333333", flex: 5 },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "原日期", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.oldDate, size: "sm", color: "#999999", flex: 5, decoration: "line-through" },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "新日期", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: `${info.newDate} ${info.newTime}`, size: "sm", color: "#059669", flex: 5, weight: "bold" },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "20px",
+      contents: [
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "查看預約詳情",
+            uri: `https://liff.line.me/${LIFF_ID}/booking/${info.bookingId}`,
+          },
+          style: "primary",
+          color: "#D4A0A0",
+          height: "md",
+        },
+      ],
+    },
+    styles: {
+      body: { backgroundColor: "#FAFAF8" },
+      footer: { backgroundColor: "#FAFAF8" },
+    },
+  };
+
+  return pushFlexMessage(userLineId, `改期請求 - ${info.artistName}`, bubble);
+}
+
 // Notify customer to leave a review after booking completion
 export async function notifyReviewPrompt(
   customerLineId: string,
