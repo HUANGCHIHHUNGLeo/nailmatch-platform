@@ -87,6 +87,24 @@ interface PaginatedResult<T> {
   hasMore: boolean;
 }
 
+interface ArtistResponse {
+  id: string;
+  quoted_price: number | null;
+  message: string | null;
+  available_time: string | null;
+  status: string;
+  created_at: string;
+  artists: { id: string; display_name: string } | null;
+  service_requests: {
+    id: string;
+    services: string[];
+    locations: string[];
+    budget_range: string;
+  } | null;
+  customer_name: string;
+  has_line: boolean;
+}
+
 interface AuditLog {
   id: string;
   action: string;
@@ -117,6 +135,10 @@ export default function AdminDataPage() {
   const [totals, setTotals] = useState({ customers: 0, requests: 0, bookings: 0 });
   const [pages, setPages] = useState({ customers: 1, requests: 1, bookings: 1 });
   const [hasMore, setHasMore] = useState({ customers: false, requests: false, bookings: false });
+  const [responses, setResponses] = useState<ArtistResponse[]>([]);
+  const [responsesTotal, setResponsesTotal] = useState(0);
+  const [responsesHasMore, setResponsesHasMore] = useState(false);
+  const [responsesPage, setResponsesPage] = useState(1);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [auditTotal, setAuditTotal] = useState(0);
   const [auditHasMore, setAuditHasMore] = useState(false);
@@ -124,17 +146,18 @@ export default function AdminDataPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [tab, setTab] = useState<"analytics" | "customers" | "requests" | "bookings" | "audit">("analytics");
+  const [tab, setTab] = useState<"analytics" | "customers" | "requests" | "bookings" | "responses" | "audit">("analytics");
   const PAGE_LIMIT = 30;
 
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [custRes, reqRes, bookRes, analyticsRes, auditRes] = await Promise.all([
+        const [custRes, reqRes, bookRes, analyticsRes, respRes, auditRes] = await Promise.all([
           fetch(`/api/admin/customers?limit=${PAGE_LIMIT}`),
           fetch(`/api/admin/requests?limit=${PAGE_LIMIT}`),
           fetch(`/api/admin/bookings?limit=${PAGE_LIMIT}`),
           fetch("/api/admin/analytics"),
+          fetch(`/api/admin/responses?limit=${PAGE_LIMIT}`),
           fetch(`/api/admin/audit-logs?limit=${PAGE_LIMIT}`),
         ]);
 
@@ -147,6 +170,12 @@ export default function AdminDataPage() {
         const reqData: PaginatedResult<ServiceRequest> = await reqRes.json();
         const bookData: PaginatedResult<Booking> = await bookRes.json();
         if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
+        if (respRes.ok) {
+          const respData: PaginatedResult<ArtistResponse> = await respRes.json();
+          setResponses(respData.data || []);
+          setResponsesTotal(respData.total || 0);
+          setResponsesHasMore(!!respData.hasMore);
+        }
         if (auditRes.ok) {
           const auditData: PaginatedResult<AuditLog> = await auditRes.json();
           setAuditLogs(auditData.data || []);
@@ -187,6 +216,23 @@ export default function AdminDataPage() {
       setHasMore((prev) => ({ ...prev, [type]: result.hasMore }));
     } catch (err) {
       console.error("Failed to load more:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMoreResponses = async () => {
+    setLoadingMore(true);
+    const nextPage = responsesPage + 1;
+    try {
+      const res = await fetch(`/api/admin/responses?page=${nextPage}&limit=${PAGE_LIMIT}`);
+      if (!res.ok) return;
+      const result: PaginatedResult<ArtistResponse> = await res.json();
+      setResponses((prev) => [...prev, ...result.data]);
+      setResponsesPage(nextPage);
+      setResponsesHasMore(result.hasMore);
+    } catch (err) {
+      console.error("Failed to load more responses:", err);
     } finally {
       setLoadingMore(false);
     }
@@ -272,6 +318,7 @@ export default function AdminDataPage() {
             ["customers", `客戶 (${totals.customers})`],
             ["requests", `需求 (${totals.requests})`],
             ["bookings", `預約 (${totals.bookings})`],
+            ["responses", `報價 (${responsesTotal})`],
             ["audit", `操作紀錄 (${auditTotal})`],
           ] as const).map(([key, label]) => (
             <button
@@ -642,6 +689,81 @@ export default function AdminDataPage() {
             </Card>
           )}
 
+          {/* Responses / Quotes Table */}
+          {tab === "responses" && (
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-gray-50 text-left text-xs text-gray-500">
+                        <th className="px-4 py-3">設計師</th>
+                        <th className="px-4 py-3">客戶</th>
+                        <th className="px-4 py-3">服務</th>
+                        <th className="px-4 py-3">報價金額</th>
+                        <th className="px-4 py-3">留言</th>
+                        <th className="px-4 py-3">狀態</th>
+                        <th className="px-4 py-3">LINE</th>
+                        <th className="px-4 py-3">時間</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {responses.map((r) => {
+                        const sr = Array.isArray(r.service_requests) ? r.service_requests[0] : r.service_requests;
+                        const artist = Array.isArray(r.artists) ? r.artists[0] : r.artists;
+                        return (
+                          <tr key={r.id} className="border-b hover:bg-gray-50">
+                            <td className="px-4 py-3 font-medium">{artist?.display_name || "-"}</td>
+                            <td className="px-4 py-3">{r.customer_name}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex flex-wrap gap-1">
+                                {sr?.services?.slice(0, 2).map((s: string) => (
+                                  <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+                                ))}
+                                {(sr?.services?.length || 0) > 2 && (
+                                  <Badge variant="secondary" className="text-[10px]">+{sr!.services.length - 2}</Badge>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 font-medium text-[var(--brand)]">
+                              {r.quoted_price ? `NT$${r.quoted_price.toLocaleString()}` : "-"}
+                            </td>
+                            <td className="px-4 py-3 text-xs text-gray-500 max-w-[200px] truncate" title={r.message || ""}>
+                              {r.message || "-"}
+                            </td>
+                            <td className="px-4 py-3">
+                              <Badge className={`text-[10px] ${RESPONSE_STATUS_COLORS[r.status] || "bg-gray-100"}`}>
+                                {RESPONSE_STATUS_LABELS[r.status] || r.status}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3">
+                              {r.has_line ? (
+                                <Badge className="bg-green-100 text-green-700 text-[10px]">已通知</Badge>
+                              ) : (
+                                <Badge className="bg-red-100 text-red-700 text-[10px]">無法通知</Badge>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-xs text-gray-400">{formatDate(r.created_at)}</td>
+                          </tr>
+                        );
+                      })}
+                      {responses.length === 0 && (
+                        <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">尚無報價紀錄</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {responsesHasMore && (
+                  <div className="border-t p-3 text-center">
+                    <Button variant="ghost" size="sm" onClick={loadMoreResponses} disabled={loadingMore}>
+                      {loadingMore ? "載入中..." : `載入更多（已載入 ${responses.length}/${responsesTotal}）`}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Audit Logs */}
           {tab === "audit" && (
             <Card>
@@ -697,6 +819,18 @@ export default function AdminDataPage() {
     </div>
   );
 }
+
+const RESPONSE_STATUS_LABELS: Record<string, string> = {
+  pending: "待回應",
+  accepted: "已接受",
+  declined: "已拒絕",
+};
+
+const RESPONSE_STATUS_COLORS: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-800",
+  accepted: "bg-green-100 text-green-800",
+  declined: "bg-red-100 text-red-800",
+};
 
 const AUDIT_ACTION_LABELS: Record<string, string> = {
   "admin.login": "管理員登入",

@@ -91,6 +91,10 @@ export async function POST(request: Request) {
         }).catch((err) => {
           console.error("Failed to notify customer:", err);
         });
+      } else {
+        console.warn(
+          `[Quote] Customer ${serviceRequest.customer_id} has no LINE ID — notification skipped for request ${requestId}`
+        );
       }
     }
 
