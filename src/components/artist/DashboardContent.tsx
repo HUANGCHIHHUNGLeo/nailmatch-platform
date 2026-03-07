@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthSWR } from "@/lib/line/use-auth-swr";
+import { useLiff } from "@/lib/line/liff";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface ArtistMe {
@@ -48,6 +49,7 @@ function timeAgo(dateStr: string): string {
 
 export default function DashboardContent() {
   const { t } = useLanguage();
+  const { liff } = useLiff();
   const { data: me, error: meError } = useAuthSWR<ArtistMe>("/api/artists/me");
   const { data: requests, error: reqError } = useAuthSWR<ServiceRequest[]>("/api/requests/matching");
   const { data: bookings } = useAuthSWR<Booking[]>(
@@ -112,6 +114,12 @@ export default function DashboardContent() {
             >
               重新整理
             </button>
+          </div>
+          <div className="mt-4 rounded bg-gray-50 p-3 text-left text-xs text-gray-400 break-all">
+            <p>error: {fetchError?.message || "unknown"}</p>
+            <p>status: {(fetchError as Error & { status?: number })?.status || "N/A"}</p>
+            <p>hasToken: {liff?.getIDToken?.() ? "yes" : "no"}</p>
+            <p>tokenPrefix: {liff?.getIDToken?.()?.substring(0, 20) || "none"}...</p>
           </div>
         </div>
       </div>
