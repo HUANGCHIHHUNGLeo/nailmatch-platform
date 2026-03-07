@@ -37,6 +37,33 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-Hant-TW" className="scroll-smooth">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "NaLi Match",
+              alternateName: "美甲美睫媒合平台",
+              description: "送出需求，讓合適的美甲/美睫師主動報價。看作品、看價格、選順眼的直接預約。",
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Web",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "TWD",
+                description: "客戶完全免費使用",
+              },
+              areaServed: {
+                "@type": "Country",
+                name: "Taiwan",
+              },
+              inLanguage: "zh-TW",
+            }),
+          }}
+        />
+      </head>
       <body className={`${notoSansTC.variable} ${notoSerifTC.variable} font-sans antialiased bg-[var(--brand-bg)] text-slate-800 min-h-screen flex flex-col selection:bg-[var(--brand-light)] selection:text-[var(--brand-dark)]`}>
         <GoogleAnalytics />
         <LanguageProvider>
