@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { requestId, artistId: providedArtistId, ...quoteData } = body;
+    const { requestId, ...quoteData } = body;
 
     // Validate quote data
     const parsed = artistQuoteSchema.safeParse(quoteData);
@@ -29,19 +29,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // Resolve artist ID from auth or provided value
-    let finalArtistId = providedArtistId;
-    if (!finalArtistId) {
-      const resolved = await resolveArtist(request);
-      finalArtistId = resolved?.artistId;
-    }
-
-    if (!finalArtistId) {
+    // Resolve artist ID from auth token only
+    const resolved = await resolveArtist(request);
+    if (!resolved) {
       return NextResponse.json(
-        { error: "Artist not found" },
-        { status: 404 }
+        { error: "Authentication required" },
+        { status: 401 }
       );
     }
+    const finalArtistId = resolved.artistId;
 
     const supabase = await createServiceClient();
 

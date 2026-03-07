@@ -11,15 +11,19 @@ export async function GET(request: Request) {
 
     const supabase = await createServiceClient();
 
-    // Get artist profile for matching
+    // Get artist profile for matching (must be verified)
     const { data: artist } = await supabase
       .from("artists")
-      .select("id, cities, services, gender, min_price, max_price")
+      .select("id, cities, services, gender, min_price, max_price, is_verified")
       .eq("id", resolved.artistId)
       .single();
 
     if (!artist) {
       return NextResponse.json({ error: "Artist not found" }, { status: 404 });
+    }
+
+    if (!artist.is_verified) {
+      return NextResponse.json({ error: "Artist not verified" }, { status: 403 });
     }
 
     // Fetch active requests that match this artist's profile

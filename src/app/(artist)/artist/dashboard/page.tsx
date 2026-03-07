@@ -48,6 +48,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function ArtistDashboard() {
+  const { t } = useLanguage();
   const { data: me } = useAuthSWR<ArtistMe>("/api/artists/me");
   const { data: requests } = useAuthSWR<ServiceRequest[]>("/api/requests/matching");
   const { data: bookings } = useAuthSWR<Booking[]>(
@@ -114,8 +115,6 @@ export default function ArtistDashboard() {
       </div>
     );
   }
-
-  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-[var(--brand-bg)]">
