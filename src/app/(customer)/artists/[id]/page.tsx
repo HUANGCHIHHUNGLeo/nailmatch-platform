@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, MapPin, Star, Scissors, Palette, CreditCard, Instagram, MessageCircle } from "lucide-react";
+import FavoriteButton from "@/components/shared/FavoriteButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -142,7 +143,10 @@ export default function ArtistPublicPage() {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h1 className="text-xl font-bold text-gray-900">{artist.display_name}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold text-gray-900">{artist.display_name}</h1>
+                  <FavoriteButton artistId={artist.id} />
+                </div>
                 {reviewData && reviewData.totalReviews > 0 && (
                   <div className="mt-1 flex items-center gap-1">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />

@@ -148,15 +148,121 @@ export async function GET() {
     statusCounts[r.status] = (statusCounts[r.status] || 0) + 1;
   }
 
+  // --- Advanced Analytics ---
+
+  // Step-by-step funnel conversion rates
+  const funnelConversion = {
+    requests_to_responses: funnel.requests > 0 ? Math.round((funnel.responses / funnel.requests) * 1000) / 10 : 0,
+    responses_to_bookings: funnel.responses > 0 ? Math.round((funnel.bookings / funnel.responses) * 1000) / 10 : 0,
+    bookings_to_completed: funnel.bookings > 0 ? Math.round((funnel.completed / funnel.bookings) * 1000) / 10 : 0,
+    completed_to_reviews: funnel.completed > 0 ? Math.round((funnel.reviews / funnel.completed) * 1000) / 10 : 0,
+  };
+
+  // LTV estimate: total completed booking revenue / unique customers with completed bookings
+  const sixMonthsAgo = new Date(now);
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const { data: allCompletedBookings } = await supabase
+    .from("bookings")
+    .select("customer_id, final_price")
+    .eq("status", "completed");
+
+  const completedCustomerIds = new Set<string>();
+  let ltvTotalRevenue = 0;
+  for (const b of allCompletedBookings || []) {
+    if (b.customer_id) completedCustomerIds.add(b.customer_id);
+    ltvTotalRevenue += b.final_price || 0;
+  }
+
+  const ltv = {
+    average_revenue_per_customer: completedCustomerIds.size > 0
+      ? Math.round(ltvTotalRevenue / completedCustomerIds.size)
+      : 0,
+    total_revenue: ltvTotalRevenue,
+    unique_customers: completedCustomerIds.size,
+  };
+
+  // Retention cohort data: last 6 months
+  // For each month, find customers who made their first booking in that month (cohort),
+  // then count how many returned the next month
+  const retention: { month: string; cohort_size: number; returned: number; retention_pct: number }[] = [];
+
+  const { data: allBookings } = await supabase
+    .from("bookings")
+    .select("customer_id, created_at")
+    .gte("created_at", sixMonthsAgo.toISOString())
+    .order("created_at", { ascending: true });
+
+  // Group bookings by customer -> list of months
+  const customerBookingMonths: Record<string, Set<string>> = {};
+  for (const b of allBookings || []) {
+    if (!b.customer_id) continue;
+    const month = new Date(b.created_at).toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" }).slice(0, 7);
+    if (!customerBookingMonths[b.customer_id]) {
+      customerBookingMonths[b.customer_id] = new Set();
+    }
+    customerBookingMonths[b.customer_id].add(month);
+  }
+
+  // Find first booking month for each customer (globally, not just last 6 months)
+  const { data: firstBookings } = await supabase
+    .from("bookings")
+    .select("customer_id, created_at")
+    .order("created_at", { ascending: true });
+
+  const firstBookingMonth: Record<string, string> = {};
+  for (const b of firstBookings || []) {
+    if (!b.customer_id) continue;
+    if (!firstBookingMonth[b.customer_id]) {
+      firstBookingMonth[b.customer_id] = new Date(b.created_at)
+        .toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" })
+        .slice(0, 7);
+    }
+  }
+
+  // Build cohort for each of the last 6 months
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now);
+    d.setMonth(d.getMonth() - i);
+    const monthKey = d.toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" }).slice(0, 7);
+
+    // Next month key
+    const nextD = new Date(d);
+    nextD.setMonth(nextD.getMonth() + 1);
+    const nextMonthKey = nextD.toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" }).slice(0, 7);
+
+    // Cohort: customers whose first booking was in monthKey
+    const cohortCustomers = Object.entries(firstBookingMonth)
+      .filter(([, m]) => m === monthKey)
+      .map(([cid]) => cid);
+
+    // Returned: cohort customers who also booked in nextMonthKey
+    const returned = cohortCustomers.filter(
+      (cid) => customerBookingMonths[cid]?.has(nextMonthKey)
+    ).length;
+
+    retention.push({
+      month: monthKey,
+      cohort_size: cohortCustomers.length,
+      returned,
+      retention_pct: cohortCustomers.length > 0
+        ? Math.round((returned / cohortCustomers.length) * 1000) / 10
+        : 0,
+    });
+  }
+
   return NextResponse.json({
     trend,
     topServices,
     topLocations,
     budgetDistribution: budgetCounts,
     funnel,
+    funnelConversion,
     revenue: { total: totalRevenue, average: avgPrice, count: completedBookings.length },
     avgRating,
     statusBreakdown: statusCounts,
+    ltv,
+    retention,
     period: { from: since.split("T")[0], to: now.toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" }) },
   });
 }

@@ -233,12 +233,12 @@ describe("artistQuoteSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects missing available time", () => {
+  it("accepts empty available time (now optional)", () => {
     const result = artistQuoteSchema.safeParse({
       quotedPrice: 1000,
       availableTime: "",
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("rejects missing price", () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +16,31 @@ interface Customer {
   created_at: string;
   terms_accepted_at: string | null;
   request_count: number;
+  booking_count: number;
+  total_spend: number;
   has_line: boolean;
+  is_active: boolean;
+}
+
+interface Dispute {
+  id: string;
+  booking_id: string;
+  reporter_type: "customer" | "artist";
+  reporter_id: string;
+  reporter_name: string;
+  reason: string;
+  description: string | null;
+  status: "open" | "investigating" | "resolved" | "dismissed";
+  admin_notes: string | null;
+  resolution: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  booking_info: {
+    customer_name: string;
+    artist_name: string;
+    services: string[];
+    status: string;
+  } | null;
 }
 
 interface ServiceRequest {
@@ -121,9 +145,17 @@ interface Analytics {
   topLocations: { name: string; count: number }[];
   budgetDistribution: Record<string, number>;
   funnel: { requests: number; responses: number; bookings: number; completed: number; reviews: number };
+  funnelConversion: {
+    requests_to_responses: number;
+    responses_to_bookings: number;
+    bookings_to_completed: number;
+    completed_to_reviews: number;
+  };
   revenue: { total: number; average: number; count: number };
   avgRating: number;
   statusBreakdown: Record<string, number>;
+  ltv: { average_revenue_per_customer: number; total_revenue: number; unique_customers: number };
+  retention: { month: string; cohort_size: number; returned: number; retention_pct: number }[];
   period: { from: string; to: string };
 }
 
@@ -143,22 +175,34 @@ export default function AdminDataPage() {
   const [auditTotal, setAuditTotal] = useState(0);
   const [auditHasMore, setAuditHasMore] = useState(false);
   const [auditPage, setAuditPage] = useState(1);
+  const [disputes, setDisputes] = useState<Dispute[]>([]);
+  const [disputesTotal, setDisputesTotal] = useState(0);
+  const [disputesHasMore, setDisputesHasMore] = useState(false);
+  const [disputesPage, setDisputesPage] = useState(1);
+  const [expandedDispute, setExpandedDispute] = useState<string | null>(null);
+  const [disputeNotes, setDisputeNotes] = useState<Record<string, string>>({});
+  const [disputeResolution, setDisputeResolution] = useState<Record<string, string>>({});
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [tab, setTab] = useState<"analytics" | "customers" | "requests" | "bookings" | "responses" | "audit">("analytics");
+  const [tab, setTab] = useState<"analytics" | "customers" | "requests" | "bookings" | "responses" | "disputes" | "audit">("analytics");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [customerSearchInput, setCustomerSearchInput] = useState("");
+  const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
   const PAGE_LIMIT = 30;
 
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [custRes, reqRes, bookRes, analyticsRes, respRes, auditRes] = await Promise.all([
-          fetch(`/api/admin/customers?limit=${PAGE_LIMIT}`),
+        const searchParam = customerSearch ? `&search=${encodeURIComponent(customerSearch)}` : "";
+        const [custRes, reqRes, bookRes, analyticsRes, respRes, auditRes, disputeRes] = await Promise.all([
+          fetch(`/api/admin/customers?limit=${PAGE_LIMIT}${searchParam}`),
           fetch(`/api/admin/requests?limit=${PAGE_LIMIT}`),
           fetch(`/api/admin/bookings?limit=${PAGE_LIMIT}`),
           fetch("/api/admin/analytics"),
           fetch(`/api/admin/responses?limit=${PAGE_LIMIT}`),
           fetch(`/api/admin/audit-logs?limit=${PAGE_LIMIT}`),
+          fetch(`/api/admin/disputes?limit=${PAGE_LIMIT}`),
         ]);
 
         if (custRes.status === 401) {
@@ -182,6 +226,12 @@ export default function AdminDataPage() {
           setAuditTotal(auditData.total || 0);
           setAuditHasMore(!!auditData.hasMore);
         }
+        if (disputeRes.ok) {
+          const dispData: PaginatedResult<Dispute> = await disputeRes.json();
+          setDisputes(dispData.data || []);
+          setDisputesTotal(dispData.total || 0);
+          setDisputesHasMore(!!dispData.hasMore);
+        }
 
         setCustomers(custData.data || []);
         setRequests(reqData.data || []);
@@ -195,7 +245,7 @@ export default function AdminDataPage() {
       }
     }
     fetchAll();
-  }, [router]);
+  }, [router, customerSearch]);
 
   const loadMore = async (type: "customers" | "requests" | "bookings") => {
     setLoadingMore(true);
@@ -252,6 +302,69 @@ export default function AdminDataPage() {
       console.error("Failed to load more audit logs:", err);
     } finally {
       setLoadingMore(false);
+    }
+  };
+
+  const loadMoreDisputes = async () => {
+    setLoadingMore(true);
+    const nextPage = disputesPage + 1;
+    try {
+      const res = await fetch(`/api/admin/disputes?page=${nextPage}&limit=${PAGE_LIMIT}`);
+      if (!res.ok) return;
+      const result: PaginatedResult<Dispute> = await res.json();
+      setDisputes((prev) => [...prev, ...result.data]);
+      setDisputesPage(nextPage);
+      setDisputesHasMore(result.hasMore);
+    } catch (err) {
+      console.error("Failed to load more disputes:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const handleCustomerSearch = () => {
+    setCustomerSearch(customerSearchInput);
+    setPages((prev) => ({ ...prev, customers: 1 }));
+  };
+
+  const handleDeactivateCustomer = async (customerId: string, currentActive: boolean) => {
+    if (!confirm(currentActive ? "確定要停用此客戶？" : "確定要重新啟用此客戶？")) return;
+    try {
+      const res = await fetch("/api/admin/customers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customer_id: customerId, is_active: !currentActive }),
+      });
+      if (res.ok) {
+        setCustomers((prev) =>
+          prev.map((c) => (c.id === customerId ? { ...c, is_active: !currentActive } : c))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to update customer status:", err);
+    }
+  };
+
+  const handleUpdateDispute = async (disputeId: string, status: string) => {
+    try {
+      const res = await fetch("/api/admin/disputes", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dispute_id: disputeId,
+          status,
+          admin_notes: disputeNotes[disputeId] || undefined,
+          resolution: disputeResolution[disputeId] || undefined,
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setDisputes((prev) =>
+          prev.map((d) => (d.id === disputeId ? { ...d, ...updated } : d))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to update dispute:", err);
     }
   };
 
@@ -312,13 +425,14 @@ export default function AdminDataPage() {
         </div>
 
         {/* Data Tabs */}
-        <div className="mb-4 flex gap-1 rounded-lg bg-gray-100 p-1">
+        <div className="mb-4 flex flex-wrap gap-1 rounded-lg bg-gray-100 p-1">
           {([
             ["analytics", "趨勢分析"],
             ["customers", `客戶 (${totals.customers})`],
             ["requests", `需求 (${totals.requests})`],
             ["bookings", `預約 (${totals.bookings})`],
             ["responses", `報價 (${responsesTotal})`],
+            ["disputes", `爭議 (${disputesTotal})`],
             ["audit", `操作紀錄 (${auditTotal})`],
           ] as const).map(([key, label]) => (
             <button
@@ -338,32 +452,123 @@ export default function AdminDataPage() {
           {/* Analytics Dashboard */}
           {tab === "analytics" && analytics && (
             <div className="space-y-4">
-              {/* Conversion Funnel */}
+              {/* Conversion Funnel with step-by-step rates */}
               <Card>
                 <CardContent className="p-4">
                   <h3 className="mb-3 text-sm font-semibold text-gray-700">轉換漏斗（近 30 天）</h3>
                   <div className="space-y-2">
                     {[
-                      { label: "需求送出", value: analytics.funnel.requests, color: "bg-blue-500" },
-                      { label: "設計師報價", value: analytics.funnel.responses, color: "bg-indigo-500" },
-                      { label: "確認預約", value: analytics.funnel.bookings, color: "bg-green-500" },
-                      { label: "完成服務", value: analytics.funnel.completed, color: "bg-emerald-500" },
-                      { label: "留下評價", value: analytics.funnel.reviews, color: "bg-purple-500" },
+                      { label: "需求送出", value: analytics.funnel.requests, color: "bg-blue-500", stepRate: null },
+                      { label: "設計師報價", value: analytics.funnel.responses, color: "bg-indigo-500", stepRate: analytics.funnelConversion?.requests_to_responses },
+                      { label: "確認預約", value: analytics.funnel.bookings, color: "bg-green-500", stepRate: analytics.funnelConversion?.responses_to_bookings },
+                      { label: "完成服務", value: analytics.funnel.completed, color: "bg-emerald-500", stepRate: analytics.funnelConversion?.bookings_to_completed },
+                      { label: "留下評價", value: analytics.funnel.reviews, color: "bg-purple-500", stepRate: analytics.funnelConversion?.completed_to_reviews },
                     ].map((step) => {
                       const pct = analytics.funnel.requests > 0 ? (step.value / analytics.funnel.requests) * 100 : 0;
                       return (
-                        <div key={step.label} className="flex items-center gap-3">
-                          <span className="w-20 flex-shrink-0 text-xs text-gray-500">{step.label}</span>
-                          <div className="flex-1 rounded-full bg-gray-100 h-5 overflow-hidden">
-                            <div className={`h-full ${step.color} rounded-full transition-all`} style={{ width: `${Math.max(pct, 2)}%` }} />
+                        <div key={step.label}>
+                          <div className="flex items-center gap-3">
+                            <span className="w-20 flex-shrink-0 text-xs text-gray-500">{step.label}</span>
+                            <div className="flex-1 rounded-full bg-gray-100 h-5 overflow-hidden">
+                              <div className={`h-full ${step.color} rounded-full transition-all`} style={{ width: `${Math.max(pct, 2)}%` }} />
+                            </div>
+                            <span className="w-16 flex-shrink-0 text-right text-xs font-medium">{step.value} ({Math.round(pct)}%)</span>
                           </div>
-                          <span className="w-16 flex-shrink-0 text-right text-xs font-medium">{step.value} ({Math.round(pct)}%)</span>
+                          {step.stepRate !== null && step.stepRate !== undefined && (
+                            <div className="ml-20 pl-1 text-[10px] text-gray-400">
+                              ↑ 上步轉換率 {step.stepRate}%
+                            </div>
+                          )}
                         </div>
                       );
                     })}
                   </div>
                 </CardContent>
               </Card>
+
+              {/* LTV Card + Revenue */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="mb-3 text-sm font-semibold text-gray-700">客戶終身價值 (LTV)</h3>
+                    <div className="rounded-lg bg-amber-50 p-4">
+                      <p className="text-xs text-amber-600">平均每位客戶營收</p>
+                      <p className="text-2xl font-bold text-amber-700">
+                        NT${(analytics.ltv?.average_revenue_per_customer || 0).toLocaleString()}
+                      </p>
+                      <p className="mt-1 text-xs text-amber-500">
+                        {analytics.ltv?.unique_customers || 0} 位消費客戶 / 總營收 NT${(analytics.ltv?.total_revenue || 0).toLocaleString()}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="mb-3 text-sm font-semibold text-gray-700">營收與評價（30天）</h3>
+                    <div className="space-y-3">
+                      <div className="rounded-lg bg-green-50 p-3">
+                        <p className="text-xs text-green-600">平台總成交額</p>
+                        <p className="text-xl font-bold text-green-700">NT${analytics.revenue.total.toLocaleString()}</p>
+                        <p className="text-xs text-green-500">{analytics.revenue.count} 筆完成・平均 NT${analytics.revenue.average.toLocaleString()}</p>
+                      </div>
+                      <div className="rounded-lg bg-purple-50 p-3">
+                        <p className="text-xs text-purple-600">平均評價</p>
+                        <p className="text-xl font-bold text-purple-700">
+                          {analytics.avgRating > 0 ? `${analytics.avgRating} / 5.0` : "尚無評價"}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Retention Cohort Table */}
+              {analytics.retention && analytics.retention.length > 0 && (
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="mb-3 text-sm font-semibold text-gray-700">月留存率（新客回訪）</h3>
+                    <p className="mb-2 text-[10px] text-gray-400">每月首次預約客群，隔月再次預約的比例</p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b bg-gray-50 text-gray-500">
+                            <th className="px-3 py-2 text-left">月份</th>
+                            <th className="px-3 py-2 text-right">新客數</th>
+                            <th className="px-3 py-2 text-right">隔月回訪</th>
+                            <th className="px-3 py-2 text-right">留存率</th>
+                            <th className="px-3 py-2 text-left w-32">留存率</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {analytics.retention.map((r) => (
+                            <tr key={r.month} className="border-b">
+                              <td className="px-3 py-2 font-medium">{r.month}</td>
+                              <td className="px-3 py-2 text-right">{r.cohort_size}</td>
+                              <td className="px-3 py-2 text-right">{r.returned}</td>
+                              <td className="px-3 py-2 text-right font-medium">
+                                <span className={r.retention_pct >= 30 ? "text-green-600" : r.retention_pct >= 15 ? "text-yellow-600" : "text-red-500"}>
+                                  {r.retention_pct}%
+                                </span>
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="h-2 w-full rounded-full bg-gray-100">
+                                  <div
+                                    className={`h-full rounded-full ${r.retention_pct >= 30 ? "bg-green-500" : r.retention_pct >= 15 ? "bg-yellow-500" : "bg-red-400"}`}
+                                    style={{ width: `${Math.min(r.retention_pct, 100)}%` }}
+                                  />
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {analytics.retention.every((r) => r.cohort_size === 0) && (
+                      <p className="mt-2 text-center text-xs text-gray-400">尚無足夠預約資料</p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Daily Trend */}
               <Card>
@@ -481,84 +686,165 @@ export default function AdminDataPage() {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Revenue & Ratings */}
-                <Card>
-                  <CardContent className="p-4">
-                    <h3 className="mb-3 text-sm font-semibold text-gray-700">營收與評價</h3>
-                    <div className="space-y-3">
-                      <div className="rounded-lg bg-green-50 p-3">
-                        <p className="text-xs text-green-600">平台總成交額（30天）</p>
-                        <p className="text-xl font-bold text-green-700">NT${analytics.revenue.total.toLocaleString()}</p>
-                        <p className="text-xs text-green-500">{analytics.revenue.count} 筆完成・平均 NT${analytics.revenue.average.toLocaleString()}</p>
-                      </div>
-                      <div className="rounded-lg bg-purple-50 p-3">
-                        <p className="text-xs text-purple-600">平均評價</p>
-                        <p className="text-xl font-bold text-purple-700">
-                          {analytics.avgRating > 0 ? `${analytics.avgRating} / 5.0` : "尚無評價"}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </div>
           )}
 
           {/* Customers Table */}
           {tab === "customers" && (
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-gray-50 text-left text-xs text-gray-500">
-                        <th className="px-4 py-3">姓名</th>
-                        <th className="px-4 py-3">LINE</th>
-                        <th className="px-4 py-3">電話</th>
-                        <th className="px-4 py-3">需求數</th>
-                        <th className="px-4 py-3">同意條款</th>
-                        <th className="px-4 py-3">註冊時間</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {customers.map((c) => (
-                        <tr key={c.id} className="border-b hover:bg-gray-50">
-                          <td className="px-4 py-3 font-medium">{c.display_name}</td>
-                          <td className="px-4 py-3">
-                            {c.has_line ? (
-                              <Badge className="bg-green-100 text-green-700 text-[10px]">已綁定</Badge>
-                            ) : (
-                              <Badge className="bg-gray-100 text-gray-500 text-[10px]">匿名</Badge>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-gray-500">{c.phone || "-"}</td>
-                          <td className="px-4 py-3">{c.request_count}</td>
-                          <td className="px-4 py-3">
-                            {c.terms_accepted_at ? (
-                              <Badge className="bg-green-100 text-green-700 text-[10px]">已同意</Badge>
-                            ) : (
-                              <span className="text-gray-300">-</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-gray-400">{formatDate(c.created_at)}</td>
-                        </tr>
-                      ))}
-                      {customers.length === 0 && (
-                        <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">尚無客戶資料</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {hasMore.customers && (
-                  <div className="border-t p-3 text-center">
-                    <Button variant="ghost" size="sm" onClick={() => loadMore("customers")} disabled={loadingMore}>
-                      {loadingMore ? "載入中..." : `載入更多（已載入 ${customers.length}/${totals.customers}）`}
-                    </Button>
-                  </div>
+            <div className="space-y-3">
+              {/* Search Bar */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="搜尋客戶姓名或電話..."
+                  value={customerSearchInput}
+                  onChange={(e) => setCustomerSearchInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCustomerSearch()}
+                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-[var(--brand)] focus:outline-none focus:ring-1 focus:ring-[var(--brand)]"
+                />
+                <Button size="sm" onClick={handleCustomerSearch}>搜尋</Button>
+                {customerSearch && (
+                  <Button variant="ghost" size="sm" onClick={() => { setCustomerSearchInput(""); setCustomerSearch(""); }}>
+                    清除
+                  </Button>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+
+              <Card>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b bg-gray-50 text-left text-xs text-gray-500">
+                          <th className="px-4 py-3">姓名</th>
+                          <th className="px-4 py-3">LINE</th>
+                          <th className="px-4 py-3">電話</th>
+                          <th className="px-4 py-3">Email</th>
+                          <th className="px-4 py-3">需求</th>
+                          <th className="px-4 py-3">預約</th>
+                          <th className="px-4 py-3">總消費</th>
+                          <th className="px-4 py-3">狀態</th>
+                          <th className="px-4 py-3">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {customers.map((c) => (
+                          <React.Fragment key={c.id}>
+                            <tr className={`border-b hover:bg-gray-50 ${!c.is_active ? "opacity-50" : ""}`}>
+                              <td className="px-4 py-3 font-medium">{c.display_name}</td>
+                              <td className="px-4 py-3">
+                                {c.has_line ? (
+                                  <Badge className="bg-green-100 text-green-700 text-[10px]">已綁定</Badge>
+                                ) : (
+                                  <Badge className="bg-gray-100 text-gray-500 text-[10px]">匿名</Badge>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-gray-500 text-xs">{c.phone || "-"}</td>
+                              <td className="px-4 py-3 text-gray-500 text-xs max-w-[140px] truncate" title={c.email || ""}>{c.email || "-"}</td>
+                              <td className="px-4 py-3 text-center">{c.request_count}</td>
+                              <td className="px-4 py-3 text-center">{c.booking_count}</td>
+                              <td className="px-4 py-3 font-medium text-[var(--brand)]">
+                                {c.total_spend > 0 ? `NT$${c.total_spend.toLocaleString()}` : "-"}
+                              </td>
+                              <td className="px-4 py-3">
+                                {c.is_active ? (
+                                  <Badge className="bg-green-100 text-green-700 text-[10px]">啟用</Badge>
+                                ) : (
+                                  <Badge className="bg-red-100 text-red-700 text-[10px]">停用</Badge>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-xs h-7 px-2"
+                                    onClick={() => setExpandedCustomer(expandedCustomer === c.id ? null : c.id)}
+                                  >
+                                    查看詳情
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className={`text-xs h-7 px-2 ${c.is_active ? "text-red-600 hover:text-red-700" : "text-green-600 hover:text-green-700"}`}
+                                    onClick={() => handleDeactivateCustomer(c.id, c.is_active)}
+                                  >
+                                    {c.is_active ? "停用" : "啟用"}
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                            {expandedCustomer === c.id && (
+                              <tr className="bg-gray-50">
+                                <td colSpan={9} className="px-4 py-4">
+                                  <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+                                    <div>
+                                      <p className="font-medium text-gray-500">客戶 ID</p>
+                                      <p className="font-mono text-gray-700">{c.id.slice(0, 12)}...</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">LINE 綁定</p>
+                                      <p className="text-gray-700">{c.has_line ? "已綁定" : "未綁定"}</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">電話</p>
+                                      <p className="text-gray-700">{c.phone || "未提供"}</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">Email</p>
+                                      <p className="text-gray-700">{c.email || "未提供"}</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">需求次數</p>
+                                      <p className="text-gray-700">{c.request_count} 次</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">預約次數</p>
+                                      <p className="text-gray-700">{c.booking_count} 次</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">總消費金額</p>
+                                      <p className="text-gray-700 font-medium">NT${c.total_spend.toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">同意條款</p>
+                                      <p className="text-gray-700">{c.terms_accepted_at ? formatDate(c.terms_accepted_at) : "未同意"}</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">註冊時間</p>
+                                      <p className="text-gray-700">{formatDate(c.created_at)}</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">帳號狀態</p>
+                                      <p className={c.is_active ? "text-green-600" : "text-red-600"}>
+                                        {c.is_active ? "啟用中" : "已停用"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        ))}
+                        {customers.length === 0 && (
+                          <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">
+                            {customerSearch ? `找不到「${customerSearch}」相關客戶` : "尚無客戶資料"}
+                          </td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  {hasMore.customers && (
+                    <div className="border-t p-3 text-center">
+                      <Button variant="ghost" size="sm" onClick={() => loadMore("customers")} disabled={loadingMore}>
+                        {loadingMore ? "載入中..." : `載入更多（已載入 ${customers.length}/${totals.customers}）`}
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           )}
 
           {/* Requests Table */}
@@ -764,6 +1050,184 @@ export default function AdminDataPage() {
             </Card>
           )}
 
+          {/* Disputes */}
+          {tab === "disputes" && (
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-gray-50 text-left text-xs text-gray-500">
+                        <th className="px-4 py-3">預約</th>
+                        <th className="px-4 py-3">申訴人</th>
+                        <th className="px-4 py-3">原因</th>
+                        <th className="px-4 py-3">狀態</th>
+                        <th className="px-4 py-3">建立時間</th>
+                        <th className="px-4 py-3">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {disputes.map((d) => (
+                        <React.Fragment key={d.id}>
+                          <tr className="border-b hover:bg-gray-50">
+                            <td className="px-4 py-3">
+                              <div className="text-xs">
+                                <p className="font-medium">{d.booking_info?.customer_name || "匿名"}</p>
+                                <p className="text-gray-400">{d.booking_info?.artist_name || "-"}</p>
+                                {d.booking_info?.services && d.booking_info.services.length > 0 && (
+                                  <div className="mt-1 flex flex-wrap gap-1">
+                                    {d.booking_info.services.slice(0, 2).map((s) => (
+                                      <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <p className="text-xs font-medium">{d.reporter_name}</p>
+                              <Badge className={`text-[10px] ${d.reporter_type === "customer" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>
+                                {d.reporter_type === "customer" ? "客戶" : "設計師"}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3 text-xs max-w-[200px]">
+                              <p className="font-medium text-gray-700">{d.reason}</p>
+                              {d.description && (
+                                <p className="mt-1 text-gray-400 truncate" title={d.description}>{d.description}</p>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <Badge className={`text-[10px] ${DISPUTE_STATUS_COLORS[d.status] || "bg-gray-100"}`}>
+                                {DISPUTE_STATUS_LABELS[d.status] || d.status}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-gray-400">{formatDate(d.created_at)}</td>
+                            <td className="px-4 py-3">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs h-7 px-2"
+                                onClick={() => setExpandedDispute(expandedDispute === d.id ? null : d.id)}
+                              >
+                                {expandedDispute === d.id ? "收起" : "展開"}
+                              </Button>
+                            </td>
+                          </tr>
+                          {expandedDispute === d.id && (
+                            <tr className="bg-gray-50">
+                              <td colSpan={6} className="px-4 py-4">
+                                <div className="space-y-3">
+                                  <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
+                                    <div>
+                                      <p className="font-medium text-gray-500">爭議 ID</p>
+                                      <p className="font-mono text-gray-700">{d.id.slice(0, 12)}...</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">預約狀態</p>
+                                      <Badge className={`text-[10px] ${STATUS_COLORS[d.booking_info?.status || ""] || "bg-gray-100"}`}>
+                                        {STATUS_LABELS[d.booking_info?.status || ""] || d.booking_info?.status || "-"}
+                                      </Badge>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-500">解決時間</p>
+                                      <p className="text-gray-700">{d.resolved_at ? formatDate(d.resolved_at) : "尚未解決"}</p>
+                                    </div>
+                                  </div>
+
+                                  {d.description && (
+                                    <div className="text-xs">
+                                      <p className="font-medium text-gray-500 mb-1">詳細描述</p>
+                                      <p className="rounded bg-white p-2 text-gray-700 border">{d.description}</p>
+                                    </div>
+                                  )}
+
+                                  {d.admin_notes && (
+                                    <div className="text-xs">
+                                      <p className="font-medium text-gray-500 mb-1">管理員備註</p>
+                                      <p className="rounded bg-yellow-50 p-2 text-gray-700 border border-yellow-200">{d.admin_notes}</p>
+                                    </div>
+                                  )}
+
+                                  {d.resolution && (
+                                    <div className="text-xs">
+                                      <p className="font-medium text-gray-500 mb-1">處理結果</p>
+                                      <p className="rounded bg-green-50 p-2 text-gray-700 border border-green-200">{d.resolution}</p>
+                                    </div>
+                                  )}
+
+                                  {/* Action area */}
+                                  {(d.status === "open" || d.status === "investigating") && (
+                                    <div className="space-y-2 rounded border bg-white p-3">
+                                      <div>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">管理員備註</label>
+                                        <textarea
+                                          className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs focus:border-[var(--brand)] focus:outline-none focus:ring-1 focus:ring-[var(--brand)]"
+                                          rows={2}
+                                          placeholder="輸入備註..."
+                                          value={disputeNotes[d.id] || d.admin_notes || ""}
+                                          onChange={(e) => setDisputeNotes((prev) => ({ ...prev, [d.id]: e.target.value }))}
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">處理結果</label>
+                                        <textarea
+                                          className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs focus:border-[var(--brand)] focus:outline-none focus:ring-1 focus:ring-[var(--brand)]"
+                                          rows={2}
+                                          placeholder="輸入處理結果..."
+                                          value={disputeResolution[d.id] || d.resolution || ""}
+                                          onChange={(e) => setDisputeResolution((prev) => ({ ...prev, [d.id]: e.target.value }))}
+                                        />
+                                      </div>
+                                      <div className="flex gap-2">
+                                        {d.status === "open" && (
+                                          <Button
+                                            size="sm"
+                                            className="text-xs h-7 bg-blue-600 hover:bg-blue-700"
+                                            onClick={() => handleUpdateDispute(d.id, "investigating")}
+                                          >
+                                            調查中
+                                          </Button>
+                                        )}
+                                        <Button
+                                          size="sm"
+                                          className="text-xs h-7 bg-green-600 hover:bg-green-700"
+                                          onClick={() => handleUpdateDispute(d.id, "resolved")}
+                                        >
+                                          已解決
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-xs h-7 text-gray-600"
+                                          onClick={() => handleUpdateDispute(d.id, "dismissed")}
+                                        >
+                                          駁回
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      ))}
+                      {disputes.length === 0 && (
+                        <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">尚無爭議紀錄</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {disputesHasMore && (
+                  <div className="border-t p-3 text-center">
+                    <Button variant="ghost" size="sm" onClick={loadMoreDisputes} disabled={loadingMore}>
+                      {loadingMore ? "載入中..." : `載入更多（已載入 ${disputes.length}/${disputesTotal}）`}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Audit Logs */}
           {tab === "audit" && (
             <Card>
@@ -830,6 +1294,20 @@ const RESPONSE_STATUS_COLORS: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   accepted: "bg-green-100 text-green-800",
   declined: "bg-red-100 text-red-800",
+};
+
+const DISPUTE_STATUS_LABELS: Record<string, string> = {
+  open: "待處理",
+  investigating: "調查中",
+  resolved: "已解決",
+  dismissed: "已駁回",
+};
+
+const DISPUTE_STATUS_COLORS: Record<string, string> = {
+  open: "bg-red-100 text-red-800",
+  investigating: "bg-yellow-100 text-yellow-800",
+  resolved: "bg-green-100 text-green-800",
+  dismissed: "bg-gray-100 text-gray-600",
 };
 
 const AUDIT_ACTION_LABELS: Record<string, string> = {

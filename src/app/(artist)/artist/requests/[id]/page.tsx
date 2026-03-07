@@ -91,16 +91,20 @@ export default function ArtistRequestDetailPage() {
           requestId: id,
           artistId,
           quotedPrice: parseInt(quotedPrice),
-          message: message || null,
-          availableTime: availableTime || null,
+          message: message || "",
+          availableTime: availableTime || "",
         }),
       });
 
       if (res.ok) {
         setSubmitted(true);
+      } else {
+        const err = await res.json().catch(() => null);
+        alert(err?.error || "送出失敗，請稍後再試");
       }
     } catch (err) {
       console.error("Quote submission failed:", err);
+      alert("網路錯誤，請稍後再試");
     } finally {
       setSubmitting(false);
     }

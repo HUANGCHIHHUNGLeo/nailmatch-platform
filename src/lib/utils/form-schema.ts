@@ -79,8 +79,8 @@ export type ArtistRegistrationFormData = z.input<typeof artistRegistrationSchema
 // Artist quote form
 export const artistQuoteSchema = z.object({
   quotedPrice: z.number().min(1, "請輸入報價金額"),
-  message: z.string().optional().default(""),
-  availableTime: z.string().min(1, "請選擇可服務時間"),
+  message: z.string().nullable().optional().default(""),
+  availableTime: z.string().nullable().optional().default(""),
 });
 
 export type ArtistQuoteFormData = z.input<typeof artistQuoteSchema>;

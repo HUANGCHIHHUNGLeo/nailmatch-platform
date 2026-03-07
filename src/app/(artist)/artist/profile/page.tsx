@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, Save, Loader2, Camera } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Camera, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,12 @@ export default function ArtistProfilePage() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Collapsible section states (default: collapsed)
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const [stylesOpen, setStylesOpen] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
 
   useEffect(() => {
     if (!isReady || !isLoggedIn) return;
@@ -85,8 +91,11 @@ export default function ArtistProfilePage() {
         const updated = await res.json();
         setProfile(updated);
         setMessage({ type: "success", text: "個人檔案已更新" });
+      } else if (res.status === 404 || res.status === 401) {
+        setMessage({ type: "error", text: "登入已過期，請重新開啟頁面" });
       } else {
-        setMessage({ type: "error", text: "更新失敗，請稍後再試" });
+        const err = await res.json().catch(() => null);
+        setMessage({ type: "error", text: err?.error || "更新失敗，請稍後再試" });
       }
     } catch {
       setMessage({ type: "error", text: "網路錯誤，請稍後再試" });
@@ -286,111 +295,206 @@ export default function ArtistProfilePage() {
 
         {/* Service Location */}
         <Card>
-          <CardContent className="space-y-4 p-4">
-            <h2 className="font-semibold">服務地區</h2>
+          <CardContent className="p-4">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between"
+              onClick={() => setLocationOpen(!locationOpen)}
+            >
+              <h2 className="font-semibold">
+                服務地區
+                {!locationOpen && profile.cities.length > 0 && (
+                  <span className="ml-2 text-xs font-normal text-gray-400">
+                    已選 {profile.cities.length} 個城市
+                  </span>
+                )}
+              </h2>
+              {locationOpen ? (
+                <ChevronUp className="h-4 w-4 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+            <div
+              className="overflow-hidden transition-all duration-300 ease-in-out"
+              style={{ maxHeight: locationOpen ? "500px" : "0px", opacity: locationOpen ? 1 : 0 }}
+            >
+              <div className="space-y-4 pt-4">
+                <div className="flex flex-wrap gap-2">
+                  {LOCATIONS.map((loc) => (
+                    <Badge
+                      key={loc}
+                      variant={profile.cities.includes(loc) ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => toggleArrayItem("cities", loc)}
+                    >
+                      {loc}
+                    </Badge>
+                  ))}
+                </div>
 
-            <div className="flex flex-wrap gap-2">
-              {LOCATIONS.map((loc) => (
-                <Badge
-                  key={loc}
-                  variant={profile.cities.includes(loc) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleArrayItem("cities", loc)}
-                >
-                  {loc}
-                </Badge>
-              ))}
-            </div>
+                <div>
+                  <Label>服務地點類型</Label>
+                  <div className="mt-1 flex gap-2">
+                    {["store", "home_visit", "both"].map((t) => (
+                      <Badge
+                        key={t}
+                        variant={profile.service_location_type === t ? "default" : "outline"}
+                        className="cursor-pointer"
+                        onClick={() => setProfile({ ...profile, service_location_type: t })}
+                      >
+                        {t === "store" ? "工作室" : t === "home_visit" ? "到府服務" : "皆可"}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
 
-            <div>
-              <Label>服務地點類型</Label>
-              <div className="mt-1 flex gap-2">
-                {["store", "home_visit", "both"].map((t) => (
-                  <Badge
-                    key={t}
-                    variant={profile.service_location_type === t ? "default" : "outline"}
-                    className="cursor-pointer"
-                    onClick={() => setProfile({ ...profile, service_location_type: t })}
-                  >
-                    {t === "store" ? "工作室" : t === "home_visit" ? "到府服務" : "皆可"}
-                  </Badge>
-                ))}
+                <div>
+                  <Label>工作室地址</Label>
+                  <Input
+                    value={profile.studio_address || ""}
+                    onChange={(e) => setProfile({ ...profile, studio_address: e.target.value })}
+                    placeholder="選填，如有固定工作室"
+                  />
+                </div>
               </div>
-            </div>
-
-            <div>
-              <Label>工作室地址</Label>
-              <Input
-                value={profile.studio_address || ""}
-                onChange={(e) => setProfile({ ...profile, studio_address: e.target.value })}
-                placeholder="選填，如有固定工作室"
-              />
             </div>
           </CardContent>
         </Card>
 
         {/* Services */}
         <Card>
-          <CardContent className="space-y-4 p-4">
-            <h2 className="font-semibold">服務項目</h2>
-            <div className="flex flex-wrap gap-2">
-              {NAIL_SERVICES.map((s) => (
-                <Badge
-                  key={s.value}
-                  variant={profile.services.includes(s.value) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleArrayItem("services", s.value)}
-                >
-                  {s.label}
-                </Badge>
-              ))}
+          <CardContent className="p-4">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between"
+              onClick={() => setServicesOpen(!servicesOpen)}
+            >
+              <h2 className="font-semibold">
+                服務項目
+                {!servicesOpen && profile.services.length > 0 && (
+                  <span className="ml-2 text-xs font-normal text-gray-400">
+                    已選 {profile.services.length} 項
+                  </span>
+                )}
+              </h2>
+              {servicesOpen ? (
+                <ChevronUp className="h-4 w-4 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+            <div
+              className="overflow-hidden transition-all duration-300 ease-in-out"
+              style={{ maxHeight: servicesOpen ? "500px" : "0px", opacity: servicesOpen ? 1 : 0 }}
+            >
+              <div className="flex flex-wrap gap-2 pt-4">
+                {NAIL_SERVICES.map((s) => (
+                  <Badge
+                    key={s.value}
+                    variant={profile.services.includes(s.value) ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => toggleArrayItem("services", s.value)}
+                  >
+                    {s.label}
+                  </Badge>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Styles */}
         <Card>
-          <CardContent className="space-y-4 p-4">
-            <h2 className="font-semibold">擅長風格</h2>
-            <div className="flex flex-wrap gap-2">
-              {STYLES.map((style) => (
-                <Badge
-                  key={style}
-                  variant={profile.styles.includes(style) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleArrayItem("styles", style)}
-                >
-                  {style}
-                </Badge>
-              ))}
+          <CardContent className="p-4">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between"
+              onClick={() => setStylesOpen(!stylesOpen)}
+            >
+              <h2 className="font-semibold">
+                擅長風格
+                {!stylesOpen && profile.styles.length > 0 && (
+                  <span className="ml-2 text-xs font-normal text-gray-400">
+                    已選 {profile.styles.length} 種
+                  </span>
+                )}
+              </h2>
+              {stylesOpen ? (
+                <ChevronUp className="h-4 w-4 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+            <div
+              className="overflow-hidden transition-all duration-300 ease-in-out"
+              style={{ maxHeight: stylesOpen ? "500px" : "0px", opacity: stylesOpen ? 1 : 0 }}
+            >
+              <div className="flex flex-wrap gap-2 pt-4">
+                {STYLES.map((style) => (
+                  <Badge
+                    key={style}
+                    variant={profile.styles.includes(style) ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => toggleArrayItem("styles", style)}
+                  >
+                    {style}
+                  </Badge>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Pricing */}
         <Card>
-          <CardContent className="space-y-4 p-4">
-            <h2 className="font-semibold">價格範圍</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>最低價 (NT$)</Label>
-                <Input
-                  type="number"
-                  value={profile.min_price || ""}
-                  onChange={(e) =>
-                    setProfile({ ...profile, min_price: e.target.value ? Number(e.target.value) : null })
-                  }
-                />
-              </div>
-              <div>
-                <Label>最高價 (NT$)</Label>
-                <Input
-                  type="number"
-                  value={profile.max_price || ""}
-                  onChange={(e) =>
-                    setProfile({ ...profile, max_price: e.target.value ? Number(e.target.value) : null })
-                  }
-                />
+          <CardContent className="p-4">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between"
+              onClick={() => setPricingOpen(!pricingOpen)}
+            >
+              <h2 className="font-semibold">
+                價格範圍
+                {!pricingOpen && (profile.min_price || profile.max_price) && (
+                  <span className="ml-2 text-xs font-normal text-gray-400">
+                    {profile.min_price ? `NT$${profile.min_price.toLocaleString()}` : ""}
+                    {profile.min_price && profile.max_price ? " ~ " : ""}
+                    {profile.max_price ? `NT$${profile.max_price.toLocaleString()}` : ""}
+                  </span>
+                )}
+              </h2>
+              {pricingOpen ? (
+                <ChevronUp className="h-4 w-4 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+            <div
+              className="overflow-hidden transition-all duration-300 ease-in-out"
+              style={{ maxHeight: pricingOpen ? "500px" : "0px", opacity: pricingOpen ? 1 : 0 }}
+            >
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <div>
+                  <Label>最低價 (NT$)</Label>
+                  <Input
+                    type="number"
+                    value={profile.min_price || ""}
+                    onChange={(e) =>
+                      setProfile({ ...profile, min_price: e.target.value ? Number(e.target.value) : null })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>最高價 (NT$)</Label>
+                  <Input
+                    type="number"
+                    value={profile.max_price || ""}
+                    onChange={(e) =>
+                      setProfile({ ...profile, max_price: e.target.value ? Number(e.target.value) : null })
+                    }
+                  />
+                </div>
               </div>
             </div>
           </CardContent>

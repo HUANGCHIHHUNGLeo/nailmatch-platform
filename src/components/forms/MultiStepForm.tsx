@@ -146,14 +146,15 @@ export function MultiStepForm({ onSubmit }: MultiStepFormProps) {
             onSubmit,
             (errors) => {
               console.error("Form validation errors:", errors);
-              const firstError = Object.values(errors)[0];
-              if (firstError?.message) {
-                alert(`表單驗證失敗：${firstError.message}`);
-              }
+              const messages = Object.entries(errors)
+                .map(([key, err]) => `${key}: ${err?.message || "驗證失敗"}`)
+                .slice(0, 3);
+              alert(`表單驗證失敗：\n${messages.join("\n")}`);
             }
           )();
         } catch (err) {
           console.error("Submit error:", err);
+          alert("送出失敗，請重試");
         } finally {
           setIsSubmitting(false);
           submittingRef.current = false;
