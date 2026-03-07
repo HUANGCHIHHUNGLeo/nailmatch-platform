@@ -719,7 +719,7 @@ export async function notifyHelperMenu(userId: string) {
           action: {
             type: "uri",
             label: "查詢我的紀錄",
-            uri: `${appUrl}/my`,
+            uri: `https://liff.line.me/${liffId}/my`,
           },
           style: "secondary",
           color: "#F5F0EB",

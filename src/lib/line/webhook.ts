@@ -255,13 +255,13 @@ async function handleTextMessage(userId: string, text: string) {
         const label = statusLabels[latestRequest.status] || latestRequest.status;
         await pushMessage(
           userId,
-          `您最新的需求狀態：${label}\n\n查看詳情：${APP_URL}/request/${latestRequest.id}\n\n查看所有紀錄：${APP_URL}/my`
+          `您最新的需求狀態：${label}\n\n查看詳情：${APP_URL}/request/${latestRequest.id}\n\n查看所有紀錄：https://liff.line.me/${LIFF_ID}/my`
         );
         return;
       }
     }
 
-    await pushMessage(userId, `目前沒有進行中的需求。\n\n立即送出需求：https://liff.line.me/${LIFF_ID}/customer-form\n\n查看歷史紀錄：${APP_URL}/my`);
+    await pushMessage(userId, `目前沒有進行中的需求。\n\n立即送出需求：https://liff.line.me/${LIFF_ID}/customer-form\n\n查看歷史紀錄：https://liff.line.me/${LIFF_ID}/my`);
     return;
   }
 
