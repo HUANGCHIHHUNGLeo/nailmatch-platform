@@ -1,4 +1,5 @@
 import { messagingApi } from "@line/bot-sdk";
+import { withRetry } from "./retry";
 
 const client = new messagingApi.MessagingApiClient({
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || "",
@@ -6,30 +7,34 @@ const client = new messagingApi.MessagingApiClient({
 
 const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "";
 
-// Send push message to a single user
+// Send push message to a single user (with retry on transient failures)
 export async function pushMessage(userId: string, text: string) {
-  return client.pushMessage({
-    to: userId,
-    messages: [{ type: "text", text }],
-  });
+  return withRetry(() =>
+    client.pushMessage({
+      to: userId,
+      messages: [{ type: "text", text }],
+    })
+  );
 }
 
-// Send Flex Message (rich card) to a single user
+// Send Flex Message (rich card) to a single user (with retry on transient failures)
 export async function pushFlexMessage(
   userId: string,
   altText: string,
   contents: messagingApi.FlexBubble
 ) {
-  return client.pushMessage({
-    to: userId,
-    messages: [
-      {
-        type: "flex",
-        altText,
-        contents,
-      },
-    ],
-  });
+  return withRetry(() =>
+    client.pushMessage({
+      to: userId,
+      messages: [
+        {
+          type: "flex",
+          altText,
+          contents,
+        },
+      ],
+    })
+  );
 }
 
 // Broadcast new request notification to multiple artists
@@ -145,29 +150,11 @@ export async function notifyArtistsOfNewRequest(
     },
   };
 
-  // Send to each artist (multicast has 500 limit)
+  // Send to each artist (multicast has 500 limit) — with retry
   if (artistLineIds.length <= 500) {
-    return client.multicast({
-      to: artistLineIds,
-      messages: [
-        {
-          type: "flex",
-          altText: `新的美甲需求：${requestSummary.services.join("、")}`,
-          contents: bubble,
-        },
-      ],
-    });
-  }
-
-  // Batch send for more than 500
-  const batches = [];
-  for (let i = 0; i < artistLineIds.length; i += 500) {
-    batches.push(artistLineIds.slice(i, i + 500));
-  }
-  return Promise.all(
-    batches.map((batch) =>
+    return withRetry(() =>
       client.multicast({
-        to: batch,
+        to: artistLineIds,
         messages: [
           {
             type: "flex",
@@ -176,6 +163,28 @@ export async function notifyArtistsOfNewRequest(
           },
         ],
       })
+    );
+  }
+
+  // Batch send for more than 500
+  const batches = [];
+  for (let i = 0; i < artistLineIds.length; i += 500) {
+    batches.push(artistLineIds.slice(i, i + 500));
+  }
+  return Promise.allSettled(
+    batches.map((batch) =>
+      withRetry(() =>
+        client.multicast({
+          to: batch,
+          messages: [
+            {
+              type: "flex",
+              altText: `新的美甲需求：${requestSummary.services.join("、")}`,
+              contents: bubble,
+            },
+          ],
+        })
+      )
     )
   );
 }
@@ -1036,4 +1045,123 @@ export async function notifyRequestExpired(
   };
 
   return pushFlexMessage(customerLineId, "您的需求已過期，歡迎重新預約", bubble);
+}
+
+// Notify both parties about an upcoming booking
+export async function notifyBookingReminder(
+  userLineId: string,
+  info: {
+    artistName: string;
+    bookingDate: string;
+    bookingTime: string;
+    location: string;
+    bookingId: string;
+    isToday: boolean;
+  }
+) {
+  const timeLabel = info.isToday ? "今天" : "明天";
+
+  const bubble: messagingApi.FlexBubble = {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "lg",
+      paddingAll: "24px",
+      contents: [
+        {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            {
+              type: "text",
+              text: timeLabel,
+              size: "xs",
+              color: "#FFFFFF",
+              weight: "bold",
+            },
+          ],
+          backgroundColor: "#f59e0b",
+          cornerRadius: "xl",
+          paddingAll: "6px",
+          paddingStart: "12px",
+          paddingEnd: "12px",
+          width: "52px",
+        },
+        {
+          type: "text",
+          text: `${timeLabel}有預約提醒`,
+          weight: "bold",
+          size: "xl",
+          color: "#1a1a1a",
+          margin: "md",
+        },
+        { type: "separator", margin: "lg", color: "#f0f0f0" },
+        {
+          type: "box",
+          layout: "vertical",
+          spacing: "sm",
+          margin: "lg",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "設計師", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.artistName, size: "sm", color: "#333333", flex: 5, weight: "bold" },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "日期", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.bookingDate, size: "sm", color: "#333333", flex: 5 },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "時間", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.bookingTime || "待確認", size: "sm", color: "#333333", flex: 5 },
+              ],
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "地點", size: "sm", color: "#999999", flex: 3 },
+                { type: "text", text: info.location || "待確認", size: "sm", color: "#333333", flex: 5, wrap: true },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "20px",
+      contents: [
+        {
+          type: "button",
+          action: {
+            type: "uri",
+            label: "查看預約詳情",
+            uri: `https://liff.line.me/${LIFF_ID}/booking/${info.bookingId}`,
+          },
+          style: "primary",
+          color: "#D4A0A0",
+          height: "md",
+        },
+      ],
+    },
+    styles: {
+      footer: { backgroundColor: "#FAFAF8" },
+    },
+  };
+
+  return pushFlexMessage(userLineId, `${timeLabel}有預約 - ${info.artistName}`, bubble);
 }

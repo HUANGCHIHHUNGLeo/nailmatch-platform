@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LOCATION_GROUPS } from "@/lib/utils/constants";
 import InstagramReelsCarousel from "@/components/InstagramReels";
+import { Star } from "lucide-react";
 
 interface Artist {
   id: string;
@@ -21,6 +22,8 @@ interface Artist {
   studio_address: string | null;
   payment_methods: string[];
   instagram_handle: string | null;
+  average_rating: number;
+  review_count: number;
 }
 
 const CITY_FILTERS = ["全部", ...LOCATION_GROUPS.filter((g) => g.enabled !== false).map((g) => g.city)];
@@ -190,6 +193,17 @@ export default function ArtistDirectoryPage() {
                           </Badge>
                         </div>
 
+                        {artist.review_count > 0 && (
+                          <div className="mt-0.5 flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            <span className="text-xs font-medium text-amber-600">
+                              {artist.average_rating}
+                            </span>
+                            <span className="text-[10px] text-gray-400">
+                              ({artist.review_count})
+                            </span>
+                          </div>
+                        )}
                         <p className="mt-0.5 truncate text-xs text-gray-400">
                           {artist.studio_address || "\u00A0"}
                         </p>

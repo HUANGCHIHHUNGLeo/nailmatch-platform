@@ -60,6 +60,8 @@ model Artist {
   responses           ArtistResponse[]
   bookings            Booking[]
 
+  // Indexes for matching queries
+  @@index([isActive, isVerified])
   @@map("artists")
 }
 
@@ -76,6 +78,7 @@ model PortfolioWork {
   source    String   @default("upload") // 'upload' | 'instagram'
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
+  @@index([artistId])
   @@map("portfolio_works")
 }
 
@@ -89,6 +92,7 @@ model AvailabilitySlot {
   endTime   DateTime @map("end_time") @db.Time
   isBooked  Boolean  @default(false) @map("is_booked")
 
+  @@index([artistId, date])
   @@map("availability_slots")
 }
 
@@ -141,6 +145,8 @@ model ServiceRequest {
   responses           ArtistResponse[]
   bookings            Booking[]
 
+  @@index([customerId])
+  @@index([status, createdAt])
   @@map("service_requests")
 }
 
@@ -159,6 +165,8 @@ model ArtistResponse {
 
   bookings      Booking[]
 
+  @@index([requestId])
+  @@index([artistId])
   @@map("artist_responses")
 }
 
@@ -181,6 +189,9 @@ model Booking {
 
   review      Review?
 
+  @@index([customerId])
+  @@index([artistId])
+  @@index([status])
   @@map("bookings")
 }
 
@@ -195,5 +206,6 @@ model Review {
   comment   String?
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
+  @@index([artistId])
   @@map("reviews")
 }

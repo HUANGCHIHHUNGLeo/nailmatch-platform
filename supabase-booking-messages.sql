@@ -15,3 +15,6 @@ CREATE INDEX IF NOT EXISTS idx_booking_messages_created_at ON booking_messages(b
 -- Customer contact visibility preference
 -- Controls whether customer's phone is shown to the artist on confirmed bookings
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS show_contact_to_artist BOOLEAN DEFAULT false;
+
+-- Enable Supabase Realtime for booking_messages (live chat)
+ALTER PUBLICATION supabase_realtime ADD TABLE booking_messages;

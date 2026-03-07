@@ -117,7 +117,36 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Failed to fetch artists" }, { status: 500 });
     }
 
-    return NextResponse.json(paginatedResponse(data || [], count || 0, page, limit), {
+    // Batch-fetch review stats for all artists on this page
+    const artistIds = (data || []).map((a) => a.id);
+    let ratingMap: Record<string, { avg: number; count: number }> = {};
+
+    if (artistIds.length > 0) {
+      const { data: reviews } = await supabase
+        .from("reviews")
+        .select("artist_id, rating")
+        .in("artist_id", artistIds);
+
+      if (reviews) {
+        const grouped: Record<string, number[]> = {};
+        for (const r of reviews) {
+          if (!grouped[r.artist_id]) grouped[r.artist_id] = [];
+          grouped[r.artist_id].push(r.rating);
+        }
+        for (const [id, ratings] of Object.entries(grouped)) {
+          const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
+          ratingMap[id] = { avg: Math.round(avg * 10) / 10, count: ratings.length };
+        }
+      }
+    }
+
+    const enriched = (data || []).map((a) => ({
+      ...a,
+      average_rating: ratingMap[a.id]?.avg || 0,
+      review_count: ratingMap[a.id]?.count || 0,
+    }));
+
+    return NextResponse.json(paginatedResponse(enriched, count || 0, page, limit), {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60" },
     });
   } catch (error) {

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { createClient } from "@/lib/supabase/client";
 
 interface Message {
   id: string;
@@ -39,7 +40,9 @@ export function BookingMessages({ bookingId, role, fetchFn }: BookingMessagesPro
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageIdsRef = useRef(new Set<string>());
 
   const doFetch = useCallback(
     (url: string, init?: RequestInit) => (fetchFn ? fetchFn(url, init) : fetch(url, init)),
@@ -50,8 +53,9 @@ export function BookingMessages({ bookingId, role, fetchFn }: BookingMessagesPro
     try {
       const res = await doFetch(`/api/bookings/${bookingId}/messages`);
       if (res.ok) {
-        const data = await res.json();
+        const data: Message[] = await res.json();
         setMessages(data);
+        messageIdsRef.current = new Set(data.map((m) => m.id));
       }
     } catch (err) {
       console.error("Failed to load messages:", err);
@@ -60,10 +64,44 @@ export function BookingMessages({ bookingId, role, fetchFn }: BookingMessagesPro
     }
   }, [bookingId, doFetch]);
 
+  // Initial load
   useEffect(() => {
     loadMessages();
   }, [loadMessages]);
 
+  // Supabase Realtime subscription — listen for new inserts on this booking
+  useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel(`booking-messages:${bookingId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "booking_messages",
+          filter: `booking_id=eq.${bookingId}`,
+        },
+        (payload) => {
+          const newMsg = payload.new as Message;
+          // Deduplicate — avoid showing a message we already added optimistically
+          if (!messageIdsRef.current.has(newMsg.id)) {
+            messageIdsRef.current.add(newMsg.id);
+            setMessages((prev) => [...prev, newMsg]);
+          }
+        }
+      )
+      .subscribe((status) => {
+        setRealtimeConnected(status === "SUBSCRIBED");
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [bookingId]);
+
+  // Auto-scroll on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -81,7 +119,9 @@ export function BookingMessages({ bookingId, role, fetchFn }: BookingMessagesPro
       });
 
       if (res.ok) {
-        const data = await res.json();
+        const data: Message = await res.json();
+        // Add immediately (Realtime will deduplicate via messageIdsRef)
+        messageIdsRef.current.add(data.id);
         setMessages((prev) => [...prev, data]);
         setNewMessage("");
       } else {
@@ -102,7 +142,12 @@ export function BookingMessages({ bookingId, role, fetchFn }: BookingMessagesPro
     <Card className="mb-4">
       <CardContent className="p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-700">留言討論</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-semibold text-gray-700">留言討論</h2>
+            {realtimeConnected && (
+              <span className="inline-block h-2 w-2 rounded-full bg-green-400" title="即時連線中" />
+            )}
+          </div>
           <button
             onClick={loadMessages}
             className="text-xs text-gray-400 hover:text-gray-600"
@@ -173,7 +218,7 @@ export function BookingMessages({ bookingId, role, fetchFn }: BookingMessagesPro
           </Button>
         </div>
         {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
-        <p className="mt-1 text-[10px] text-gray-400">按 Enter 送出，Shift+Enter 換行</p>
+        <p className="mt-1 text-[10px] text-gray-400">即時通訊 · 按 Enter 送出，Shift+Enter 換行</p>
       </CardContent>
     </Card>
   );
