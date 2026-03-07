@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { verifyAdminSession } from "@/lib/admin/auth";
+import { logAdminAction } from "@/lib/admin/audit";
 import { notifyArtistApproved, notifyArtistRejected } from "@/lib/line/messaging";
 import { linkArtistRichMenu, unlinkArtistRichMenu } from "@/lib/line/richmenu";
+import { getClientIp } from "@/lib/utils/rate-limit";
 
 export async function GET(request: Request) {
   if (!(await verifyAdminSession())) {
@@ -82,6 +84,15 @@ export async function PATCH(request: Request) {
         console.error("Failed to send LINE notification:", lineError);
       }
     }
+
+    // Audit log
+    await logAdminAction({
+      action: isApproved ? "artist.approve" : "artist.reject",
+      entityType: "artist",
+      entityId: id,
+      details: { artistName: artist.display_name },
+      ip: getClientIp(request),
+    });
 
     return NextResponse.json({ success: true, artist });
   } catch {

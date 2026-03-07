@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminSession } from "@/lib/admin/auth";
+import { logAdminAction } from "@/lib/admin/audit";
 import { setupRichMenus } from "@/lib/line/richmenu";
 
 export async function POST() {
@@ -9,6 +10,7 @@ export async function POST() {
 
   try {
     const result = await setupRichMenus();
+    await logAdminAction({ action: "richmenu.setup", entityType: "richmenu", details: result });
     return NextResponse.json({
       success: true,
       ...result,

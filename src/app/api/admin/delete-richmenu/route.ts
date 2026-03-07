@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminSession } from "@/lib/admin/auth";
+import { logAdminAction } from "@/lib/admin/audit";
 import { messagingApi } from "@line/bot-sdk";
 
 export async function POST() {
@@ -23,6 +24,7 @@ export async function POST() {
       deleted++;
     }
 
+    await logAdminAction({ action: "richmenu.delete", entityType: "richmenu", details: { deleted } });
     return NextResponse.json({
       success: true,
       deleted,

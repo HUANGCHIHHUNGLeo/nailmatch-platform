@@ -87,6 +87,16 @@ interface PaginatedResult<T> {
   hasMore: boolean;
 }
 
+interface AuditLog {
+  id: string;
+  action: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  details: Record<string, unknown>;
+  ip_address: string | null;
+  created_at: string;
+}
+
 interface Analytics {
   trend: { date: string; customers: number; requests: number; bookings: number; responses: number }[];
   topServices: { name: string; count: number }[];
@@ -107,20 +117,25 @@ export default function AdminDataPage() {
   const [totals, setTotals] = useState({ customers: 0, requests: 0, bookings: 0 });
   const [pages, setPages] = useState({ customers: 1, requests: 1, bookings: 1 });
   const [hasMore, setHasMore] = useState({ customers: false, requests: false, bookings: false });
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [auditTotal, setAuditTotal] = useState(0);
+  const [auditHasMore, setAuditHasMore] = useState(false);
+  const [auditPage, setAuditPage] = useState(1);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [tab, setTab] = useState<"analytics" | "customers" | "requests" | "bookings">("analytics");
+  const [tab, setTab] = useState<"analytics" | "customers" | "requests" | "bookings" | "audit">("analytics");
   const PAGE_LIMIT = 30;
 
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [custRes, reqRes, bookRes, analyticsRes] = await Promise.all([
+        const [custRes, reqRes, bookRes, analyticsRes, auditRes] = await Promise.all([
           fetch(`/api/admin/customers?limit=${PAGE_LIMIT}`),
           fetch(`/api/admin/requests?limit=${PAGE_LIMIT}`),
           fetch(`/api/admin/bookings?limit=${PAGE_LIMIT}`),
           fetch("/api/admin/analytics"),
+          fetch(`/api/admin/audit-logs?limit=${PAGE_LIMIT}`),
         ]);
 
         if (custRes.status === 401) {
@@ -132,6 +147,12 @@ export default function AdminDataPage() {
         const reqData: PaginatedResult<ServiceRequest> = await reqRes.json();
         const bookData: PaginatedResult<Booking> = await bookRes.json();
         if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
+        if (auditRes.ok) {
+          const auditData: PaginatedResult<AuditLog> = await auditRes.json();
+          setAuditLogs(auditData.data || []);
+          setAuditTotal(auditData.total || 0);
+          setAuditHasMore(!!auditData.hasMore);
+        }
 
         setCustomers(custData.data || []);
         setRequests(reqData.data || []);
@@ -166,6 +187,23 @@ export default function AdminDataPage() {
       setHasMore((prev) => ({ ...prev, [type]: result.hasMore }));
     } catch (err) {
       console.error("Failed to load more:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMoreAudit = async () => {
+    setLoadingMore(true);
+    const nextPage = auditPage + 1;
+    try {
+      const res = await fetch(`/api/admin/audit-logs?page=${nextPage}&limit=${PAGE_LIMIT}`);
+      if (!res.ok) return;
+      const result: PaginatedResult<AuditLog> = await res.json();
+      setAuditLogs((prev) => [...prev, ...result.data]);
+      setAuditPage(nextPage);
+      setAuditHasMore(result.hasMore);
+    } catch (err) {
+      console.error("Failed to load more audit logs:", err);
     } finally {
       setLoadingMore(false);
     }
@@ -234,6 +272,7 @@ export default function AdminDataPage() {
             ["customers", `客戶 (${totals.customers})`],
             ["requests", `需求 (${totals.requests})`],
             ["bookings", `預約 (${totals.bookings})`],
+            ["audit", `操作紀錄 (${auditTotal})`],
           ] as const).map(([key, label]) => (
             <button
               key={key}
@@ -602,7 +641,93 @@ export default function AdminDataPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Audit Logs */}
+          {tab === "audit" && (
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-gray-50 text-left text-xs text-gray-500">
+                        <th className="px-4 py-3">操作</th>
+                        <th className="px-4 py-3">對象</th>
+                        <th className="px-4 py-3">詳情</th>
+                        <th className="px-4 py-3">IP</th>
+                        <th className="px-4 py-3">時間</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {auditLogs.map((log) => (
+                        <tr key={log.id} className="border-b hover:bg-gray-50">
+                          <td className="px-4 py-3">
+                            <Badge className={`text-[10px] ${getAuditActionColor(log.action)}`}>
+                              {getAuditActionLabel(log.action)}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-500">
+                            {log.entity_type && (
+                              <span>{log.entity_type}{log.entity_id ? ` #${log.entity_id.slice(0, 8)}` : ""}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-600">
+                            {formatAuditDetails(log.details)}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-400 font-mono">{log.ip_address || "-"}</td>
+                          <td className="px-4 py-3 text-xs text-gray-400">{formatDate(log.created_at)}</td>
+                        </tr>
+                      ))}
+                      {auditLogs.length === 0 && (
+                        <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">尚無操作紀錄</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {auditHasMore && (
+                  <div className="border-t p-3 text-center">
+                    <Button variant="ghost" size="sm" onClick={loadMoreAudit} disabled={loadingMore}>
+                      {loadingMore ? "載入中..." : `載入更多（已載入 ${auditLogs.length}/${auditTotal}）`}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
       </main>
     </div>
   );
+}
+
+const AUDIT_ACTION_LABELS: Record<string, string> = {
+  "admin.login": "管理員登入",
+  "artist.approve": "核准設計師",
+  "artist.reject": "拒絕設計師",
+  "richmenu.setup": "設定 Rich Menu",
+  "richmenu.delete": "刪除 Rich Menu",
+};
+
+const AUDIT_ACTION_COLORS: Record<string, string> = {
+  "admin.login": "bg-blue-100 text-blue-800",
+  "artist.approve": "bg-green-100 text-green-800",
+  "artist.reject": "bg-red-100 text-red-800",
+  "richmenu.setup": "bg-purple-100 text-purple-800",
+  "richmenu.delete": "bg-orange-100 text-orange-800",
+};
+
+function getAuditActionLabel(action: string) {
+  return AUDIT_ACTION_LABELS[action] || action;
+}
+
+function getAuditActionColor(action: string) {
+  return AUDIT_ACTION_COLORS[action] || "bg-gray-100 text-gray-800";
+}
+
+function formatAuditDetails(details: Record<string, unknown>) {
+  if (!details || Object.keys(details).length === 0) return "-";
+  const parts: string[] = [];
+  if (details.artistName) parts.push(`設計師: ${details.artistName}`);
+  if (details.deleted !== undefined) parts.push(`刪除: ${details.deleted} 個`);
+  if (details.customerMenuId) parts.push("客戶選單已建立");
+  if (details.artistMenuId) parts.push("設計師選單已建立");
+  return parts.length > 0 ? parts.join("、") : JSON.stringify(details).slice(0, 60);
 }

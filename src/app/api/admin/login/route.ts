@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { checkRateLimit, getClientIp } from "@/lib/utils/rate-limit";
+import { logAdminAction } from "@/lib/admin/audit";
 
 export async function POST(request: Request) {
   // 管理員登入：每分鐘最多 5 次（防暴力破解）
@@ -40,6 +41,9 @@ export async function POST(request: Request) {
       .digest("hex");
 
     const sessionValue = `${sessionData}.${hmac}`;
+
+    // Audit log successful login
+    await logAdminAction({ action: "admin.login", ip });
 
     const response = NextResponse.json({ success: true });
     response.cookies.set("admin_session", sessionValue, {
