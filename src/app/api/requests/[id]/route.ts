@@ -10,10 +10,10 @@ export async function GET(
     const { id } = await params;
     const supabase = await createServiceClient();
 
-    // Fetch request with customer info (exclude PII like line_user_id)
+    // Fetch request with customer info
     const { data: serviceRequest, error } = await supabase
       .from("service_requests")
-      .select("*, customers(id, display_name)")
+      .select("*, customers(id, display_name, line_user_id)")
       .eq("id", id)
       .single();
 
@@ -53,8 +53,22 @@ export async function GET(
         : null,
     }));
 
+    // Determine LINE linkage without exposing line_user_id
+    const customerObj = Array.isArray(serviceRequest.customers)
+      ? serviceRequest.customers[0]
+      : serviceRequest.customers;
+    const hasLine = !!customerObj?.line_user_id;
+
+    // Strip line_user_id from response
+    const { customers, ...restRequest } = serviceRequest;
+    const safeCustomers = customerObj
+      ? { id: customerObj.id, display_name: customerObj.display_name }
+      : null;
+
     return NextResponse.json({
-      ...serviceRequest,
+      ...restRequest,
+      customers: safeCustomers,
+      has_line: hasLine,
       responses: responsesWithPortfolio,
     });
   } catch (error) {

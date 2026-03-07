@@ -36,6 +36,30 @@ interface Booking {
   customers: { display_name: string };
 }
 
+interface MyQuote {
+  id: string;
+  quoted_price: number | null;
+  message: string | null;
+  available_time: string | null;
+  status: string;
+  created_at: string;
+  service_requests: {
+    id: string;
+    services: string[];
+    locations: string[];
+    budget_range: string;
+    preferred_date: string;
+    status: string;
+    customers: { display_name: string } | null;
+  } | null;
+}
+
+const QUOTE_STATUS: Record<string, { label: string; color: string }> = {
+  pending: { label: "等待回應", color: "bg-yellow-100 text-yellow-800" },
+  accepted: { label: "已被接受", color: "bg-green-100 text-green-800" },
+  declined: { label: "未被選中", color: "bg-gray-100 text-gray-600" },
+};
+
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
@@ -53,12 +77,14 @@ export default function DashboardContent() {
   const { data: bookings } = useAuthSWR<Booking[]>(
     me?.id ? `/api/bookings?artistId=${me.id}` : null
   );
+  const { data: myQuotes } = useAuthSWR<MyQuote[]>("/api/responses/mine");
 
   const fetchError = meError || reqError;
   const loading = !me && !requests && !fetchError;
   const artistName = me?.display_name || "";
   const requestList = requests || [];
   const bookingList = bookings || [];
+  const quoteList = myQuotes || [];
 
   const stats = useMemo(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -231,6 +257,14 @@ export default function DashboardContent() {
                 <Badge variant="secondary" className="ml-1">{requestList.length}</Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="quotes" className="flex-1">
+              我的報價
+              {quoteList.filter((q) => q.status === "pending").length > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {quoteList.filter((q) => q.status === "pending").length}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="bookings" className="flex-1">
               {t.dashboard.tabs.myBookings}
             </TabsTrigger>
@@ -279,6 +313,66 @@ export default function DashboardContent() {
                   </CardContent>
                 </Card>
               ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="quotes" className="mt-4 space-y-3">
+            {quoteList.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center text-gray-400">
+                  <p>還沒有送出報價</p>
+                  <p className="mt-1 text-sm">報價後可以在這裡追蹤客戶回覆狀態</p>
+                </CardContent>
+              </Card>
+            ) : (
+              quoteList.map((quote) => {
+                const sr = Array.isArray(quote.service_requests) ? quote.service_requests[0] : quote.service_requests;
+                const customer = sr?.customers;
+                const customerObj = Array.isArray(customer) ? customer[0] : customer;
+                const statusInfo = QUOTE_STATUS[quote.status] || QUOTE_STATUS.pending;
+                // If the request itself is confirmed/completed, the quote was accepted
+                const requestConfirmed = sr && ["confirmed", "completed"].includes(sr.status);
+                const displayStatus = requestConfirmed && quote.status === "pending"
+                  ? QUOTE_STATUS.accepted
+                  : statusInfo;
+                return (
+                  <Card key={quote.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">
+                            {customerObj?.display_name || "匿名客戶"}
+                          </p>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {sr?.services?.map((s: string) => (
+                              <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>
+                            ))}
+                          </div>
+                          <div className="mt-2 space-y-0.5 text-sm text-gray-500">
+                            <p>地點：{sr?.locations?.join("、") || "-"}</p>
+                            <p>預算：{sr?.budget_range || "-"}</p>
+                            {sr?.preferred_date && <p>日期：{sr.preferred_date}</p>}
+                          </div>
+                          <p className="mt-2 text-sm font-semibold text-[var(--brand)]">
+                            我的報價：NT${(quote.quoted_price || 0).toLocaleString()}
+                          </p>
+                          {quote.message && (
+                            <p className="mt-1 text-xs text-gray-400 truncate max-w-[250px]">
+                              &ldquo;{quote.message}&rdquo;
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <Badge className={`text-[10px] ${displayStatus.color}`}>
+                            {displayStatus.label}
+                          </Badge>
+                          <span className="text-[11px] text-gray-400">{timeAgo(quote.created_at)}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </TabsContent>
 
