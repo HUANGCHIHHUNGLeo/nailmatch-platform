@@ -217,6 +217,14 @@ async function handleTextMessage(userId: string, text: string) {
     return;
   }
 
+  if (["註冊", "加入", "成為設計師", "我要接案"].some((kw) => lowerText.includes(kw))) {
+    await pushMessage(
+      userId,
+      `歡迎加入 NaLi Match！點擊下方連結填寫設計師資料：\n\nhttps://liff.line.me/${LIFF_ID}/artist-form`
+    );
+    return;
+  }
+
   if (["登入", "後台", "設計師登入", "我是設計師"].some((kw) => lowerText.includes(kw))) {
     await pushMessage(
       userId,

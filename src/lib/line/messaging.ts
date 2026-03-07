@@ -697,7 +697,7 @@ export async function notifyHelperMenu(userId: string) {
         },
         {
           type: "text",
-          text: "💡 也可以輸入關鍵字：\n「預約」填寫需求｜「查詢」查看進度｜「登入」設計師後台",
+          text: "💡 也可以輸入關鍵字：\n「預約」填寫需求｜「查詢」查看進度\n「登入」設計師後台｜「註冊」成為設計師",
           size: "xs",
           color: "#aaaaaa",
           margin: "md",
@@ -738,7 +738,7 @@ export async function notifyHelperMenu(userId: string) {
           type: "button",
           action: {
             type: "uri",
-            label: "設計師登入",
+            label: "設計師入口（登入/註冊）",
             uri: `https://liff.line.me/${liffId}/artist`,
           },
           style: "secondary",
