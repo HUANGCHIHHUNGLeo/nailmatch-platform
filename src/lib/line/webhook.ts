@@ -241,6 +241,11 @@ async function handleTextMessage(userId: string, text: string) {
     return;
   }
 
+  if (["選單", "功能", "menu", "help", "幫助"].some((kw) => lowerText.includes(kw))) {
+    await notifyHelperMenu(userId);
+    return;
+  }
+
   if (["我的預約", "查詢", "進度"].some((kw) => lowerText.includes(kw))) {
     const supabase = await createServiceClient();
 
@@ -281,7 +286,11 @@ async function handleTextMessage(userId: string, text: string) {
     return;
   }
 
-  await notifyHelperMenu(userId);
+  // Unrecognized text — send a short hint instead of the full menu card
+  await pushMessage(
+    userId,
+    `感謝您的訊息！💡 您可以輸入：\n\n「預約」→ 填寫需求\n「查詢」→ 查看進度\n「登入」→ 設計師後台\n「註冊」→ 成為設計師\n\n或輸入「選單」查看完整功能`
+  );
 }
 
 async function handlePostback(userId: string, data: string) {
