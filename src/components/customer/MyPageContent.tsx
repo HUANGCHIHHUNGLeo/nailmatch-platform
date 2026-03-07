@@ -62,11 +62,12 @@ const BOOKING_STATUS: Record<string, { label: string; color: string }> = {
 export default function MyPageContent() {
   const { isReady, isLoggedIn, needsLogin, error, profile } = useLiff();
   const { authFetch } = useAuthFetch();
-  const { data: requests } = useAuthSWR<ServiceRequest[]>("/api/requests");
-  const { data: bookings } = useAuthSWR<Booking[]>("/api/bookings");
+  const { data: requests, error: reqError } = useAuthSWR<ServiceRequest[]>("/api/requests");
+  const { data: bookings, error: bookError } = useAuthSWR<Booking[]>("/api/bookings");
   const [deleting, setDeleting] = useState(false);
 
-  const loading = isReady && isLoggedIn && !requests && !bookings;
+  const fetchError = reqError || bookError;
+  const loading = isReady && isLoggedIn && !requests && !bookings && !fetchError;
   const requestList = requests || [];
   const bookingList = bookings || [];
 
@@ -191,7 +192,22 @@ export default function MyPageContent() {
 
           {/* Requests Tab */}
           <TabsContent value="requests" className="space-y-3">
-            {loading ? (
+            {fetchError ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <p className="mb-1 font-medium text-gray-700">無法載入紀錄</p>
+                  <p className="mb-4 text-sm text-gray-400">
+                    請關閉此頁面後重新從 LINE 開啟
+                  </p>
+                  <Button
+                    onClick={() => window.location.reload()}
+                    className="bg-[var(--brand)] hover:bg-[var(--brand-dark)]"
+                  >
+                    重新整理
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--brand)] border-t-transparent" />
               </div>

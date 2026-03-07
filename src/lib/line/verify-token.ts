@@ -8,7 +8,10 @@ export function verifyLineIdToken(idToken: string): { userId: string } | null {
   try {
     const channelId = process.env.LINE_LOGIN_CHANNEL_ID;
     const channelSecret = process.env.LINE_LOGIN_CHANNEL_SECRET;
-    if (!channelId || !channelSecret) return null;
+    if (!channelId || !channelSecret) {
+      console.error("[verifyLineIdToken] LINE_LOGIN_CHANNEL_ID or LINE_LOGIN_CHANNEL_SECRET not set");
+      return null;
+    }
 
     const parts = idToken.split(".");
     if (parts.length !== 3) return null;
@@ -22,7 +25,10 @@ export function verifyLineIdToken(idToken: string): { userId: string } | null {
       .update(data)
       .digest("base64url");
 
-    if (signatureB64 !== expectedSig) return null;
+    if (signatureB64 !== expectedSig) {
+      console.error("[verifyLineIdToken] Signature mismatch — check LINE_LOGIN_CHANNEL_SECRET");
+      return null;
+    }
 
     // Decode payload
     const payload = JSON.parse(
@@ -31,13 +37,20 @@ export function verifyLineIdToken(idToken: string): { userId: string } | null {
 
     // Verify issuer and audience
     if (payload.iss !== "https://access.line.me") return null;
-    if (payload.aud !== channelId) return null;
+    if (payload.aud !== channelId) {
+      console.error(`[verifyLineIdToken] Audience mismatch: token aud=${payload.aud}, expected=${channelId}`);
+      return null;
+    }
 
     // Verify expiry
-    if (payload.exp && payload.exp < Date.now() / 1000) return null;
+    if (payload.exp && payload.exp < Date.now() / 1000) {
+      console.error(`[verifyLineIdToken] Token expired: exp=${new Date(payload.exp * 1000).toISOString()}`);
+      return null;
+    }
 
     return { userId: payload.sub };
-  } catch {
+  } catch (err) {
+    console.error("[verifyLineIdToken] Exception:", err);
     return null;
   }
 }
