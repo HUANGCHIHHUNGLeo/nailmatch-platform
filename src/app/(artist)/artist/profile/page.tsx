@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Save, Loader2, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,7 +39,9 @@ export default function ArtistProfilePage() {
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isReady || !isLoggedIn) return;
@@ -62,6 +65,7 @@ export default function ArtistProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           display_name: profile.display_name,
+          avatar_url: profile.avatar_url,
           bio: profile.bio,
           phone: profile.phone,
           email: profile.email,
@@ -131,13 +135,87 @@ export default function ArtistProfilePage() {
       <main className="mx-auto max-w-2xl space-y-4 p-4">
         {message && (
           <div
-            className={`rounded-lg p-3 text-sm ${
-              message.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
-            }`}
+            className={`rounded-lg p-3 text-sm ${message.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+              }`}
           >
             {message.text}
           </div>
         )}
+
+        {/* Avatar */}
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 p-6">
+            <div className="relative">
+              <div
+                className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-full border-4 border-[var(--brand-light)] shadow-md transition-shadow hover:shadow-lg"
+                onClick={() => avatarInputRef.current?.click()}
+              >
+                {profile.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={profile.display_name}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-[var(--brand-light)] text-3xl font-bold text-[var(--brand)]">
+                    {profile.display_name.charAt(0)}
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                  <Camera className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              {avatarUploading && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/70">
+                  <Loader2 className="h-6 w-6 animate-spin text-[var(--brand)]" />
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              className="text-sm font-medium text-[var(--brand)] hover:underline"
+              onClick={() => avatarInputRef.current?.click()}
+            >
+              更換大頭貼
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setAvatarUploading(true);
+                try {
+                  const fd = new FormData();
+                  fd.append("file", file);
+                  fd.append("bucket", "portfolio-images");
+                  const uploadRes = await authFetch("/api/upload", { method: "POST", body: fd });
+                  if (!uploadRes.ok) { alert("圖片上傳失敗"); return; }
+                  const { url } = await uploadRes.json();
+                  // Update avatar_url in profile state and save immediately
+                  const saveRes = await authFetch("/api/artists/me", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ avatar_url: url }),
+                  });
+                  if (saveRes.ok) {
+                    const updated = await saveRes.json();
+                    setProfile(updated);
+                    setMessage({ type: "success", text: "大頭貼已更新" });
+                  }
+                } catch {
+                  alert("上傳發生錯誤");
+                } finally {
+                  setAvatarUploading(false);
+                  e.target.value = "";
+                }
+              }}
+            />
+          </CardContent>
+        </Card>
 
         {/* Basic Info */}
         <Card>
