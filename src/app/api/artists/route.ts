@@ -16,33 +16,62 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createServiceClient();
+    const lineUserId = lineProfile?.userId || null;
 
+    const artistData = {
+      line_user_id: lineUserId,
+      display_name: parsed.data.displayName,
+      avatar_url: lineProfile?.pictureUrl || null,
+      gender: parsed.data.gender,
+      phone: parsed.data.phone,
+      email: parsed.data.email || null,
+      bio: parsed.data.bio || null,
+      cities: parsed.data.cities,
+      service_location_type: parsed.data.serviceLocationType,
+      studio_address: parsed.data.studioAddress || null,
+      services: parsed.data.services,
+      styles: parsed.data.styles,
+      min_price: parsed.data.minPrice,
+      max_price: parsed.data.maxPrice,
+      instagram_handle: parsed.data.instagramHandle || null,
+      line_id: parsed.data.lineId || null,
+      payment_methods: parsed.data.paymentMethods || [],
+      role: role || "nail",
+      updated_at: new Date().toISOString(),
+    };
+
+    // Check if artist with same LINE user ID already exists
+    if (lineUserId) {
+      const { data: existing } = await supabase
+        .from("artists")
+        .select("id")
+        .eq("line_user_id", lineUserId)
+        .single();
+
+      if (existing) {
+        // Update existing artist instead of creating duplicate
+        const { error: updateError } = await supabase
+          .from("artists")
+          .update(artistData)
+          .eq("id", existing.id);
+
+        if (updateError) {
+          console.error("Artist update error:", updateError);
+          return NextResponse.json({ error: "Update failed", detail: updateError.message }, { status: 500 });
+        }
+        return NextResponse.json({ id: existing.id, updated: true });
+      }
+    }
+
+    // New registration
     const { data: artist, error } = await supabase
       .from("artists")
       .insert({
-        line_user_id: lineProfile?.userId || null,
-        display_name: parsed.data.displayName,
-        avatar_url: lineProfile?.pictureUrl || null,
-        gender: parsed.data.gender,
-        phone: parsed.data.phone,
-        email: parsed.data.email || null,
-        bio: parsed.data.bio || null,
-        cities: parsed.data.cities,
-        service_location_type: parsed.data.serviceLocationType,
-        studio_address: parsed.data.studioAddress || null,
-        services: parsed.data.services,
-        styles: parsed.data.styles,
-        min_price: parsed.data.minPrice,
-        max_price: parsed.data.maxPrice,
-        instagram_handle: parsed.data.instagramHandle || null,
-        line_id: parsed.data.lineId || null,
-        payment_methods: parsed.data.paymentMethods || [],
-        role: role || "nail",
+        ...artistData,
         is_verified: false,
         is_active: true,
         terms_accepted_at: consentAccepted ? new Date().toISOString() : null,
         privacy_accepted_at: consentAccepted ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString(),
       })
       .select("id")
       .single();
