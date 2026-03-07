@@ -39,6 +39,8 @@ export async function GET(
     return NextResponse.json({
       ...publicProfile,
       portfolio: portfolio || [],
+    }, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60" },
     });
   } catch (error) {
     console.error("Artist detail error:", error);

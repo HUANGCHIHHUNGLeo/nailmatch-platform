@@ -59,5 +59,7 @@ export async function GET(request: Request) {
     response_count: responseMap[r.id] || 0,
   }));
 
-  return NextResponse.json(paginatedResponse(enriched, count || 0, page, limit));
+  return NextResponse.json(paginatedResponse(enriched, count || 0, page, limit), {
+    headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=30" },
+  });
 }

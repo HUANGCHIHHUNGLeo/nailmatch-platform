@@ -99,6 +99,8 @@ export async function GET(request: Request) {
       reviews,
       averageRating: Math.round(avgRating * 10) / 10,
       totalReviews: reviews.length,
+    }, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60" },
     });
   } catch (error) {
     console.error("Reviews GET error:", error);

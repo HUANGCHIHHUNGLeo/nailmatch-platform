@@ -117,7 +117,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Failed to fetch artists" }, { status: 500 });
     }
 
-    return NextResponse.json(paginatedResponse(data || [], count || 0, page, limit));
+    return NextResponse.json(paginatedResponse(data || [], count || 0, page, limit), {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60" },
+    });
   } catch (error) {
     console.error("Artists GET error:", error);
     return NextResponse.json(
